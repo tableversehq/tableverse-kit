@@ -2,7 +2,7 @@
 
 ## Summary
 
-Ship a first-party UI library, `tabletop-ui`, that gives boardgame
+Ship a first-party UI library, `@tabletop-kit/ui`, that gives boardgame
 implementations a consistent way to render the engine's state tree and wire
 commands.
 
@@ -11,7 +11,7 @@ The library should be **hybrid**:
 - React **hooks** distributed as a normal npm package, imported like any
   dependency.
 - React **components** distributed as source code that customers copy into
-  their own repo via `tabletop-cli ui add <component>`, in the style of
+  their own repo via `tt-kit ui add <component>`, in the style of
   `shadcn/ui`.
 
 Both halves should live in the same npm package and share one version, so the
@@ -41,7 +41,7 @@ This doc describes the library that vocabulary lives in.
 - let designers tweak the visuals and interactions of any primitive without
   forking a package
 - keep version coherence between hooks and components automatic
-- integrate with the existing `tabletop-cli` so customers learn one tool
+- integrate with the existing `tt-kit` CLI so customers learn one tool
 - keep the React-specific surface optional — non-React customers should not
   pay a cost for it
 
@@ -96,7 +96,7 @@ import {
   useDiscovery,
   useSelectable,
   useActiveCommand,
-} from "tabletop-ui";
+} from "@tabletop-kit/ui";
 
 const bank = useGameState((s) => s.board.bank);
 const discovery = useDiscovery();
@@ -112,9 +112,9 @@ Components are React source files that get copied into the customer's repo
 when they run:
 
 ```bash
-tabletop-cli ui add token-pile
-tabletop-cli ui add card
-tabletop-cli ui add command-bar
+tt-kit ui add token-pile
+tt-kit ui add card
+tt-kit ui add command-bar
 ```
 
 Each component is opinionated about behavior and minimal about styling. They
@@ -162,7 +162,7 @@ forking a package.
 
 Shipping hooks via npm means selection/discovery/confirmation logic stays
 canonical across games. A bug in the discovery state machine is fixed once,
-and `bun update tabletop-ui` reaches every customer.
+and `bun update @tabletop-kit/ui` reaches every customer.
 
 ## Why The Same Package
 
@@ -170,7 +170,7 @@ The copied components will import their logic from the hooks package:
 
 ```tsx
 // src/components/ui/token-pile.tsx (scaffolded)
-import { useSelectable } from "tabletop-ui";
+import { useSelectable } from "@tabletop-kit/ui";
 
 export function TokenPile({ color, count, target }) {
   const state = useSelectable("token", target);
@@ -180,37 +180,37 @@ export function TokenPile({ color, count, target }) {
 
 If hooks and components shipped as separate packages, customers could end up
 with hooks `v2` and components scaffolded against the `v1` hook API. Bundling
-them in one package makes that drift impossible: scaffolding `tabletop-ui ui
+them in one package makes that drift impossible: scaffolding `@tabletop-kit/ui ui
 add token-pile` always pulls source that targets the same version of
-`tabletop-ui` the customer already has installed.
+`@tabletop-kit/ui` the customer already has installed.
 
 Tradeoff: hooks cannot independently version vs. components. This is
 acceptable because component churn is mostly **additive** — adding new
 primitives — and additive changes do not require a hooks bump.
 
-## Why Bundle Into `tabletop-cli`
+## Why Bundle Into `tt-kit`
 
-Customers already use `tabletop-cli` to generate engine types and protocol
+Customers already use `tt-kit` to generate engine types and protocol
 artifacts. Adding UI scaffolding to the same CLI gives them one tool to
 learn:
 
 ```bash
-tabletop-cli init
-tabletop-cli generate types
-tabletop-cli ui add token-pile
+tt-kit init
+tt-kit generate types
+tt-kit ui add token-pile
 ```
 
 For an agent, this is even more important: one CLI surface to know means one
 set of capabilities to plan against, not two.
 
 The React-specific dependencies of the `ui` subcommand should be **lazy** or
-**peer**: a non-React customer running `tabletop-cli generate types` should
+**peer**: a non-React customer running `tt-kit generate types` should
 not pay a React install cost. This is an implementation constraint on the
 CLI plugin layout, not a product compromise.
 
 ## Code Organization In The Customer Repo
 
-A typical customer repo after running `tabletop-cli ui add ...` for a few
+A typical customer repo after running `tt-kit ui add ...` for a few
 primitives:
 
 ```text
@@ -220,7 +220,7 @@ my-game/
     engine/
       ...                       # game logic authored by the customer/agent
     components/
-      ui/                       # copied from tabletop-ui
+      ui/                       # copied from @tabletop-kit/ui
         selectable.tsx
         token-pile.tsx
         card.tsx
@@ -230,11 +230,11 @@ my-game/
         development-market.tsx
         noble-strip.tsx
     app.tsx
-  package.json                  # depends on "tabletop-ui"
+  package.json                  # depends on "@tabletop-kit/ui"
 ```
 
 The `components/ui/` directory is owned by the customer once it is scaffolded.
-The `tabletop-ui` npm package owns nothing in their tree except the import
+The `@tabletop-kit/ui` npm package owns nothing in their tree except the import
 target for hooks.
 
 ## State Management Stance
@@ -256,7 +256,7 @@ mechanical: it never has to invent a state-management strategy.
 ## Open Questions
 
 - **Registry location.** shadcn fetches component source from a hosted JSON
-  registry. The first version of `tabletop-cli ui add` could read from a
+  registry. The first version of `tt-kit ui add` could read from a
   registry directory bundled into the npm package itself, avoiding a network
   hop. Decide before shipping.
 - **Theming.** Splendor's CSS uses raw color tokens. The library should
@@ -269,13 +269,13 @@ mechanical: it never has to invent a state-management strategy.
 - **Update flow.** Once components are copied, fixing a bug in the canonical
   source is straightforward; propagating that fix to existing customer
   repos is not. shadcn's answer is "the user does it manually." We may want
-  a `tabletop-cli ui diff` command that surfaces drift, but it is not
+  a `tt-kit ui diff` command that surfaces drift, but it is not
   required for v1.
 
 ## Recommendation
 
-Build `tabletop-ui` as a single npm package that exposes hooks via normal
-imports and ships component source through a `tabletop-cli ui add`
+Build `@tabletop-kit/ui` as a single npm package that exposes hooks via normal
+imports and ships component source through a `tt-kit ui add`
 subcommand. Treat the hooks API as the stable, versioned surface and the
 components as canonical-but-customer-owned source. Start the component
 vocabulary from the patterns the Splendor example already needed, and grow

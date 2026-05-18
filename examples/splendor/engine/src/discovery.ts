@@ -1,4 +1,4 @@
-import type { DiscoveryOption } from "tabletop-engine";
+import type { DiscoveryOption } from "@tabletop-kit/engine";
 import {
   TOKEN_COLORS,
   type ReturnTokensPayload,

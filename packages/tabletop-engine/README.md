@@ -1,4 +1,4 @@
-# tabletop-engine
+# @tabletop-kit/engine
 
 Reusable runtime engine package for tabletop and board-game rules engines.
 
@@ -48,7 +48,7 @@ import {
   GameDefinitionBuilder,
   GameState,
   t,
-} from "tabletop-engine";
+} from "@tabletop-kit/engine";
 
 class CounterState extends GameState {
   @field(t.number())

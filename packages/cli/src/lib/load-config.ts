@@ -1,4 +1,4 @@
-import type { GameDefinition, GameState } from "tabletop-engine";
+import type { GameDefinition, GameState } from "@tabletop-kit/engine";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 interface LoadConfigOptions {

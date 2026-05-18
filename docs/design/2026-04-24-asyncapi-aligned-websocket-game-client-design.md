@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define the next direction for `tabletop-cli generate client-sdk`.
+Define the next direction for `tt-kit generate client-sdk`.
 
 The generated artifact should no longer stop at type aliases. It should
 generate a small runtime client for the engine-scoped hosted gameplay protocol.

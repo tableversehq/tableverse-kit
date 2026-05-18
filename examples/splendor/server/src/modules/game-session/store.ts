@@ -1,5 +1,5 @@
 import { and, asc, eq, isNotNull, lt } from "drizzle-orm";
-import type { CanonicalState } from "tabletop-engine";
+import type { CanonicalState } from "@tabletop-kit/engine";
 import type { Db } from "../db";
 import {
   gameSessionPlayers,

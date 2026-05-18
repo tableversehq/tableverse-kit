@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { runGenerateCommand } from "./commands/generate.ts";
 import { runValidateCommand } from "./commands/validate.ts";
 import { failure, success, type RunResult } from "./lib/command-result.ts";

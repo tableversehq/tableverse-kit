@@ -1,12 +1,10 @@
 export function createRootHelpText(): string {
-  return ["tabletop-cli", "", "Commands:", "  generate", "  validate"].join(
-    "\n",
-  );
+  return ["tt-kit", "", "Commands:", "  generate", "  validate"].join("\n");
 }
 
 export function createGenerateHelpText(): string {
   return [
-    "tabletop-cli generate",
+    "tt-kit generate",
     "",
     "Targets:",
     "  types",
@@ -21,7 +19,7 @@ export function createGenerateHelpText(): string {
 
 export function createValidateHelpText(): string {
   return [
-    "tabletop-cli validate",
+    "tt-kit validate",
     "",
     "Optional flags:",
     "  --config <path>",

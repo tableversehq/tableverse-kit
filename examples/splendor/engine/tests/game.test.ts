@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createGameExecutor } from "tabletop-engine";
+import { createGameExecutor } from "@tabletop-kit/engine";
 import { SPLENDOR_DISCOVERY_STEPS } from "../src/discovery.ts";
 import { createCommands } from "../src/commands/index.ts";
 import { returnTokensCommand } from "../src/commands/return-tokens.ts";

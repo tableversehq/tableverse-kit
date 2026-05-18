@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createGameExecutor } from "tabletop-engine";
+import { createGameExecutor } from "@tabletop-kit/engine";
 import { createSplendorGame } from "splendor-example";
 import { run } from "../src/main.ts";
 
@@ -20,7 +20,7 @@ describe("validate", () => {
   });
 
   it("validates a valid snapshot", async () => {
-    const outDir = await mkdtemp(join(tmpdir(), "tabletop-cli-validate-"));
+    const outDir = await mkdtemp(join(tmpdir(), "tt-kit-validate-"));
     const game = createSplendorGame();
     const executor = createGameExecutor(game);
     const snapshotPath = join(outDir, "snapshot.json");
@@ -49,7 +49,7 @@ describe("validate", () => {
   });
 
   it("fails for an invalid snapshot", async () => {
-    const outDir = await mkdtemp(join(tmpdir(), "tabletop-cli-validate-"));
+    const outDir = await mkdtemp(join(tmpdir(), "tt-kit-validate-"));
     const game = createSplendorGame();
     const executor = createGameExecutor(game);
     const invalidSnapshotPath = join(outDir, "invalid-snapshot.json");

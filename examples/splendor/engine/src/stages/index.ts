@@ -1,7 +1,7 @@
 import {
   createStageFactory,
   type SingleActivePlayerStageDefinition,
-} from "tabletop-engine";
+} from "@tabletop-kit/engine";
 import { createCommands } from "../commands/index.ts";
 import type { SplendorGameState } from "../state.ts";
 import { createCheckVictoryConditionStage } from "./check-victory-condition.ts";

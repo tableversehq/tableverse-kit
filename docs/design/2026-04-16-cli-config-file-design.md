@@ -2,7 +2,7 @@
 
 ## Summary
 
-`tabletop-cli` should stop asking developers for a source file path that may or
+`tt-kit` should stop asking developers for a source file path that may or
 may not export a game definition in the expected shape.
 
 Instead, the CLI should require a TypeScript config file that explicitly gives
@@ -12,7 +12,7 @@ Recommended shape:
 
 ```ts
 // tabletop.config.ts
-import { defineConfig } from "tabletop-engine/config";
+import { defineConfig } from "@tabletop-kit/engine/config";
 import { createSplendorGame } from "./examples/splendor/engine/src/game";
 
 export default defineConfig({
@@ -74,7 +74,7 @@ The config file should provide:
 Recommended API:
 
 ```ts
-import { defineConfig } from "tabletop-engine/config";
+import { defineConfig } from "@tabletop-kit/engine/config";
 import { createMyGame } from "./src/game";
 
 export default defineConfig({
@@ -197,11 +197,11 @@ But the starting point should remain:
 Recommended command model:
 
 ```bash
-tabletop-cli generate types
-tabletop-cli generate schemas
-tabletop-cli generate protocol
-tabletop-cli generate client-sdk
-tabletop-cli validate
+tt-kit generate types
+tt-kit generate schemas
+tt-kit generate protocol
+tt-kit generate client-sdk
+tt-kit validate
 ```
 
 By default, the CLI should look for:
@@ -211,7 +211,7 @@ By default, the CLI should look for:
 Optionally, it can later support:
 
 ```bash
-tabletop-cli generate types --config ./path/to/tabletop.config.ts
+tt-kit generate types --config ./path/to/tabletop.config.ts
 ```
 
 But the main user-facing model should be config-driven, not path-driven.
@@ -221,13 +221,13 @@ But the main user-facing model should be config-driven, not path-driven.
 Current model:
 
 ```bash
-tabletop-cli generate types --game examples/splendor/engine/src/game.ts
+tt-kit generate types --game examples/splendor/engine/src/game.ts
 ```
 
 Target model:
 
 ```bash
-tabletop-cli generate types
+tt-kit generate types
 ```
 
 with:
@@ -257,7 +257,7 @@ This design implies a new helper package entrypoint, for example:
 
 or a published subpath equivalent:
 
-- `tabletop-engine/config`
+- `@tabletop-kit/engine/config`
 
 The CLI runtime should:
 
@@ -268,7 +268,7 @@ The CLI runtime should:
 
 ## Recommendation
 
-Move `tabletop-cli` to a config-file-driven model.
+Move `tt-kit` to a config-file-driven model.
 
 The CLI should accept one concrete built game definition through
 `tabletop.config.ts` and generate artifacts from that.

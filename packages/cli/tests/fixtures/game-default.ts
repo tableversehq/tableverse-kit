@@ -4,7 +4,7 @@ import {
   GameState,
   GameDefinitionBuilder,
   t,
-} from "tabletop-engine";
+} from "@tabletop-kit/engine";
 
 class FixtureState extends GameState {
   @field(t.number())

@@ -63,7 +63,7 @@ async function writeCliConfig(cwd: string): Promise<void> {
 
 describe("generate schemas", () => {
   it("writes schema artifacts for a game", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "tabletop-cli-schemas-"));
+    const cwd = await mkdtemp(join(tmpdir(), "tt-kit-schemas-"));
     await writeCliConfig(cwd);
 
     const result = await run(["generate", "schemas", "--outDir", "generated"], {

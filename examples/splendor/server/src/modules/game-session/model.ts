@@ -6,7 +6,7 @@ import type {
   ExecutionResult,
   GameEvent,
   Viewer,
-} from "tabletop-engine";
+} from "@tabletop-kit/engine";
 import type { Clock } from "../../lib/clock";
 import type { RoomSnapshot } from "../room";
 import type { GameEndedPayload } from "../websocket";

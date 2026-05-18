@@ -153,7 +153,7 @@ remains the explicit schema graph edge.
    Replace:
 
    ```ts
-   import { State, field, t } from "tabletop-engine";
+   import { State, field, t } from "@tabletop-kit/engine";
 
    @State()
    class SplendorPlayerState {
@@ -164,7 +164,7 @@ remains the explicit schema graph edge.
    with:
 
    ```ts
-   import { GameState, field, t } from "tabletop-engine";
+   import { GameState, field, t } from "@tabletop-kit/engine";
 
    class SplendorPlayerState extends GameState {
      ...

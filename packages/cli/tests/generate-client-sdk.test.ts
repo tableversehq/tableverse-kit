@@ -94,7 +94,7 @@ async function writeCliConfig(cwd: string): Promise<void> {
 
 describe("generate client-sdk", () => {
   it("writes a typed client sdk surface for a game", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "tabletop-cli-sdk-"));
+    const cwd = await mkdtemp(join(tmpdir(), "tt-kit-sdk-"));
     await writeCliConfig(cwd);
 
     const result = await run(

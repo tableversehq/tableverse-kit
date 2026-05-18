@@ -1,4 +1,7 @@
-import type { AutomaticStageDefinition, StageFactory } from "tabletop-engine";
+import type {
+  AutomaticStageDefinition,
+  StageFactory,
+} from "@tabletop-kit/engine";
 import type { SplendorGameState } from "../state.ts";
 
 interface CreateGameEndStageOptions {

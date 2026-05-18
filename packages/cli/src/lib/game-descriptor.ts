@@ -5,7 +5,7 @@ import type {
   GameDefinition,
   GameState,
   SerializableFieldType,
-} from "tabletop-engine";
+} from "@tabletop-kit/engine";
 
 export interface GeneratedDiscoveryStepDescriptor {
   stepId: string;

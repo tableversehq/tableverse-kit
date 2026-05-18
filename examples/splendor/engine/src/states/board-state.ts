@@ -1,4 +1,4 @@
-import { configureVisibility, field, GameState, t } from "tabletop-engine";
+import { configureVisibility, field, GameState, t } from "@tabletop-kit/engine";
 import type { DevelopmentLevel } from "../data/types.ts";
 
 const hiddenDeckSchema = t.object({

@@ -1,4 +1,4 @@
-import type { RNGApi } from "tabletop-engine";
+import type { RNGApi } from "@tabletop-kit/engine";
 import { developmentCardsByLevel } from "./data/cards.ts";
 import { nobleTiles } from "./data/nobles.ts";
 import { SplendorGameState } from "./state.ts";

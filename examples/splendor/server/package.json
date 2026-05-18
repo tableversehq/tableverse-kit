@@ -19,7 +19,7 @@
     "pg": "^8.20.0",
     "pino": "^9.14.0",
     "splendor-example": "workspace:*",
-    "tabletop-engine": "workspace:*"
+    "@tabletop-kit/engine": "workspace:*"
   },
   "devDependencies": {
     "@types/pg": "^8.20.0",

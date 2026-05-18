@@ -1,4 +1,4 @@
-import type { GameEvent, VisibleState } from "tabletop-engine";
+import type { GameEvent, VisibleState } from "@tabletop-kit/engine";
 import type {
   CommandRequest as SplendorGeneratedCommandRequest,
   DiscoveryRequest as SplendorGeneratedDiscoveryRequest,

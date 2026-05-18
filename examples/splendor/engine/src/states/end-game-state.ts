@@ -1,4 +1,4 @@
-import { field, GameState, t } from "tabletop-engine";
+import { field, GameState, t } from "@tabletop-kit/engine";
 
 export class SplendorEndGameState extends GameState {
   @field(t.string())

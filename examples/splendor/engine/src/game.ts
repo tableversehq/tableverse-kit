@@ -1,4 +1,8 @@
-import { createGameExecutor, GameDefinitionBuilder, t } from "tabletop-engine";
+import {
+  createGameExecutor,
+  GameDefinitionBuilder,
+  t,
+} from "@tabletop-kit/engine";
 import { setupSplendorGame } from "./setup.ts";
 import { SplendorGameState as SplendorRootState } from "./state.ts";
 import { createSplendorStages } from "./stages/index.ts";

@@ -1,5 +1,5 @@
-import type { GameEvent } from "tabletop-engine";
-import { field, GameState, t } from "tabletop-engine";
+import type { GameEvent } from "@tabletop-kit/engine";
+import { field, GameState, t } from "@tabletop-kit/engine";
 import { developmentCardsById } from "../data/cards.ts";
 import { nobleTilesById } from "../data/nobles.ts";
 import type { CardCost, DevelopmentCard, NobleTile } from "../data/types.ts";

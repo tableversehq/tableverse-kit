@@ -5,9 +5,10 @@
 Add a new workspace package at `packages/cli` that turns runtime-authored game
 metadata into generated developer artifacts.
 
-The CLI command name should be:
+The CLI package and command names should be:
 
-- `tabletop-cli`
+- package: `@tabletop-kit/cli`
+- command: `tt-kit`
 
 The CLI exists to solve a structural limitation in the current engine:
 
@@ -58,12 +59,13 @@ Reasons:
 
 The package name and command surface should follow the same separation:
 
-- runtime library: `tabletop-engine`
-- workspace CLI: `tabletop-cli`
+- runtime library: `@tabletop-kit/engine`
+- workspace CLI package: `@tabletop-kit/cli`
+- workspace CLI command: `tt-kit`
 
 The CLI package should depend on:
 
-- `tabletop-engine`
+- `@tabletop-kit/engine`
 
 It should reuse engine-owned compilation, schema, protocol, and validation
 artifacts rather than reimplementing them independently.
@@ -184,7 +186,7 @@ High-level example:
 
 ```ts
 // tabletop.config.ts
-import { defineConfig } from "tabletop-engine/config";
+import { defineConfig } from "@tabletop-kit/engine/config";
 import { createSplendorGame } from "./examples/splendor/engine/src/game";
 
 export default defineConfig({
@@ -196,10 +198,10 @@ export default defineConfig({
 Then:
 
 ```bash
-tabletop-cli generate types
-tabletop-cli generate schemas
-tabletop-cli generate client-sdk
-tabletop-cli validate
+tt-kit generate types
+tt-kit generate schemas
+tt-kit generate client-sdk
+tt-kit validate
 ```
 
 If needed later, the CLI can support:
@@ -288,7 +290,7 @@ That means:
 
 This keeps responsibilities clean:
 
-- `tabletop-engine`
+- `@tabletop-kit/engine`
   execution and metadata authority
 - `packages/cli`
   generated artifact authority

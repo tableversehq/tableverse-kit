@@ -2,7 +2,7 @@ import type {
   AutomaticStageDefinition,
   SingleActivePlayerStageDefinition,
   StageFactory,
-} from "tabletop-engine";
+} from "@tabletop-kit/engine";
 import type { SplendorGameState } from "../state.ts";
 import { getLastActingPlayerId } from "./shared.ts";
 

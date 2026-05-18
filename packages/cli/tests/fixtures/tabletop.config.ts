@@ -1,4 +1,4 @@
-import { defineConfig } from "tabletop-engine/config";
+import { defineConfig } from "@tabletop-kit/engine/config";
 import createFixtureGame from "./game-default.ts";
 
 export default defineConfig({

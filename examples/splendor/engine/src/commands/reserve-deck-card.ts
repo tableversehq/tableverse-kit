@@ -1,4 +1,4 @@
-import { t } from "tabletop-engine";
+import { t } from "@tabletop-kit/engine";
 import { completeDiscovery, SPLENDOR_DISCOVERY_STEPS } from "../discovery.ts";
 import {
   assertDevelopmentLevel,

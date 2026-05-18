@@ -1,4 +1,4 @@
-import type { GameEvent } from "tabletop-engine";
+import type { GameEvent } from "@tabletop-kit/engine";
 import {
   DEVELOPMENT_LEVELS,
   developmentCardsById,
