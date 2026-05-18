@@ -1,5 +1,5 @@
-import { describeGameProtocol } from "tabletop-engine";
 import { success, type RunResult } from "../lib/command-result.ts";
+import { describeGameForGeneration } from "../lib/game-descriptor.ts";
 import { createGenerationContext } from "../lib/generation-context.ts";
 import { parseCommandArguments } from "../lib/parse-args.ts";
 import { renderTypeDeclaration } from "../lib/render-typescript.ts";
@@ -17,7 +17,7 @@ export async function runGenerateTypesCommand(
   const context = await createGenerationContext(parsed, {
     cwd: options.cwd,
   });
-  const protocol = describeGameProtocol(context.game);
+  const descriptor = describeGameForGeneration(context.game);
   const canonicalOutputPath = `${context.outputDirectory}/canonical-state.generated.d.ts`;
   const visibleOutputPath = `${context.outputDirectory}/visible-state.generated.d.ts`;
   const canonicalSchema = {
@@ -35,7 +35,7 @@ export async function runGenerateTypesCommand(
   );
   await writeOutputFile(
     visibleOutputPath,
-    renderTypeDeclaration("VisibleState", protocol.viewSchema),
+    renderTypeDeclaration("VisibleState", descriptor.viewSchema),
   );
 
   return success(`generated types:${context.outputDirectory}`);
