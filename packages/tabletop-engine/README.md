@@ -18,8 +18,6 @@ This package currently provides:
 - snapshot and replay helpers
 - a small scenario-style test harness
 - viewer-specific visible state projection
-- protocol descriptor generation
-- hosted AsyncAPI generation
 
 ## Intentional deferrals
 

@@ -2,7 +2,6 @@ import { failure, success, type RunResult } from "../lib/command-result.ts";
 import { createGenerateHelpText } from "../lib/help-text.ts";
 import { isHelpFlag } from "../lib/parse-args.ts";
 import { runGenerateClientSdkCommand } from "./generate-client-sdk.ts";
-import { runGenerateProtocolCommand } from "./generate-protocol.ts";
 import { runGenerateSchemasCommand } from "./generate-schemas.ts";
 import { runGenerateTypesCommand } from "./generate-types.ts";
 
@@ -23,10 +22,6 @@ export async function runGenerateCommand(
   try {
     if (target === "schemas") {
       return await runGenerateSchemasCommand(args.slice(1), options);
-    }
-
-    if (target === "protocol") {
-      return await runGenerateProtocolCommand(args.slice(1), options);
     }
 
     if (target === "types") {

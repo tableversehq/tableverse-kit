@@ -11,8 +11,7 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "generate:types": "bun ../../../packages/cli/src/main.ts generate types --outDir generated",
-    "generate:client-sdk": "bun ../../../packages/cli/src/main.ts generate client-sdk --outDir generated",
-    "generate:asyncapi": "bun run ./src/generate-asyncapi.ts"
+    "generate:client-sdk": "bun ../../../packages/cli/src/main.ts generate client-sdk --outDir generated"
   },
   "dependencies": {
     "tabletop-engine": "workspace:*"

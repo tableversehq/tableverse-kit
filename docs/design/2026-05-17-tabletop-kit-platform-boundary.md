@@ -235,24 +235,20 @@ is:
 
 ## Consequences
 
-This decision means some existing code and docs should be revisited:
+This decision means the codebase should keep the platform boundary explicit:
 
-- `tabletop-engine` protocol and AsyncAPI exports should be removed, moved, or
-  deprecated as platform-specific.
-- CLI commands that generate hosted protocol artifacts or hosted client SDKs
-  should move out of the public CLI core.
+- `tabletop-engine` should not export protocol descriptors or AsyncAPI
+  generation.
+- The public CLI should keep generic type/schema generation.
+- Hosted protocol artifacts and platform-targeted SDK generation should live
+  under private Tabletop Lab ownership when they become product features.
 - Existing design docs that call AsyncAPI the source of truth are historical and
   superseded by this decision.
 - The standalone engine docs site should migrate toward a broader Tabletop Kit
   documentation structure when UI and CLI docs become first-class.
 
-## Current Recommendation
+## Implemented Cleanup
 
-Do not immediately delete every protocol-related file without a migration pass.
-First separate the concepts:
-
-1. Keep `tabletop-engine` focused on rules/runtime.
-2. Move hosted protocol and platform SDK generation behind private Tabletop Lab
-   ownership.
-3. Keep only generic type/schema generation in the public CLI.
-4. Remove AsyncAPI if no concrete external consumer remains after the split.
+The engine-owned protocol descriptor and AsyncAPI generation surface has been
+removed. The CLI owns the descriptor logic it still needs for local artifact
+generation, and the dedicated `generate protocol` command has been removed.

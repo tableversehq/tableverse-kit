@@ -1,42 +1,86 @@
 import { Type, type TSchema } from "@sinclair/typebox";
-import type { GameDefinition } from "../game-definition";
-import type { FieldType, SerializableFieldType } from "../schema";
-import type { CommandSchema } from "../types/command";
 import type {
-  FieldVisibilityConfig,
-  GameState as BaseGameState,
-  VisibilityMode,
-} from "../state-facade/metadata";
-import type { CompiledStateFacadeDefinition } from "../state-facade/compile";
+  CommandSchema,
+  FieldType,
+  GameDefinition,
+  GameState,
+  SerializableFieldType,
+} from "tabletop-engine";
 
-export interface ProtocolDiscoveryStepDescriptor {
+export interface GeneratedDiscoveryStepDescriptor {
   stepId: string;
   inputSchema: CommandSchema<Record<string, unknown>>;
   outputSchema: CommandSchema<Record<string, unknown>>;
 }
 
-export interface ProtocolDiscoveryDescriptor {
+export interface GeneratedDiscoveryDescriptor {
   startStep: string;
-  steps: ProtocolDiscoveryStepDescriptor[];
+  steps: GeneratedDiscoveryStepDescriptor[];
 }
 
-export interface ProtocolCommandDescriptor {
+export interface GeneratedCommandDescriptor {
   commandId: string;
   commandSchema: CommandSchema<Record<string, unknown>>;
-  discovery?: ProtocolDiscoveryDescriptor;
+  discovery?: GeneratedDiscoveryDescriptor;
 }
 
-export interface GameProtocolDescriptor {
+export interface GeneratedGameDescriptor {
   name: string;
-  commands: Record<string, ProtocolCommandDescriptor>;
+  commands: Record<string, GeneratedCommandDescriptor>;
   viewSchema: TSchema;
 }
 
-export function describeGameProtocol<
-  FacadeGameState extends BaseGameState,
+export const hostedMessageNames = {
+  listAvailableCommands: "game_list_available_commands",
+  availableCommands: "game_available_commands",
+  discover: "game_discover",
+  discoveryResult: "game_discovery_result",
+  execute: "game_execute",
+  executionResult: "game_execution_result",
+  gameSnapshot: "game_snapshot",
+  gameEnded: "game_ended",
+  error: "error",
+} as const;
+
+export type HostedMessageNames = typeof hostedMessageNames;
+
+export function toJsonSchema(schema: unknown): Record<string, unknown> {
+  const candidate =
+    isObjectRecord(schema) && isObjectRecord(schema.schema)
+      ? schema.schema
+      : schema;
+
+  if (!isObjectRecord(candidate)) {
+    throw new Error("invalid_json_schema");
+  }
+
+  return candidate;
+}
+
+interface CompiledStateFacadeDefinition {
+  root: {
+    name: string;
+  };
+  states: Record<string, CompiledStateDefinition>;
+}
+
+interface CompiledStateDefinition {
+  fields: Record<string, FieldType>;
+  fieldVisibility: Record<string, FieldVisibilityConfig>;
+}
+
+interface FieldVisibilityConfig {
+  mode: VisibilityMode;
+  schema?: SerializableFieldType;
+}
+
+type VisibilityMode = "hidden" | "visible_to_self";
+
+export function describeGameForGeneration<
+  FacadeGameState extends GameState,
   SetupInput extends object | undefined = undefined,
->(game: GameDefinition<FacadeGameState, SetupInput>): GameProtocolDescriptor {
-  const commands: Record<string, ProtocolCommandDescriptor> = {};
+>(game: GameDefinition<FacadeGameState, SetupInput>): GeneratedGameDescriptor {
+  const commands: Record<string, GeneratedCommandDescriptor> = {};
 
   for (const [commandId, command] of Object.entries(game.commands)) {
     if (!command.commandSchema) {
@@ -57,19 +101,21 @@ export function describeGameProtocol<
   return {
     name: game.name,
     commands,
-    viewSchema: createVisibleStateSchema(game.stateFacade),
+    viewSchema: createVisibleStateSchema(
+      game.stateFacade as CompiledStateFacadeDefinition | undefined,
+    ),
   };
 }
 
 function normalizeDiscoveryDescriptor(
   commandId: string,
-  discovery: ProtocolDiscoveryDescriptor,
-): ProtocolDiscoveryDescriptor {
+  discovery: GeneratedDiscoveryDescriptor,
+): GeneratedDiscoveryDescriptor {
   if (!Array.isArray(discovery.steps) || discovery.steps.length === 0) {
     throw new Error(`command_discovery_steps_required:${commandId}`);
   }
 
-  const normalizedSteps: ProtocolDiscoveryStepDescriptor[] = [];
+  const normalizedSteps: GeneratedDiscoveryStepDescriptor[] = [];
   const knownStepIds = new Set<string>();
 
   for (const [index, step] of discovery.steps.entries()) {

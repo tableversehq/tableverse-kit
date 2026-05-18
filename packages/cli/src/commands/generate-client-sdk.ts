@@ -1,9 +1,11 @@
-import {
-  describeEngineWebSocketProtocol,
-  describeGameProtocol,
-  type ProtocolCommandDescriptor,
-} from "tabletop-engine";
 import { success, type RunResult } from "../lib/command-result.ts";
+import {
+  describeGameForGeneration,
+  hostedMessageNames,
+  toJsonSchema,
+  type GeneratedCommandDescriptor,
+  type HostedMessageNames,
+} from "../lib/game-descriptor.ts";
 import { createGenerationContext } from "../lib/generation-context.ts";
 import { parseCommandArguments } from "../lib/parse-args.ts";
 import {
@@ -18,8 +20,8 @@ interface GenerateClientSdkOptions {
 
 interface DiscoveryStepDescriptor {
   stepId: string;
-  inputSchema: Record<string, unknown>;
-  outputSchema: Record<string, unknown>;
+  inputSchema: unknown;
+  outputSchema: unknown;
 }
 
 interface DiscoveryDescriptor {
@@ -35,18 +37,14 @@ export async function runGenerateClientSdkCommand(
   const context = await createGenerationContext(parsed, {
     cwd: options.cwd,
   });
-  const protocol = describeGameProtocol(context.game);
-  const websocket = describeEngineWebSocketProtocol(context.game);
+  const descriptor = describeGameForGeneration(context.game);
   const output = [
-    renderTypeDeclaration(
-      "VisibleState",
-      protocol.viewSchema as Record<string, unknown>,
-    ),
-    renderCommandTypeAliases(protocol.commands),
-    renderCommandPayloadAliases(protocol.commands),
-    renderHostedMessageTypes(protocol.commands, websocket.messages),
-    renderDiscoveryStartHelpers(protocol.commands),
-    renderRuntimeClient(protocol.commands, websocket.messages),
+    renderTypeDeclaration("VisibleState", toJsonSchema(descriptor.viewSchema)),
+    renderCommandTypeAliases(descriptor.commands),
+    renderCommandPayloadAliases(descriptor.commands),
+    renderHostedMessageTypes(descriptor.commands, hostedMessageNames),
+    renderDiscoveryStartHelpers(descriptor.commands),
+    renderRuntimeClient(descriptor.commands, hostedMessageNames),
   ].join("\n");
   const outputPath = `${context.outputDirectory}/client-sdk.generated.ts`;
 
@@ -56,7 +54,7 @@ export async function runGenerateClientSdkCommand(
 }
 
 function renderCommandTypeAliases(
-  commands: Record<string, ProtocolCommandDescriptor>,
+  commands: Record<string, GeneratedCommandDescriptor>,
 ): string {
   const aliases = Object.entries(commands).flatMap(([commandId, command]) => {
     const typeName = toPascalCase(commandId);
@@ -100,7 +98,7 @@ function renderCommandTypeAliases(
 }
 
 function renderCommandPayloadAliases(
-  commands: Record<string, ProtocolCommandDescriptor>,
+  commands: Record<string, GeneratedCommandDescriptor>,
 ): string {
   const aliases = [
     'export type WithoutActorId<T> = T extends unknown ? Omit<T, "actorId"> : never;\n',
@@ -138,8 +136,8 @@ function renderCommandPayloadAliases(
 }
 
 function renderHostedMessageTypes(
-  commands: Record<string, ProtocolCommandDescriptor>,
-  messageNames: ReturnType<typeof describeEngineWebSocketProtocol>["messages"],
+  commands: Record<string, GeneratedCommandDescriptor>,
+  messageNames: HostedMessageNames,
 ): string {
   const discoveryMessageUnion = renderUnion(
     Object.entries(commands).flatMap(([commandId, command]) =>
@@ -251,7 +249,7 @@ function renderHostedMessageTypes(
 }
 
 function renderDiscoveryStartHelpers(
-  commands: Record<string, ProtocolCommandDescriptor>,
+  commands: Record<string, GeneratedCommandDescriptor>,
 ): string {
   return Object.entries(commands)
     .flatMap(([commandId, command]) => {
@@ -292,8 +290,8 @@ function renderDiscoveryStartHelpers(
 }
 
 function renderRuntimeClient(
-  commands: Record<string, ProtocolCommandDescriptor>,
-  messageNames: ReturnType<typeof describeEngineWebSocketProtocol>["messages"],
+  commands: Record<string, GeneratedCommandDescriptor>,
+  messageNames: HostedMessageNames,
 ): string {
   const discoverMethodSignatures = Object.entries(commands)
     .flatMap(([commandId, command]) => {
@@ -684,9 +682,9 @@ export function createGameEngineClient(
 
 function renderCommandRequestType(
   commandId: string,
-  command: ProtocolCommandDescriptor,
+  command: GeneratedCommandDescriptor,
 ): string {
-  const commandSchema = command.commandSchema as Record<string, unknown>;
+  const commandSchema = toJsonSchema(command.commandSchema);
 
   return `{
   type: ${JSON.stringify(commandId)};
@@ -701,7 +699,7 @@ function renderDiscoveryRequestType(
 ): string {
   return renderUnion(
     discovery.steps.map((step) => {
-      const inputSchema = step.inputSchema.schema as Record<string, unknown>;
+      const inputSchema = toJsonSchema(step.inputSchema);
 
       return `{
   type: ${JSON.stringify(commandId)};
@@ -714,7 +712,7 @@ function renderDiscoveryRequestType(
 }
 
 function renderDiscoveryResultType(command: {
-  commandSchema: Record<string, unknown>;
+  commandSchema: unknown;
   discovery?: DiscoveryDescriptor;
 }): string {
   const discovery = command.discovery;
@@ -725,19 +723,14 @@ function renderDiscoveryResultType(command: {
 
   const completeResult = `{
   complete: true;
-  input: ${renderSchemaTypeString(
-    command.commandSchema as Record<string, unknown>,
-  )};
+  input: ${renderSchemaTypeString(toJsonSchema(command.commandSchema))};
 }`;
 
   const stepResults = discovery.steps.map((step) => {
-    const outputSchema = step.outputSchema as Record<string, unknown>;
+    const outputSchema = toJsonSchema(step.outputSchema);
     const nextOptionType = renderUnion(
       discovery.steps.map((targetStep) => {
-        const targetInputSchema = targetStep.inputSchema as Record<
-          string,
-          unknown
-        >;
+        const targetInputSchema = toJsonSchema(targetStep.inputSchema);
 
         return `{
     id: string;
