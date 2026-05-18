@@ -1,5 +1,8 @@
 import { success, type RunResult } from "../lib/command-result.ts";
-import { describeGameForGeneration } from "../lib/game-descriptor.ts";
+import {
+  describeGameForGeneration,
+  toJsonSchema,
+} from "../lib/game-descriptor.ts";
 import { createGenerationContext } from "../lib/generation-context.ts";
 import { parseCommandArguments } from "../lib/parse-args.ts";
 import { writeOutputFile } from "../lib/write-output.ts";
@@ -23,8 +26,8 @@ export async function runGenerateSchemasCommand(
     canonicalState: {
       type: "object",
       properties: {
-        game: context.game.canonicalGameStateSchema.schema,
-        runtime: context.game.runtimeStateSchema,
+        game: toJsonSchema(context.game.canonicalGameStateSchema),
+        runtime: toJsonSchema(context.game.runtimeStateSchema),
       },
       required: ["game", "runtime"],
       additionalProperties: false,
@@ -33,7 +36,7 @@ export async function runGenerateSchemasCommand(
     commands: Object.fromEntries(
       Object.entries(descriptor.commands).map(([commandId, command]) => [
         commandId,
-        command.commandSchema.schema,
+        toJsonSchema(command.commandSchema),
       ]),
     ),
     discoveries: Object.fromEntries(
@@ -45,8 +48,8 @@ export async function runGenerateSchemasCommand(
             startStep: command.discovery!.startStep,
             steps: command.discovery!.steps.map((step) => ({
               stepId: step.stepId,
-              input: step.inputSchema.schema,
-              output: step.outputSchema.schema,
+              input: toJsonSchema(step.inputSchema),
+              output: toJsonSchema(step.outputSchema),
             })),
           },
         ]),

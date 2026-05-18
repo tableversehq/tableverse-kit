@@ -3,9 +3,6 @@ export { createCommandFactory } from "./command-factory";
 export { createStageFactory } from "./stage-factory";
 export { createGameExecutor } from "./runtime/game-executor";
 export { assertSchemaValue } from "./runtime/validation";
-export { generateAsyncApi } from "./protocol/asyncapi";
-export { describeGameProtocol } from "./protocol/describe";
-export { describeEngineWebSocketProtocol } from "./protocol/engine-websocket";
 export { t } from "./schema";
 export {
   configureVisibility,
@@ -23,16 +20,6 @@ export { runScenario } from "./testing/harness";
 
 export type { GameDefinition, GameSetupContext } from "./game-definition";
 export type { GameExecutor } from "./runtime/game-executor";
-export type { AsyncApiDocument, AsyncApiOptions } from "./protocol/asyncapi";
-export type {
-  EngineWebSocketMessageNames,
-  EngineWebSocketProtocolDescriptor,
-  EngineWebSocketProtocolOptions,
-} from "./protocol/engine-websocket";
-export type {
-  GameProtocolDescriptor,
-  ProtocolCommandDescriptor,
-} from "./protocol/describe";
 export type {
   ArraySchemaStatic,
   ArrayFieldType,

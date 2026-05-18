@@ -18,7 +18,6 @@ describe("tabletop-cli", () => {
     expect(result.stdout).toContain("tabletop-cli generate");
     expect(result.stdout).toContain("types");
     expect(result.stdout).toContain("schemas");
-    expect(result.stdout).toContain("protocol");
     expect(result.stdout).toContain("client-sdk");
   });
 

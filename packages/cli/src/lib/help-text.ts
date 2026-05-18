@@ -11,7 +11,6 @@ export function createGenerateHelpText(): string {
     "Targets:",
     "  types",
     "  schemas",
-    "  protocol",
     "  client-sdk",
     "",
     "Optional flags:",

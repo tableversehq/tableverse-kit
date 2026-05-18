@@ -2,6 +2,7 @@ import { success, type RunResult } from "../lib/command-result.ts";
 import {
   describeGameForGeneration,
   hostedMessageNames,
+  toJsonSchema,
   type GeneratedCommandDescriptor,
   type HostedMessageNames,
 } from "../lib/game-descriptor.ts";
@@ -19,8 +20,8 @@ interface GenerateClientSdkOptions {
 
 interface DiscoveryStepDescriptor {
   stepId: string;
-  inputSchema: Record<string, unknown>;
-  outputSchema: Record<string, unknown>;
+  inputSchema: unknown;
+  outputSchema: unknown;
 }
 
 interface DiscoveryDescriptor {
@@ -38,10 +39,7 @@ export async function runGenerateClientSdkCommand(
   });
   const descriptor = describeGameForGeneration(context.game);
   const output = [
-    renderTypeDeclaration(
-      "VisibleState",
-      descriptor.viewSchema as Record<string, unknown>,
-    ),
+    renderTypeDeclaration("VisibleState", toJsonSchema(descriptor.viewSchema)),
     renderCommandTypeAliases(descriptor.commands),
     renderCommandPayloadAliases(descriptor.commands),
     renderHostedMessageTypes(descriptor.commands, hostedMessageNames),
@@ -686,7 +684,7 @@ function renderCommandRequestType(
   commandId: string,
   command: GeneratedCommandDescriptor,
 ): string {
-  const commandSchema = command.commandSchema as Record<string, unknown>;
+  const commandSchema = toJsonSchema(command.commandSchema);
 
   return `{
   type: ${JSON.stringify(commandId)};
@@ -701,7 +699,7 @@ function renderDiscoveryRequestType(
 ): string {
   return renderUnion(
     discovery.steps.map((step) => {
-      const inputSchema = step.inputSchema.schema as Record<string, unknown>;
+      const inputSchema = toJsonSchema(step.inputSchema);
 
       return `{
   type: ${JSON.stringify(commandId)};
@@ -714,7 +712,7 @@ function renderDiscoveryRequestType(
 }
 
 function renderDiscoveryResultType(command: {
-  commandSchema: Record<string, unknown>;
+  commandSchema: unknown;
   discovery?: DiscoveryDescriptor;
 }): string {
   const discovery = command.discovery;
@@ -725,19 +723,14 @@ function renderDiscoveryResultType(command: {
 
   const completeResult = `{
   complete: true;
-  input: ${renderSchemaTypeString(
-    command.commandSchema as Record<string, unknown>,
-  )};
+  input: ${renderSchemaTypeString(toJsonSchema(command.commandSchema))};
 }`;
 
   const stepResults = discovery.steps.map((step) => {
-    const outputSchema = step.outputSchema as Record<string, unknown>;
+    const outputSchema = toJsonSchema(step.outputSchema);
     const nextOptionType = renderUnion(
       discovery.steps.map((targetStep) => {
-        const targetInputSchema = targetStep.inputSchema as Record<
-          string,
-          unknown
-        >;
+        const targetInputSchema = toJsonSchema(targetStep.inputSchema);
 
         return `{
     id: string;

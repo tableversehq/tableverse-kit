@@ -1,5 +1,8 @@
 import { success, type RunResult } from "../lib/command-result.ts";
-import { describeGameForGeneration } from "../lib/game-descriptor.ts";
+import {
+  describeGameForGeneration,
+  toJsonSchema,
+} from "../lib/game-descriptor.ts";
 import { createGenerationContext } from "../lib/generation-context.ts";
 import { parseCommandArguments } from "../lib/parse-args.ts";
 import { renderTypeDeclaration } from "../lib/render-typescript.ts";
@@ -23,8 +26,8 @@ export async function runGenerateTypesCommand(
   const canonicalSchema = {
     type: "object",
     properties: {
-      game: context.game.canonicalGameStateSchema.schema,
-      runtime: context.game.runtimeStateSchema,
+      game: toJsonSchema(context.game.canonicalGameStateSchema),
+      runtime: toJsonSchema(context.game.runtimeStateSchema),
     },
     required: ["game", "runtime"],
   } as const;

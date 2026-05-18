@@ -44,6 +44,19 @@ export const hostedMessageNames = {
 
 export type HostedMessageNames = typeof hostedMessageNames;
 
+export function toJsonSchema(schema: unknown): Record<string, unknown> {
+  const candidate =
+    isObjectRecord(schema) && isObjectRecord(schema.schema)
+      ? schema.schema
+      : schema;
+
+  if (!isObjectRecord(candidate)) {
+    throw new Error("invalid_json_schema");
+  }
+
+  return candidate;
+}
+
 interface CompiledStateFacadeDefinition {
   root: {
     name: string;
