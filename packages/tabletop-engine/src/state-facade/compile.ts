@@ -61,7 +61,7 @@ function visitState(
   };
 
   for (const field of Object.values(metadata.fields)) {
-    visitNestedStateTargets(
+    visitNestedFieldTargets(
       field,
       states,
       visited,
@@ -70,7 +70,7 @@ function visitState(
   }
 }
 
-function visitNestedStateTargets(
+function visitNestedFieldTargets(
   field: FieldType,
   states: Record<string, CompiledStateDefinition>,
   visited: Set<GameStateClass>,
@@ -87,7 +87,7 @@ function visitNestedStateTargets(
   }
 
   if (field.kind === "array") {
-    visitNestedFieldTypeTargets(
+    visitNestedFieldTargets(
       field.item,
       states,
       visited,
@@ -97,7 +97,7 @@ function visitNestedStateTargets(
   }
 
   if (field.kind === "record") {
-    visitNestedFieldTypeTargets(
+    visitNestedFieldTargets(
       field.value,
       states,
       visited,
@@ -108,7 +108,7 @@ function visitNestedStateTargets(
 
   if (field.kind === "object") {
     for (const nestedField of Object.values(field.properties)) {
-      visitNestedFieldTypeTargets(
+      visitNestedFieldTargets(
         nestedField,
         states,
         visited,
@@ -119,65 +119,7 @@ function visitNestedStateTargets(
   }
 
   if (field.kind === "optional") {
-    visitNestedFieldTypeTargets(
-      field.item,
-      states,
-      visited,
-      hasOwningPlayerAncestor,
-    );
-  }
-}
-
-function visitNestedFieldTypeTargets(
-  field: FieldType,
-  states: Record<string, CompiledStateDefinition>,
-  visited: Set<GameStateClass>,
-  hasOwningPlayerAncestor: boolean,
-): void {
-  if (field.kind === "state") {
-    visitNestedStateTarget(
-      field.target(),
-      states,
-      visited,
-      hasOwningPlayerAncestor,
-    );
-    return;
-  }
-
-  if (field.kind === "array") {
-    visitNestedFieldTypeTargets(
-      field.item,
-      states,
-      visited,
-      hasOwningPlayerAncestor,
-    );
-    return;
-  }
-
-  if (field.kind === "record") {
-    visitNestedFieldTypeTargets(
-      field.value,
-      states,
-      visited,
-      hasOwningPlayerAncestor,
-    );
-    return;
-  }
-
-  if (field.kind === "object") {
-    for (const nestedField of Object.values(field.properties)) {
-      visitNestedFieldTypeTargets(
-        nestedField,
-        states,
-        visited,
-        hasOwningPlayerAncestor,
-      );
-    }
-    return;
-  }
-
-  if (field.kind === "optional") {
-    visitNestedFieldTypeTargets(
+    visitNestedFieldTargets(
       field.item,
       states,
       visited,
