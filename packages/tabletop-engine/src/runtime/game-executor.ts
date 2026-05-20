@@ -74,7 +74,7 @@ export interface GameExecutor<
 
 function createCommandGameView<
   FacadeGameState extends BaseGameState,
-  SetupInput extends object | undefined = undefined,
+  SetupInput extends object | undefined,
 >(
   game: GameExecutorDefinition<FacadeGameState, SetupInput>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
@@ -96,7 +96,7 @@ type CreateInitialStateFn<
 
 function createInitialRuntimeState<
   FacadeGameState extends BaseGameState,
-  SetupInput extends object | undefined = undefined,
+  SetupInput extends object | undefined,
 >(
   game: GameExecutorDefinition<FacadeGameState, SetupInput>,
   rngSeed: string | number,
@@ -123,7 +123,7 @@ function createInitialRuntimeState<
 
 function getCurrentStageDefinition<
   FacadeGameState extends BaseGameState,
-  SetupInput extends object | undefined = undefined,
+  SetupInput extends object | undefined,
 >(
   game: GameExecutorDefinition<FacadeGameState, SetupInput>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
@@ -141,7 +141,7 @@ function resolveStageNextStages<GameState extends BaseGameState>(
 
 function initializeStageMachine<
   FacadeGameState extends BaseGameState,
-  SetupInput extends object | undefined = undefined,
+  SetupInput extends object | undefined,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
   game: GameExecutorDefinition<FacadeGameState, SetupInput>,
@@ -205,7 +205,7 @@ function initializeStageMachine<
 
 function advanceStageMachine<
   FacadeGameState extends BaseGameState,
-  SetupInput extends object | undefined = undefined,
+  SetupInput extends object | undefined,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
   game: GameExecutorDefinition<FacadeGameState, SetupInput>,
@@ -854,7 +854,7 @@ function isActorAllowedInCurrentStage(
 
 function executeCommandAgainstState<
   FacadeGameState extends BaseGameState,
-  SetupInput extends object | undefined = undefined,
+  SetupInput extends object | undefined,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
   game: GameExecutorDefinition<FacadeGameState, SetupInput>,
