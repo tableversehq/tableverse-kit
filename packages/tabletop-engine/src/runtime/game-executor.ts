@@ -14,7 +14,7 @@ import type {
   Command,
   CommandDefinition,
   Discovery,
-  DiscoveryStepResolvedOption,
+  DiscoveryStepOption,
 } from "../types/command";
 import type { CommandDiscoveryResult } from "../types/command";
 import type { GameEvent } from "../types/event";
@@ -515,7 +515,7 @@ export function createGameExecutor<
         };
       }
 
-      const discoveryOptions: Array<DiscoveryStepResolvedOption> = [];
+      const discoveryOptions: Array<DiscoveryStepOption> = [];
 
       for (const option of result) {
         try {

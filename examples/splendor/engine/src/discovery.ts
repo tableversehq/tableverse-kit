@@ -1,4 +1,4 @@
-import type { DiscoveryOption } from "@tabletop-kit/engine";
+import type { DiscoveryStepOption } from "@tabletop-kit/engine";
 import {
   TOKEN_COLORS,
   type ReturnTokensPayload,
@@ -47,7 +47,7 @@ export function createReturnTokenDiscovery<
   input: TDiscoveryInput,
   availableTokens: TokenCountsState,
   requiredReturnCount: number,
-): DiscoveryOption<TDiscoveryInput, ReturnTokenDiscoveryOutput>[] | null {
+): DiscoveryStepOption<TDiscoveryInput, ReturnTokenDiscoveryOutput>[] | null {
   const currentReturnTokens = input.returnTokens ?? {};
   const selectedCount = sumReturnTokens(currentReturnTokens);
 
@@ -82,7 +82,7 @@ export function createNobleDiscovery<
 >(
   input: TDiscoveryInput,
   eligibleNobles: readonly NobleTile[],
-): DiscoveryOption<TDiscoveryInput, NobleDiscoveryOutput>[] | null {
+): DiscoveryStepOption<TDiscoveryInput, NobleDiscoveryOutput>[] | null {
   if (eligibleNobles.length <= 1) {
     return null;
   }

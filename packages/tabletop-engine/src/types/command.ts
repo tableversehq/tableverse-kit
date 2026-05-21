@@ -71,12 +71,6 @@ export type DiscoveryStepOption<
   nextStep: TNextStep;
 };
 
-export type DiscoveryOption<
-  TNextInput extends DiscoveryData = DiscoveryData,
-  TOutput extends DiscoveryData = DiscoveryData,
-  TNextStep extends string = string,
-> = DiscoveryStepOption<TNextInput, TOutput, TNextStep>;
-
 export type DiscoveryStepComplete<TCommandInput extends CommandData> = {
   complete: true;
   input: TCommandInput;
@@ -90,12 +84,6 @@ export type DiscoveryStepResult<
 > =
   | DiscoveryStepOption<TNextInput, TOutput, TNextStep>[]
   | DiscoveryStepComplete<TCommandInput>;
-
-export type DiscoveryStepResolvedOption<
-  TNextInput extends DiscoveryData = DiscoveryData,
-  TOutput extends DiscoveryData = DiscoveryData,
-  TNextStep extends string = string,
-> = DiscoveryStepOption<TNextInput, TOutput, TNextStep>;
 
 export interface DiscoveryStepContext<
   FacadeGameState extends BaseGameState,
@@ -220,7 +208,7 @@ type ValidatedDiscoveryStepOption<
   TSteps extends readonly AnyDiscoveryStepDefinition[],
   TOutput extends DiscoveryData,
 > = {
-  [TStepId in TSteps[number]["stepId"]]: DiscoveryStepResolvedOption<
+  [TStepId in TSteps[number]["stepId"]]: DiscoveryStepOption<
     DiscoveryStepInputForStepId<TSteps, TStepId>,
     TOutput,
     TStepId
@@ -614,9 +602,7 @@ export type CommandDiscoveryResult<
   | {
       complete: false;
       step: TStep;
-      options: Array<
-        DiscoveryStepResolvedOption<TNextInput, TOutput, TNextStep>
-      >;
+      options: Array<DiscoveryStepOption<TNextInput, TOutput, TNextStep>>;
     }
   | {
       complete: true;
