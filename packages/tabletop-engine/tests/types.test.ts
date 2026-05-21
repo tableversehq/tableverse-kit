@@ -846,6 +846,28 @@ test("command factory contextually types command lifecycle methods", () => {
   expect(command.commandId).toBe("gain_score");
   expect(command.commandSchema).toBe(commandSchema);
   expect(command.discovery?.steps[0]?.initial).toBeTrue();
+
+  const defineStage = createStageFactory<ScoreIncrementTypeState>();
+  const terminalStage = defineStage("terminal").automatic().build();
+  const stage = defineStage("turn")
+    .singleActivePlayer()
+    .activePlayer(() => "p1")
+    .commands([command])
+    .nextStages(() => ({
+      terminalStage,
+    }))
+    .transition(({ command, nextStages }) => {
+      const amount: number = command.input.amount;
+
+      // @ts-expect-error stage commands should expose final command input, not discovery draft input
+      void command.input.selectedAmount;
+
+      expect(amount).toBeNumber();
+      return nextStages.terminalStage;
+    })
+    .build();
+
+  expect(stage.id).toBe("turn");
 });
 
 test("discovery resolver typing keeps next-step input and completion input correlated", () => {

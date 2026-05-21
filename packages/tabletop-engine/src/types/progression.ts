@@ -55,13 +55,11 @@ export type StageDefinitionResolver<
 
 type CommandFromDefinition<Definition> =
   Definition extends DefinedCommand<
-    infer GameState extends BaseGameState,
+    BaseGameState,
     infer Input extends Record<string, unknown>,
-    infer DiscoveryInput extends Record<string, unknown>
+    Record<string, unknown>
   >
-    ? [GameState, DiscoveryInput] extends [object, Record<string, unknown>]
-      ? Command<Input>
-      : never
+    ? Command<Input>
     : never;
 
 export type CommandsFromDefinitions<Definitions extends readonly unknown[]> =
