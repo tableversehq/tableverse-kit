@@ -44,10 +44,10 @@ export function createInProcessClient<
     for (const listener of subscribers) listener();
   };
 
-  const emitEvents = (events: ReadonlyArray<unknown>): void => {
+  const emitEvents = (events: ReadonlyArray<G["event"]>): void => {
     for (const event of events) {
       for (const listener of eventListeners) {
-        listener(event as G["event"]);
+        listener(event);
       }
     }
   };
@@ -82,7 +82,7 @@ export function createInProcessClient<
       return executor.getView(state, {
         kind: "player",
         playerId: currentViewerId,
-      }) as G["view"];
+      });
     },
 
     getAvailableCommands() {
@@ -122,7 +122,7 @@ export function createInProcessClient<
       if (result === null) {
         throw new Error(`discover: command "${type}" has no discovery defined`);
       }
-      return result as G["discovery"]["result"];
+      return result;
     },
 
     async execute(command) {
