@@ -67,7 +67,7 @@ function optionMatchesTarget(
   if (target === undefined || target === null) {
     return false;
   }
-  const output = (option as { output: Record<string, unknown> }).output;
+  const output = option.output;
   if (typeof target !== "object") {
     for (const value of Object.values(output)) {
       if (value === target) return true;

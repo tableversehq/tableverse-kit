@@ -1,9 +1,6 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useTTKitContext } from "../client/context.tsx";
-import type {
-  DiscoveryStateSnapshot,
-  DiscoveryStatus,
-} from "../client/discovery-state.ts";
+import type { DiscoveryStatus } from "../client/discovery-state.ts";
 import type { RegisteredGame, TTKitGame } from "../client/types.ts";
 
 /**
@@ -50,19 +47,15 @@ export interface UseDiscoveryResult {
 export function useDiscovery(): UseDiscoveryResult {
   const { discovery } = useTTKitContext();
 
-  // Snapshot is a structural DiscoveryStateSnapshot at runtime; we expose
-  // the per-game typed view at the hook boundary. The fields hold the same
-  // runtime values regardless of typing, so this is a widening view-only
-  // reinterpretation, not a runtime conversion.
   const snapshot = useSyncExternalStore(
     discovery.subscribe.bind(discovery),
     discovery.getSnapshot.bind(discovery),
-  ) as DiscoveryStateSnapshot as unknown as TypedSnapshot;
+  );
 
   const actions = useMemo<DiscoveryActions>(
     () => ({
-      start: discovery.start.bind(discovery) as DiscoveryActions["start"],
-      pick: discovery.pick.bind(discovery) as DiscoveryActions["pick"],
+      start: discovery.start.bind(discovery),
+      pick: discovery.pick.bind(discovery),
       confirm: discovery.confirm.bind(discovery),
       cancel: discovery.cancel.bind(discovery),
     }),
@@ -72,7 +65,6 @@ export function useDiscovery(): UseDiscoveryResult {
   return { ...snapshot, ...actions };
 }
 
-type TypedSnapshot = Omit<UseDiscoveryResult, keyof DiscoveryActions>;
 type DiscoveryActions = Pick<
   UseDiscoveryResult,
   "start" | "pick" | "confirm" | "cancel"
