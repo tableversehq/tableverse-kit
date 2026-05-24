@@ -1,6 +1,13 @@
 import { useTTKitContext } from "../client/context.tsx";
-import type { RegisteredGame, TTKitClient } from "../client/types.ts";
+import type { TTKitClient, TTKitGame } from "../client/types.ts";
 
-export function useTTKitClient(): TTKitClient<RegisteredGame> {
-  return useTTKitContext().client;
+/**
+ * Return the underlying TTKitClient. `G` defaults to the unparameterized
+ * `TTKitGame` shape — pass `G` explicitly or use a pre-bound hook from
+ * `createGameHooks<G>()` to get typed view/event/command shapes.
+ */
+export function useTTKitClient<
+  G extends TTKitGame = TTKitGame,
+>(): TTKitClient<G> {
+  return useTTKitContext().client as TTKitClient<G>;
 }

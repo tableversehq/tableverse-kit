@@ -1,3 +1,5 @@
+import type { DiscoveryStepOption } from "@tabletop-kit/engine";
+import type { TTKitGame } from "../client/types.ts";
 import { useDiscovery, type UseDiscoveryResult } from "./use-discovery.ts";
 
 export type SelectableState =
@@ -6,12 +8,13 @@ export type SelectableState =
   | "selected"
   | "unselectable";
 
-type DiscoveryPickOption = UseDiscoveryResult["trail"][number];
+type DiscoveryPickOption<G extends TTKitGame> =
+  UseDiscoveryResult<G>["trail"][number];
 
-export interface UseSelectableResult {
+export interface UseSelectableResult<G extends TTKitGame = TTKitGame> {
   state: SelectableState;
   onClick: () => void;
-  option: DiscoveryPickOption | null;
+  option: DiscoveryPickOption<G> | null;
 }
 
 /**
@@ -22,12 +25,16 @@ export interface UseSelectableResult {
  * `slot` is the discovery step id (e.g. "gem", "card"). `target` is the
  * value that uniquely identifies this element within the slot — compared
  * against `option.output` fields by deep equality.
+ *
+ * `G` defaults to the unparameterized `TTKitGame` shape; pass the game's
+ * shape for typed `option` output, or use a pre-bound hook from
+ * `createGameHooks<G>()`.
  */
-export function useSelectable(
+export function useSelectable<G extends TTKitGame = TTKitGame>(
   slot: string,
   target: unknown,
-): UseSelectableResult {
-  const discovery = useDiscovery();
+): UseSelectableResult<G> {
+  const discovery = useDiscovery<G>();
 
   const alreadyPicked = discovery.trail.some((option) =>
     optionMatchesTarget(option, target),
@@ -61,7 +68,7 @@ export function useSelectable(
 }
 
 function optionMatchesTarget(
-  option: DiscoveryPickOption,
+  option: DiscoveryStepOption,
   target: unknown,
 ): boolean {
   if (target === undefined || target === null) {

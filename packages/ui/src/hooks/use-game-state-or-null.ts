@@ -1,25 +1,30 @@
 import { useRef, useSyncExternalStore } from "react";
 import { useTTKitContext } from "../client/context.tsx";
-import type { RegisteredGame } from "../client/types.ts";
 
-type View = RegisteredGame["view"];
-
-export function useGameStateOrNull(): View | null;
-export function useGameStateOrNull<T>(
-  selector: (view: View) => T,
-  isEqual?: (a: T, b: T) => boolean,
-): T | null;
-export function useGameStateOrNull<T>(
-  selector?: (view: View) => T,
-  isEqual: (a: T, b: T) => boolean = Object.is,
-): T | View | null {
+/**
+ * Like `useGameState` but returns `null` instead of throwing when no view
+ * is loaded yet. `TView` defaults to `unknown` — annotate explicitly or use
+ * a pre-bound hook from `createGameHooks<G>()`.
+ */
+export function useGameStateOrNull<TView = unknown>(): TView | null;
+export function useGameStateOrNull<TView, TSelected>(
+  selector: (view: TView) => TSelected,
+  isEqual?: (a: TSelected, b: TSelected) => boolean,
+): TSelected | null;
+export function useGameStateOrNull<TView = unknown, TSelected = unknown>(
+  selector?: (view: TView) => TSelected,
+  isEqual: (a: TSelected, b: TSelected) => boolean = Object.is,
+): TSelected | TView | null {
   const { client } = useTTKitContext();
-  const cache = useRef<{ selected: T | View | null; hasValue: boolean }>({
+  const cache = useRef<{
+    selected: TSelected | TView | null;
+    hasValue: boolean;
+  }>({
     selected: null,
     hasValue: false,
   });
 
-  const getSnapshot = (): T | View | null => {
+  const getSnapshot = (): TSelected | TView | null => {
     const view = client.getView();
     if (view === null) {
       if (cache.current.hasValue && cache.current.selected === null) {
@@ -28,11 +33,11 @@ export function useGameStateOrNull<T>(
       cache.current = { selected: null, hasValue: true };
       return null;
     }
-    const next = selector ? selector(view) : view;
+    const next = selector ? selector(view as TView) : (view as TView);
     if (
       cache.current.hasValue &&
       cache.current.selected !== null &&
-      isEqual(cache.current.selected as T, next as T)
+      isEqual(cache.current.selected as TSelected, next as TSelected)
     ) {
       return cache.current.selected;
     }

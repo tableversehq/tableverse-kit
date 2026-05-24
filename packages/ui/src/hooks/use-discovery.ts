@@ -1,13 +1,8 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useTTKitContext } from "../client/context.tsx";
 import type { DiscoveryStatus } from "../client/discovery-state.ts";
-import type { RegisteredGame, TTKitGame } from "../client/types.ts";
+import type { TTKitGame } from "../client/types.ts";
 
-/**
- * Open-discovery variant from the customer's typed result union. With the
- * tightened TTKitGame constraints, G["discovery"]["result"] always extends
- * the engine's CommandDiscoveryResult, so the Extract narrows correctly.
- */
 type OpenResultOf<G extends TTKitGame> = Extract<
   G["discovery"]["result"],
   { complete: false }
@@ -26,25 +21,28 @@ type CommandInputOf<G extends TTKitGame> =
 
 type DiscoveryPayloadOf<G extends TTKitGame> = G["discovery"]["payload"];
 
-type RegisteredOpenResult = OpenResultOf<RegisteredGame>;
-type RegisteredPickOption = PickOptionOf<RegisteredGame>;
-type RegisteredCommandInput = CommandInputOf<RegisteredGame>;
-type RegisteredDiscoveryPayload = DiscoveryPayloadOf<RegisteredGame>;
-
-export interface UseDiscoveryResult {
+export interface UseDiscoveryResult<G extends TTKitGame = TTKitGame> {
   activeCommandType: string | null;
-  open: RegisteredOpenResult | null;
-  trail: ReadonlyArray<RegisteredPickOption>;
-  pendingInput: RegisteredCommandInput | null;
+  open: OpenResultOf<G> | null;
+  trail: ReadonlyArray<PickOptionOf<G>>;
+  pendingInput: CommandInputOf<G> | null;
   status: DiscoveryStatus;
   error: string | null;
-  start: (payload: RegisteredDiscoveryPayload) => void;
-  pick: (option: RegisteredPickOption) => void;
+  start: (payload: DiscoveryPayloadOf<G>) => void;
+  pick: (option: PickOptionOf<G>) => void;
   confirm: () => void;
   cancel: () => void;
 }
 
-export function useDiscovery(): UseDiscoveryResult {
+/**
+ * `G` defaults to the unparameterized `TTKitGame` shape; pass the game's
+ * full shape (`useDiscovery<SplendorGame>()`) or use a pre-bound hook from
+ * `createGameHooks<G>()` for typed `open` / `trail` / `pendingInput` and
+ * typed `start` / `pick` parameters.
+ */
+export function useDiscovery<
+  G extends TTKitGame = TTKitGame,
+>(): UseDiscoveryResult<G> {
   const { discovery } = useTTKitContext();
 
   const snapshot = useSyncExternalStore(
@@ -52,7 +50,7 @@ export function useDiscovery(): UseDiscoveryResult {
     discovery.getSnapshot.bind(discovery),
   );
 
-  const actions = useMemo<DiscoveryActions>(
+  const actions = useMemo(
     () => ({
       start: discovery.start.bind(discovery),
       pick: discovery.pick.bind(discovery),
@@ -62,10 +60,5 @@ export function useDiscovery(): UseDiscoveryResult {
     [discovery],
   );
 
-  return { ...snapshot, ...actions };
+  return { ...snapshot, ...actions } as unknown as UseDiscoveryResult<G>;
 }
-
-type DiscoveryActions = Pick<
-  UseDiscoveryResult,
-  "start" | "pick" | "confirm" | "cancel"
->;
