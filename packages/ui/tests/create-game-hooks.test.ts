@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createGameHooks } from "../src/client/create-game-hooks.ts";
+import { createGameHooks } from "../src/client/create-game-hooks.tsx";
 import type { TTKitGame } from "../src/client/types.ts";
 
 interface FakeView {
@@ -30,16 +30,16 @@ describe("createGameHooks", () => {
     expect(typeof hooks.useViewerId).toBe("function");
   });
 
-  test("bundle hooks have the same identity as the underlying generic hooks", async () => {
-    // The factory is purely a type narrowing — references should be the
-    // same module-level functions. Two factory calls for different G
-    // return the same runtime references.
+  test("each createGameHooks call owns a private context", () => {
+    // Each factory call must produce its own Provider/hook closures so
+    // bundles in the same app cannot accidentally read each other's
+    // contexts.
     const a = createGameHooks<FakeGame>();
     const b = createGameHooks<FakeGame>();
 
-    expect(a.useGameState).toBe(b.useGameState);
-    expect(a.useDiscovery).toBe(b.useDiscovery);
-    expect(a.TTKitProvider).toBe(b.TTKitProvider);
+    expect(a.useGameState).not.toBe(b.useGameState);
+    expect(a.useDiscovery).not.toBe(b.useDiscovery);
+    expect(a.TTKitProvider).not.toBe(b.TTKitProvider);
   });
 
   // Type-only assertion: the selector parameter must be typed as the
@@ -48,8 +48,6 @@ describe("createGameHooks", () => {
     const hooks = createGameHooks<FakeGame>();
     const selector: (view: FakeView) => number = (view) =>
       Object.values(view.players).length;
-    // Compile-time check: this overload should accept the typed selector
-    // without needing an explicit generic argument.
     const unusedHook = hooks.useGameState<number>;
     void unusedHook;
     void selector;

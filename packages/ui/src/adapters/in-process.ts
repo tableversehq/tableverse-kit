@@ -23,8 +23,8 @@ export interface CreateInProcessClientOptions<GameState extends object> {
  * `GameState` and `SetupInput` are inferred from the `executor` argument.
  */
 export function createInProcessClient<
-  G extends TTKitGame = TTKitGame,
-  GameState extends object = object,
+  G extends TTKitGame,
+  GameState extends object,
   SetupInput extends object | undefined = undefined,
 >(
   executor: GameExecutor<GameState, SetupInput>,
