@@ -132,7 +132,7 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
       type: current.activeCommandType,
       step: option.nextStep,
       input: option.nextInput,
-    } as G["discovery"]["payload"]);
+    });
   }
 
   confirm(): void {
@@ -148,7 +148,7 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
     const command = {
       type: current.activeCommandType,
       input: current.pendingInput,
-    } as CommandPayload;
+    };
     this.setSnapshot({ ...current, status: "executing" });
     void this.runExecute(flow, command);
   }
@@ -195,7 +195,7 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
     command: CommandPayload,
   ): Promise<void> {
     try {
-      const result = await this.client.execute(command as G["command"]);
+      const result = await this.client.execute(command);
       if (this.flowId !== flow) return;
 
       if (result.accepted) {
