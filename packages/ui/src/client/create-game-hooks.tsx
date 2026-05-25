@@ -52,17 +52,13 @@ export interface UseGameEventsOptions<TEvent> {
 
 interface UseGameStateOrNullOf<G extends TTKitGame> {
   (): G["view"] | null;
-  <TSelected>(
-    selector: (view: G["view"]) => TSelected,
-    isEqual?: (a: TSelected, b: TSelected) => boolean,
-  ): TSelected | null;
+  <TSelected>(selector: (view: G["view"]) => TSelected): TSelected | null;
 }
 
 export interface GameHooks<G extends TTKitGame> {
   readonly TTKitProvider: (props: TTKitProviderProps<G>) => ReactNode;
   readonly useGameState: <TSelected>(
     selector: (view: G["view"]) => TSelected,
-    isEqual?: (a: TSelected, b: TSelected) => boolean,
   ) => TSelected;
   readonly useGameStateOrNull: UseGameStateOrNullOf<G>;
   readonly useGameEvents: (
@@ -149,13 +145,8 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
 
   function useGameState<TSelected>(
     selector: (view: G["view"]) => TSelected,
-    isEqual: (a: TSelected, b: TSelected) => boolean = Object.is,
   ): TSelected {
     const { client } = useBundleContext();
-    const cache = useRef<
-      { hasValue: true; selected: TSelected } | { hasValue: false }
-    >({ hasValue: false });
-
     const getSnapshot = (): TSelected => {
       const view = client.getView();
       if (view === null) {
@@ -163,62 +154,24 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
           "useGameState: no view loaded. Use useGameStateOrNull or render a loading state first.",
         );
       }
-      const next = selector(view);
-      if (cache.current.hasValue && isEqual(cache.current.selected, next)) {
-        return cache.current.selected;
-      }
-      cache.current = { hasValue: true, selected: next };
-      return next;
+      return selector(view);
     };
-
     return useSyncExternalStore(client.subscribe.bind(client), getSnapshot);
   }
 
   function useGameStateOrNull(): G["view"] | null;
   function useGameStateOrNull<TSelected>(
     selector: (view: G["view"]) => TSelected,
-    isEqual?: (a: TSelected, b: TSelected) => boolean,
   ): TSelected | null;
   function useGameStateOrNull<TSelected>(
     selector?: (view: G["view"]) => TSelected,
-    isEqual: (a: TSelected, b: TSelected) => boolean = Object.is,
   ): TSelected | G["view"] | null {
     const { client } = useBundleContext();
-    type CacheState =
-      | { kind: "empty" }
-      | { kind: "null" }
-      | { kind: "selected"; value: TSelected }
-      | { kind: "raw"; value: G["view"] };
-    const cache = useRef<CacheState>({ kind: "empty" });
-
     const getSnapshot = (): TSelected | G["view"] | null => {
       const view = client.getView();
-      if (view === null) {
-        if (cache.current.kind === "null") return null;
-        cache.current = { kind: "null" };
-        return null;
-      }
-      if (selector) {
-        const next = selector(view);
-        if (
-          cache.current.kind === "selected" &&
-          isEqual(cache.current.value, next)
-        ) {
-          return cache.current.value;
-        }
-        cache.current = { kind: "selected", value: next };
-        return next;
-      }
-      if (
-        cache.current.kind === "raw" &&
-        Object.is(cache.current.value, view)
-      ) {
-        return cache.current.value;
-      }
-      cache.current = { kind: "raw", value: view };
-      return view;
+      if (view === null) return null;
+      return selector ? selector(view) : view;
     };
-
     return useSyncExternalStore(client.subscribe.bind(client), getSnapshot);
   }
 
