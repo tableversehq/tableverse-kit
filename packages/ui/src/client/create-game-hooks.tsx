@@ -62,7 +62,7 @@ export interface GameHooks<G extends TTKitGame> {
   readonly useDiscovery: () => UseDiscoveryResult<G>;
   readonly useSelectable: (
     discoveryStep: string,
-    target: unknown,
+    isTarget: (option: PickOptionOf<G>) => boolean,
   ) => UseSelectableResult<G>;
   readonly useTTKitClient: () => TTKitClient<G>;
   readonly useViewerId: () => string;
@@ -194,15 +194,11 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
 
   function useSelectable(
     discoveryStep: string,
-    target: unknown,
+    isTarget: (option: PickOptionOf<G>) => boolean,
   ): UseSelectableResult<G> {
     const discovery = useDiscovery();
 
-    const alreadyPicked = discovery.trail.some((option) =>
-      optionMatchesTarget(option, target),
-    );
-
-    if (alreadyPicked) {
+    if (discovery.trail.some(isTarget)) {
       return { state: "selected", onClick: noop, option: null };
     }
 
@@ -214,9 +210,7 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
       return { state: "unselectable", onClick: noop, option: null };
     }
 
-    const matching = discovery.open.options.find((option) =>
-      optionMatchesTarget(option, target),
-    );
+    const matching = discovery.open.options.find(isTarget);
 
     if (!matching) {
       return { state: "unselectable", onClick: noop, option: null };
@@ -250,23 +244,6 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
     useTTKitClient,
     useViewerId,
   };
-}
-
-function optionMatchesTarget(option: unknown, target: unknown): boolean {
-  if (!isRecord(option)) return false;
-  const output = option.output;
-  if (!isRecord(output)) return false;
-
-  if (!isRecord(target)) {
-    if (target === undefined || target === null) return false;
-    return Object.values(output).some((value) => value === target);
-  }
-
-  return Object.keys(target).every((key) => output[key] === target[key]);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function noop(): void {}
