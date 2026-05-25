@@ -61,7 +61,7 @@ export interface GameHooks<G extends TTKitGame> {
   ) => void;
   readonly useDiscovery: () => UseDiscoveryResult<G>;
   readonly useSelectable: (
-    slot: string,
+    discoveryStep: string,
     target: unknown,
   ) => UseSelectableResult<G>;
   readonly useTTKitClient: () => TTKitClient<G>;
@@ -193,7 +193,7 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
   }
 
   function useSelectable(
-    slot: string,
+    discoveryStep: string,
     target: unknown,
   ): UseSelectableResult<G> {
     const discovery = useDiscovery();
@@ -210,7 +210,7 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
       return { state: "idle", onClick: noop, option: null };
     }
 
-    if (discovery.open.step !== slot) {
+    if (discovery.open.step !== discoveryStep) {
       return { state: "unselectable", onClick: noop, option: null };
     }
 
