@@ -184,7 +184,7 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
           pendingInput: result.input,
           status: "ready_to_confirm",
         });
-      } else {
+      } else if (isOpenResult<G>(result)) {
         this.setSnapshot({
           ...this.snapshot,
           open: result,
@@ -234,6 +234,16 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
       listener();
     }
   }
+}
+
+// Replaces TS's inline discriminated-union narrowing on result.complete,
+// which fails to unify with OpenSnapshotResult<G> because of the
+// conditional-on-generic-indexed-access inside it. The predicate just
+// declares the narrowed type; the runtime check is the same.
+function isOpenResult<G extends TTKitGame>(
+  result: G["discovery"]["result"],
+): result is OpenSnapshotResult<G> {
+  return result.complete === false;
 }
 
 function errorMessage(error: unknown): string {
