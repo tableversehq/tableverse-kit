@@ -48,9 +48,20 @@ export type OpenSnapshotResult<G extends TTKitGame> = Omit<
 };
 
 export interface DiscoveryStateSnapshot<G extends TTKitGame> {
+  /** Command type id being discovered (e.g. "take_three_gems"). Null when idle. */
   readonly activeCommandType: string | null;
+  /**
+   * Current open step — the engine's `{ complete: false, step, options }`
+   * result waiting on the next pick. Null between flows, once the picked
+   * input is assembled (pendingInput populated), or while executing.
+   */
   readonly open: OpenSnapshotResult<G> | null;
+  /** Options picked so far in this flow, in pick order. */
   readonly trail: ReadonlyArray<PickOptionOf<G>>;
+  /**
+   * Assembled command input ready to send to `execute()`. Populated when
+   * discovery returns `{ complete: true }`; null before then.
+   */
   readonly pendingInput: CommandInputOf<G> | null;
   readonly status: DiscoveryStatus;
   readonly error: string | null;
@@ -166,14 +177,14 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
       const result = await this.client.discover(payload);
       if (this.flowId !== flow) return;
 
-      if (isCompleteResult<G>(result)) {
+      if (result.complete) {
         this.setSnapshot({
           ...this.snapshot,
           open: null,
           pendingInput: result.input,
           status: "ready_to_confirm",
         });
-      } else if (isOpenResult<G>(result)) {
+      } else {
         this.setSnapshot({
           ...this.snapshot,
           open: result,
@@ -223,28 +234,6 @@ export class DiscoveryState<G extends TTKitGame = TTKitGame> {
       listener();
     }
   }
-}
-
-function isCompleteResult<G extends TTKitGame>(
-  result: G["discovery"]["result"],
-): result is CompleteResultOf<G> {
-  return resultComplete(result) === true;
-}
-
-function isOpenResult<G extends TTKitGame>(
-  result: G["discovery"]["result"],
-): result is OpenSnapshotResult<G> {
-  return resultComplete(result) === false;
-}
-
-function resultComplete(result: unknown): boolean | undefined {
-  return isRecord(result) && typeof result.complete === "boolean"
-    ? result.complete
-    : undefined;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function errorMessage(error: unknown): string {
