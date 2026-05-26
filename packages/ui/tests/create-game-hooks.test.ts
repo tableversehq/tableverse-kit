@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createGameHooks } from "../src/client/create-game-hooks.tsx";
-import type { TTKitGame } from "../src/client/types.ts";
+import type { TTKitClient, TTKitGame } from "../src/client/types.ts";
 
 interface FakeView {
   players: Record<string, { score: number }>;
@@ -21,7 +21,7 @@ describe("createGameHooks", () => {
     const hooks = createGameHooks<FakeGame>();
 
     expect(typeof hooks.TTKitProvider).toBe("function");
-    expect(typeof hooks.useGameState).toBe("function");
+    expect(typeof hooks.useView).toBe("function");
     expect(typeof hooks.useGameEvents).toBe("function");
     expect(typeof hooks.useDiscovery).toBe("function");
     expect(typeof hooks.useSelectable).toBe("function");
@@ -36,20 +36,19 @@ describe("createGameHooks", () => {
     const a = createGameHooks<FakeGame>();
     const b = createGameHooks<FakeGame>();
 
-    expect(a.useGameState).not.toBe(b.useGameState);
+    expect(a.useView).not.toBe(b.useView);
     expect(a.useDiscovery).not.toBe(b.useDiscovery);
     expect(a.TTKitProvider).not.toBe(b.TTKitProvider);
   });
 
-  // Type-only assertion: the selector parameter must be typed as the
-  // bundle's view, not unknown. This compiles only when generics flow.
-  test("selector parameter is typed from the bundle's G", () => {
+  // Type-only assertion: useView's return is typed as G["view"].
+  test("useView return is typed from the bundle's G", () => {
     const hooks = createGameHooks<FakeGame>();
-    const selector: (view: FakeView) => number = (view) =>
-      Object.values(view.players).length;
-    const unusedHook = hooks.useGameState<number>;
-    void unusedHook;
-    void selector;
+    const useView: () => FakeView = hooks.useView;
+    void useView;
+    // Same for useTTKitClient: TTKitClient<G>.
+    const useTTKitClient: () => TTKitClient<FakeGame> = hooks.useTTKitClient;
+    void useTTKitClient;
     expect(true).toBe(true);
   });
 });

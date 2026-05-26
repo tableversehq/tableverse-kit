@@ -52,9 +52,7 @@ export interface UseGameEventsOptions<TEvent> {
 
 export interface GameHooks<G extends TTKitGame> {
   readonly TTKitProvider: (props: TTKitProviderProps<G>) => ReactNode;
-  readonly useGameState: <TSelected>(
-    selector: (view: G["view"]) => TSelected,
-  ) => TSelected;
+  readonly useView: () => G["view"];
   readonly useGameEvents: (
     handler: (event: G["event"]) => void,
     options?: UseGameEventsOptions<G["event"]>,
@@ -88,7 +86,7 @@ interface BundleContextValue<G extends TTKitGame> {
  *
  * export const {
  *   TTKitProvider,
- *   useGameState,
+ *   useView,
  *   useDiscovery,
  *   useGameEvents,
  *   useSelectable,
@@ -136,18 +134,16 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
     );
   }
 
-  function useGameState<TSelected>(
-    selector: (view: G["view"]) => TSelected,
-  ): TSelected {
+  function useView(): G["view"] {
     const { client } = useBundleContext();
-    const getSnapshot = (): TSelected => {
+    const getSnapshot = (): G["view"] => {
       const view = client.getView();
       if (view === null) {
         throw new Error(
-          "useGameState: no view loaded. Render a loading state at a parent boundary before mounting this hook.",
+          "useView: no view loaded. Render a loading state at a parent boundary before mounting this hook.",
         );
       }
-      return selector(view);
+      return view;
     };
     return useSyncExternalStore(client.subscribe.bind(client), getSnapshot);
   }
@@ -237,7 +233,7 @@ export function createGameHooks<G extends TTKitGame>(): GameHooks<G> {
 
   return {
     TTKitProvider,
-    useGameState,
+    useView,
     useGameEvents,
     useDiscovery,
     useSelectable,
