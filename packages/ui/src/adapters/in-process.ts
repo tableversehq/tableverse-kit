@@ -82,7 +82,7 @@ export function createInProcessClient<
       });
     },
 
-    getAvailableCommands() {
+    async getAvailableCommands() {
       if (disposed) return [];
       return executor.listAvailableCommands(state, {
         actorId: currentViewerId,

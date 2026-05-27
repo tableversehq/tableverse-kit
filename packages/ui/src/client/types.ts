@@ -41,7 +41,7 @@ export interface TTKitClient<G extends TTKitGame> {
   readonly viewerId: string;
 
   getView(): G["view"] | null;
-  getAvailableCommands(): readonly string[];
+  getAvailableCommands(): Promise<readonly string[]>;
   getStateVersion(): number | null;
 
   subscribe(listener: () => void): () => void;
