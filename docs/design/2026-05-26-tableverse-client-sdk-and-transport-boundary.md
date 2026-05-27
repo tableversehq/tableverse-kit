@@ -106,29 +106,59 @@ condition. Options the SDK can use, in rough preference order:
 The exact mechanism is left open (see Ambiguities below). What is fixed
 is that the dev branch must be statically dead in the production bundle.
 
-### 5. Query methods stay synchronous; only boundary-crossing methods are async
+### 5. Split methods by call-time vs. push-time, not by "query vs. mutation"
 
-The `TTKitClient<G>` interface is intentionally mixed:
+The `TTKitClient<G>` interface is intentionally mixed. The right split is
+**whether the call itself crosses the iframe/network boundary**, not
+whether the call reads or writes:
 
-- Async: `discover`, `execute`. These genuinely cross a process or
-  network boundary on every call.
-- Sync: `getView`, `getAvailableCommands`, `getStateVersion`,
-  `subscribe`, `onEvent`, `viewerId`. These read from a local mirror the
-  client maintains in memory.
+- **Async (boundary-crossing at call time):** `discover`, `execute`,
+  `getAvailableCommands`. These trigger an RPC over the bridge when
+  invoked. The parent (or the engine behind it) is the only authority
+  that can answer them, and the client has no cached form to read from.
+- **Sync (resolved against a local mirror at call time):** `getView`,
+  `getStateVersion`, `viewerId`, `subscribe`, `onEvent`. These either
+  return a value that was last set by an inbound push (`getView`,
+  `getStateVersion`, `viewerId`) or register a callback that future
+  pushes will invoke (`subscribe`, `onEvent`). No I/O happens at call
+  time.
 
-This is a hard requirement of React's `useSyncExternalStore`: the
-`getSnapshot` callback must return synchronously. The hooks layer is
-built on `useSyncExternalStore`. If `getView()` were async, every hook
-consumer would have to handle loading and race conditions, and the
-useful render-from-store guarantee would be lost.
+`getAvailableCommands` is async because it has no useful local form. The
+in-process adapter computes it from canonical state via
+`executor.listAvailableCommands(...)`; the postMessage client doesn't
+hold canonical state and would have to RPC the parent. Pre-computing the
+full list on every state change and shipping it alongside each view push
+was considered and rejected — it forces engine work on the server per
+state change for data the UI may not need, and bloats the bridge
+payload.
 
-The postMessage client therefore maintains the same shape as the
-in-process client: it owns a local cache of the current view, the parent
-shell pushes updates over the bridge, and the client calls subscribers
-when the cache changes. The mirror is part of every client
-implementation, not just the in-process one.
+The sync set is what makes `useSyncExternalStore` viable: `getSnapshot`
+must return synchronously, and `subscribe` must be a sync registration
+that fires whenever the snapshot changes. The local-mirror pattern lets
+the postMessage client satisfy that contract — the parent pushes view
+snapshots eagerly on every state change, the client caches them, hooks
+read the cache.
 
-### 6. 3rd-party transports remain a first-class path
+### 6. In-process keeps `getAvailableCommands` cheap
+
+Making `getAvailableCommands` async on the interface costs the in-process
+adapter nothing functional. The implementation becomes:
+
+```ts
+async getAvailableCommands() {
+  if (disposed) return [];
+  return executor.listAvailableCommands(state, { actorId: currentViewerId });
+}
+```
+
+Same engine call, wrapped in `Promise.resolve`-equivalent. No hook in
+the OSS layer currently calls `getAvailableCommands` (the discovery
+flow goes through `discover`, which is already async), so this is an
+interface-level breaking change without an immediate hook rewrite. A
+future `useAvailableCommands()` would be a `useState` + `useEffect`
+hook driven by view-change subscriptions, not `useSyncExternalStore`.
+
+### 7. 3rd-party transports remain a first-class path
 
 Anyone building on `@tabletop-kit` without using the Tableverse platform
 implements `TTKitClient<G>` directly. They never import
@@ -242,8 +272,10 @@ is not specified here. Deferred to the postMessage protocol design doc.
 - This document does not specify the postMessage wire protocol (message
   names, schemas, versioning, error envelopes). That belongs in a
   separate Tableverse-private design doc.
-- This document does not redesign `TTKitClient<G>` or the hooks layer.
-  Both are taken as given.
+- This document does not redesign the hooks layer. `createGameHooks<G>()`
+  and its consumers are taken as given.
+- The only `TTKitClient<G>` change this document proposes is making
+  `getAvailableCommands` async. The rest of the interface is unchanged.
 - This document does not address authentication, room scoping, or
   capability tokens for the production transport. Those are platform
   concerns owned by Tableverse.
@@ -256,9 +288,16 @@ is not specified here. Deferred to the postMessage protocol design doc.
   Tableverse-private repo. It depends on `@tabletop-kit/ui` and
   `@tabletop-kit/engine` (the dev branch needs them; the prod branch
   references neither at runtime once tree-shaken).
-- The OSS hooks layer needs no changes for this design to land. The
-  `TTKitClient<G>` interface contract — sync queries, async
-  write/discover, push-based subscription — is already what the
-  postMessage client will need.
+- `TTKitClient<G>` gains one breaking change: `getAvailableCommands`
+  becomes `Promise<...>`. The in-process adapter wraps the existing
+  sync executor call in a Promise; no current hook consumes
+  `getAvailableCommands`, so the change is localized to the adapter,
+  the interface, and any 3rd-party implementers.
+- The remaining interface contract — sync `getView`/`getStateVersion`/
+  `viewerId`, sync local-registration `subscribe`/`onEvent`, async
+  `discover`/`execute` — is already what the postMessage client will
+  need. The hooks layer needs no changes.
 - 3rd-party integrators continue to implement `TTKitClient<G>` directly
-  and never touch `@tableverse/client`.
+  and never touch `@tableverse/client`. They must update their
+  implementations to make `getAvailableCommands` async when adopting
+  the new interface version.
