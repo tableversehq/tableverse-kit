@@ -20,10 +20,10 @@ boardgame-implementation agent that will eventually consume Tabletop Kit.
 The 2026-05-01 design fixed:
 
 - `@tabletop-kit/ui` is a single hybrid npm package — hooks imported, components
-  scaffolded into the customer's tree via `tt-kit ui add`.
+  scaffolded into the customer's tree via `ttk ui add`.
 - The component vocabulary starts at `Selectable`, `TokenPile`, `Card`, `Deck`,
   `Tile`, `PlayerArea`, `CommandBar`, `ActionList`.
-- The package is bundled into the existing `tt-kit` CLI, not a separate one.
+- The package is bundled into the existing `ttk` CLI, not a separate one.
 
 What it left open:
 
@@ -40,11 +40,11 @@ This doc closes all of those.
 
 ## Decision Summary
 
-1. **Don't port shadcn's CLI.** Build a minimal `tt-kit ui` subcommand inside
+1. **Don't port shadcn's CLI.** Build a minimal `ttk ui` subcommand inside
    the existing `@tabletop-kit/cli`. Target ~500 LOC, not the ~30 files
    shadcn ships.
 2. **Bundle the registry inside the `@tabletop-kit/ui` npm tarball.** No
-   hosted registry, no network fetch. `tt-kit ui add` reads from
+   hosted registry, no network fetch. `ttk ui add` reads from
    `node_modules/@tabletop-kit/ui/registry/<name>.json`.
 3. **Support exactly one scaffold: Vite + React + Tailwind v4.** Every other
    framework uses the manual install path documented in the website.
@@ -100,17 +100,17 @@ This boundary informs a few things in this doc:
 
 ## CLI Surface
 
-The CLI lives in `packages/cli` and is exposed by the existing `tt-kit`
+The CLI lives in `packages/cli` and is exposed by the existing `ttk`
 binary. New subcommands:
 
 ```bash
-tt-kit ui init                     # bootstrap UI in an existing project
-tt-kit ui add <component>...       # copy component source into the tree
-tt-kit ui list                     # list available components
-tt-kit ui diff [component]         # (deferred) show drift vs. registry source
+ttk ui init                     # bootstrap UI in an existing project
+ttk ui add <component>...       # copy component source into the tree
+ttk ui list                     # list available components
+ttk ui diff [component]         # (deferred) show drift vs. registry source
 ```
 
-### `tt-kit ui init`
+### `ttk ui init`
 
 Runs inside any existing React + Vite repo (or any repo where Tailwind v4 can
 be installed). It:
@@ -138,7 +138,7 @@ be installed). It:
 `init` must be idempotent. Re-running it on an already-initialized project
 should produce no diff.
 
-### `tt-kit ui add <component>`
+### `ttk ui add <component>`
 
 1. Resolves the component name against
    `node_modules/@tabletop-kit/ui/registry/<name>.json`.
@@ -151,7 +151,7 @@ should produce no diff.
 If a target file already exists, prompt for overwrite unless `--yes` is
 passed. Never silently overwrite customer-edited source.
 
-### `tt-kit ui list`
+### `ttk ui list`
 
 Reads every JSON file in `node_modules/@tabletop-kit/ui/registry/` and prints
 name, description, and category. Used by humans for discovery and by the
@@ -160,7 +160,7 @@ agent for capability planning.
 ### Lazy loading
 
 The `ui` subcommand's dependencies (React-aware parsing, file scaffolding)
-must be lazy-loaded so users running `tt-kit generate types` on a
+must be lazy-loaded so users running `ttk generate types` on a
 non-React project pay no React install cost. This is an implementation
 constraint on `packages/cli/src/commands/ui/`, not a product compromise.
 
@@ -339,8 +339,8 @@ way.
 ```bash
 cd my-game
 bun add @tabletop-kit/cli @tabletop-kit/ui
-bunx tt-kit ui init
-bunx tt-kit ui add card token-pile command-bar
+bunx ttk ui init
+bunx ttk ui add card token-pile command-bar
 ```
 
 Works in any React + Vite repo. The `init` step writes `tabletop-ui.json`,
@@ -354,12 +354,12 @@ bun create @tabletop-kit/app my-game
 
 Clones one canonical Vite + React + Tailwind v4 + Tabletop Kit Engine
 template from `packages/create-app/template/`. Internally runs
-`tt-kit ui init`. Do not build this until paths 1 and the manual-install
+`ttk ui init`. Do not build this until paths 1 and the manual-install
 docs are stable.
 
 ### Path 3 — Manual install
 
-A documentation page listing exactly what `tt-kit ui init` does, plus a
+A documentation page listing exactly what `ttk ui init` does, plus a
 "copy the source" link per component. This is the escape hatch for users
 on Next, Astro, TanStack Start, React Router, or any other framework.
 
@@ -439,7 +439,7 @@ primitive per game. This is rare; default to edit-source.
 
 Most upstream fixes are hook fixes, which propagate via `bun update`
 without touching the customer's tree. Component-source bug fixes
-require manual rebase. `tt-kit ui diff` (deferred) will surface drift;
+require manual rebase. `ttk ui diff` (deferred) will surface drift;
 until then, manual rebase is the answer — matching shadcn's posture.
 
 ## Build Order
@@ -453,7 +453,7 @@ Implement in this order. Do not start step _n_ until step _n-1_ lands.
 2. **Registry build script.** `bun run build:registry` reads
    `registry-source/` and `registry-meta/`, emits
    `dist/registry/<name>.json`. Add to `prepublishOnly`.
-3. **`tt-kit ui init` and `tt-kit ui add`.** New `packages/cli/src/commands/ui/`
+3. **`ttk ui init` and `ttk ui add`.** New `packages/cli/src/commands/ui/`
    directory. Lazy-loaded.
 4. **First three components.** `Selectable`, `TokenPile`, `CommandBar`.
    These cover the discovery/confirmation pattern Splendor needs.
@@ -472,12 +472,12 @@ The following are explicitly out of scope for v1:
 - Multi-framework scaffolds (Next, Astro, TanStack Start, React Router,
   Laravel).
 - Hosted registry / `REGISTRY_URL` / OAuth.
-- MCP server inside `tt-kit ui`. The agent calls the CLI as a shell
+- MCP server inside `ttk ui`. The agent calls the CLI as a shell
   command in v1.
 - Multiple style packs (shadcn ships `new-york` and `default`). One
   canonical style; per-game customization happens in copied source.
 - Theme presets beyond a single default token set.
-- `tt-kit ui diff` / drift detection.
+- `ttk ui diff` / drift detection.
 - Asset pipeline. Card art, token sprites, board images — out of scope.
 - Animation system beyond Tailwind keyframes.
 - Sound, music, asset preloading.

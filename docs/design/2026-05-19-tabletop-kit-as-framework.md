@@ -32,7 +32,7 @@ deliberate decoupled boundary:
 
 The hooks layer ships in `@tabletop-kit/ui` as part of the public
 framework. The component layer ships in `@tabletop-kit/ui` as
-copy-into-tree source via `tt-kit ui add`, and is reusable independent
+copy-into-tree source via `ttk ui add`, and is reusable independent
 of the framework.
 
 ## Why coupling at the hooks layer is correct
@@ -111,7 +111,7 @@ producing the markup is the library's.
 Going from engine to UI:
 
 - `TView`, `TEvent`, `TCommandPayload`, `TDiscoveryPayload`,
-  `TDiscoveryResult` — types emitted by `tt-kit generate types`.
+  `TDiscoveryResult` — types emitted by `ttk generate types`.
 - The `TTKitClient<G>` interface — implemented either by the in-process
   adapter, the Tabletop Lab WS codegen, or customer code.
 - Engine events arriving via `onEvent`.

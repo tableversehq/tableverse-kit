@@ -1,10 +1,10 @@
 export function createRootHelpText(): string {
-  return ["tt-kit", "", "Commands:", "  generate", "  validate"].join("\n");
+  return ["ttk", "", "Commands:", "  generate", "  validate"].join("\n");
 }
 
 export function createGenerateHelpText(): string {
   return [
-    "tt-kit generate",
+    "ttk generate",
     "",
     "Targets:",
     "  types",
@@ -19,7 +19,7 @@ export function createGenerateHelpText(): string {
 
 export function createValidateHelpText(): string {
   return [
-    "tt-kit validate",
+    "ttk validate",
     "",
     "Optional flags:",
     "  --config <path>",

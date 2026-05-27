@@ -8,7 +8,7 @@ metadata into generated developer artifacts.
 The CLI package and command names should be:
 
 - package: `@tabletop-kit/cli`
-- command: `tt-kit`
+- command: `ttk`
 
 The CLI exists to solve a structural limitation in the current engine:
 
@@ -61,7 +61,7 @@ The package name and command surface should follow the same separation:
 
 - runtime library: `@tabletop-kit/engine`
 - workspace CLI package: `@tabletop-kit/cli`
-- workspace CLI command: `tt-kit`
+- workspace CLI command: `ttk`
 
 The CLI package should depend on:
 
@@ -198,10 +198,10 @@ export default defineConfig({
 Then:
 
 ```bash
-tt-kit generate types
-tt-kit generate schemas
-tt-kit generate client-sdk
-tt-kit validate
+ttk generate types
+ttk generate schemas
+ttk generate client-sdk
+ttk validate
 ```
 
 If needed later, the CLI can support:

@@ -7,7 +7,7 @@
     ".": "./src/main.ts"
   },
   "bin": {
-    "tt-kit": "./src/main.ts"
+    "ttk": "./src/main.ts"
   },
   "scripts": {
     "test": "bun test",

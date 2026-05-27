@@ -2,7 +2,7 @@
 
 ## Summary
 
-`tt-kit` should stop asking developers for a source file path that may or
+`ttk` should stop asking developers for a source file path that may or
 may not export a game definition in the expected shape.
 
 Instead, the CLI should require a TypeScript config file that explicitly gives
@@ -197,11 +197,11 @@ But the starting point should remain:
 Recommended command model:
 
 ```bash
-tt-kit generate types
-tt-kit generate schemas
-tt-kit generate protocol
-tt-kit generate client-sdk
-tt-kit validate
+ttk generate types
+ttk generate schemas
+ttk generate protocol
+ttk generate client-sdk
+ttk validate
 ```
 
 By default, the CLI should look for:
@@ -211,7 +211,7 @@ By default, the CLI should look for:
 Optionally, it can later support:
 
 ```bash
-tt-kit generate types --config ./path/to/tabletop.config.ts
+ttk generate types --config ./path/to/tabletop.config.ts
 ```
 
 But the main user-facing model should be config-driven, not path-driven.
@@ -221,13 +221,13 @@ But the main user-facing model should be config-driven, not path-driven.
 Current model:
 
 ```bash
-tt-kit generate types --game examples/splendor/engine/src/game.ts
+ttk generate types --game examples/splendor/engine/src/game.ts
 ```
 
 Target model:
 
 ```bash
-tt-kit generate types
+ttk generate types
 ```
 
 with:
@@ -268,7 +268,7 @@ The CLI runtime should:
 
 ## Recommendation
 
-Move `tt-kit` to a config-file-driven model.
+Move `ttk` to a config-file-driven model.
 
 The CLI should accept one concrete built game definition through
 `tabletop.config.ts` and generate artifacts from that.

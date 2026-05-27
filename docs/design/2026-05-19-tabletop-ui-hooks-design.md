@@ -608,7 +608,7 @@ declare module "@tabletop-kit/ui" {
 }
 ```
 
-`SplendorGame` is one type alias emitted by `tt-kit generate types`:
+`SplendorGame` is one type alias emitted by `ttk generate types`:
 
 ```ts
 export type SplendorGame = {
@@ -798,10 +798,10 @@ any component the agent generates.
 - Components written against the seven hooks above run unchanged on
   single-player offline, Tabletop Lab multiplayer, and any
   customer-authored transport.
-- The CLI's `tt-kit generate types` is responsible for emitting the
+- The CLI's `ttk generate types` is responsible for emitting the
   per-game `G` bundle (see
   [stack and onboarding doc](./2026-05-18-tabletop-ui-stack-and-onboarding.md)).
-  The legacy `tt-kit generate client-sdk` surface is private going
+  The legacy `ttk generate client-sdk` surface is private going
   forward; envelope types and WS implementation move into the Lab repo
   with codegen targeting `TTKitClient<G>` directly.
 - The `TTKitGameRegistry` module augmentation pattern becomes the

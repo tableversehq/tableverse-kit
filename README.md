@@ -12,7 +12,7 @@ artifacts from your game definition.
 - [`@tabletop-kit/engine`](./packages/tabletop-engine)
   transport-agnostic rules/runtime engine
 - [`@tabletop-kit/cli`](./packages/cli)
-  local tooling package that installs the `tt-kit` command
+  local tooling package that installs the `ttk` command
 - `@tabletop-kit/ui`
   planned UI package for reusable hooks and scaffolded components
 
@@ -62,13 +62,13 @@ class CounterState extends GameState {
 
 ## CLI
 
-`@tabletop-kit/cli` installs the `tt-kit` command.
+`@tabletop-kit/cli` installs the `ttk` command.
 
 ```bash
-tt-kit generate types
-tt-kit generate schemas
-tt-kit generate client-sdk
-tt-kit validate
+ttk generate types
+ttk generate schemas
+ttk generate client-sdk
+ttk validate
 ```
 
 The CLI reads `tabletop.config.ts` from your project:

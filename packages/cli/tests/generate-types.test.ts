@@ -9,7 +9,7 @@ const splendorRoot = join(repoRoot, "examples", "splendor", "engine");
 
 describe("generate types", () => {
   it("writes canonical and visible type declarations for a game", async () => {
-    const outDir = await mkdtemp(join(tmpdir(), "tt-kit-types-"));
+    const outDir = await mkdtemp(join(tmpdir(), "ttk-types-"));
     const result = await run(["generate", "types", "--outDir", outDir], {
       cwd: splendorRoot,
     });

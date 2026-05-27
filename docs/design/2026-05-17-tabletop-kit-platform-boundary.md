@@ -78,17 +78,17 @@ The exact package names can change, but the ownership boundary should not:
 The public CLI should stay open source, but it should only own generic tooling:
 
 ```txt
-tt-kit generate types
-tt-kit ui add <component>
-tt-kit validate
+ttk generate types
+ttk ui add <component>
+ttk validate
 ```
 
 Platform-specific commands should be private:
 
 ```txt
-tt-kit lab login
-tt-kit lab deploy
-tt-kit lab generate-sdk
+ttk lab login
+ttk lab deploy
+ttk lab generate-sdk
 ```
 
 The public CLI may expose a plugin mechanism or command handoff point, but the

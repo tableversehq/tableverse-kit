@@ -1,0 +1,19 @@
+# Redesigning state authoring
+
+let's take a step back and think about potentially re-designing the whole state authoring experience and mechanism. Here are some fundemental assumptions.
+
+- Game state is a set of data that depicts the current state of the entire game, just like game saves. We are taking the pure functional approach where newState = executor.executeCommand(command, oldState), so the state object need to completely determine what this game is like at this moment
+- Game state is a huge plain object and hard to maintain. It should be broken down into smaller structures that are identifiable. Each smaller structure will also have business logic that interacts with this structure only, so business logic is colocated with the data it uses only. This is analogous to how React's function component couples the UI and the interactive logic into each component, so it's much easier for dev to maintain. Given this constrain, I originally come up with state class, which naturally binds class property and class methods to this single instance. Game devs are familiar with OOP too and state class fits the use case.  
+- not all game states should be displayed to the player due to hidden information. Thats why we need a way to let developer ergo-economically and declaritive configure the visible states for each of the player. No matter what data are displayed to each player, this data is definitely some certain form of transformation of the game state, so this is where the idea of configureVisibility() come from.
+
+## The real issue
+
+executor.getView() can not return object with the correct static type without effort from developer. Either they need to generate type or use some static type helper and pass it to createExecutor() to get the gameExecutor whose getView does return right shape. This is an issue because packages/ui/src/adapters/in-process.ts the in process client need to have the right view shape.
+
+Are there other design options? The goal is to be ergoeconomic, declarative, and intuitive and simple to understand. Maybe for each view transformation, let dev create an actual class?
+
+## The broader issue
+
+Zoom out a litte bit. Are we being to strict on how game state can be defined? technically our gameExecutor need the shape of the game state only. earlier it's mentioned that we can do state = defineState(...), and dev can define the business logic to their state classes freely, like creating class StateOps whose constructor takes the game state data. Then they will initialize this class instance in the defineCommand()'s execute() closure.
+
+I'm not sure if this is a good idea. The main customer of this framework is AI agent, and you want to have more constraint, more opinionated structure for AI to make less mistakes and more readable code, just like react.

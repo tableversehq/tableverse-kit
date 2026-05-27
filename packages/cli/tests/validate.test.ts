@@ -20,7 +20,7 @@ describe("validate", () => {
   });
 
   it("validates a valid snapshot", async () => {
-    const outDir = await mkdtemp(join(tmpdir(), "tt-kit-validate-"));
+    const outDir = await mkdtemp(join(tmpdir(), "ttk-validate-"));
     const game = createSplendorGame();
     const executor = createGameExecutor(game);
     const snapshotPath = join(outDir, "snapshot.json");
@@ -49,7 +49,7 @@ describe("validate", () => {
   });
 
   it("fails for an invalid snapshot", async () => {
-    const outDir = await mkdtemp(join(tmpdir(), "tt-kit-validate-"));
+    const outDir = await mkdtemp(join(tmpdir(), "ttk-validate-"));
     const game = createSplendorGame();
     const executor = createGameExecutor(game);
     const invalidSnapshotPath = join(outDir, "invalid-snapshot.json");

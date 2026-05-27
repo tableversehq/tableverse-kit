@@ -14,7 +14,7 @@ The intended public package family is:
 - `@tabletop-kit/engine`
   transport-agnostic rules/runtime package
 - `@tabletop-kit/cli`
-  generic local developer tooling, installed with the `tt-kit` command
+  generic local developer tooling, installed with the `ttk` command
 - `@tabletop-kit/ui`
   planned UI package for hooks and scaffolded components
 
@@ -30,12 +30,12 @@ protocols, and platform-targeted SDK generation.
 The public CLI may provide generic commands such as:
 
 ```bash
-tt-kit generate types
-tt-kit generate schemas
-tt-kit validate
+ttk generate types
+ttk generate schemas
+ttk validate
 ```
 
-Future platform commands such as `tt-kit lab deploy` should be implemented in
+Future platform commands such as `ttk lab deploy` should be implemented in
 private Tabletop Lab-owned packages or through a command handoff mechanism.
 
 ## Implemented Runtime Surface
@@ -68,7 +68,7 @@ Important workspace areas:
 - `packages/tabletop-engine`
   source for the published `@tabletop-kit/engine` package
 - `packages/cli`
-  source for the `@tabletop-kit/cli` package and `tt-kit` command
+  source for the `@tabletop-kit/cli` package and `ttk` command
 - `examples/splendor/engine`
   reference game package built on `@tabletop-kit/engine`
 - `examples/splendor/terminal`
