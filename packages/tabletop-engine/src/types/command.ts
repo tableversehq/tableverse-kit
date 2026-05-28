@@ -186,7 +186,7 @@ export type DiscoveryStepInputBuilder<
   >;
 };
 
-type AnyDiscoveryStepDefinition = {
+export type AnyDiscoveryStepDefinition = {
   stepId: string;
   initial: boolean;
   inputSchema: CommandSchema<DiscoveryData>;
@@ -302,19 +302,24 @@ export type DiscoveryStepResolvedBuilder<
   >;
 };
 
-export interface DiscoveryDefinition {
+export interface DiscoveryDefinition<
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
+> {
   startStep: string;
-  steps: AnyDiscoveryStepDefinition[];
+  steps: TSteps;
 }
 
 export type DiscoverableCommandConfig<
   FacadeGameState extends BaseGameState,
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = DiscoveryData,
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
 > = {
   commandId: string;
   commandSchema: CommandSchema<TCommandInput>;
-  discovery: DiscoveryDefinition;
+  discovery: DiscoveryDefinition<TSteps>;
   _discoveryInput?: TDiscoveryInput;
 } & CommandLifecycleMethods<FacadeGameState, TCommandInput>;
 
@@ -331,15 +336,29 @@ export type DefinedCommand<
   FacadeGameState extends BaseGameState,
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = TCommandInput,
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
 > = CommandDefinitionBrand &
-  CommandDefinitionShape<FacadeGameState, TCommandInput, TDiscoveryInput>;
+  CommandDefinitionShape<
+    FacadeGameState,
+    TCommandInput,
+    TDiscoveryInput,
+    TSteps
+  >;
 
 export type CommandDefinitionShape<
   FacadeGameState extends BaseGameState,
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = TCommandInput,
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
 > =
-  | DiscoverableCommandConfig<FacadeGameState, TCommandInput, TDiscoveryInput>
+  | DiscoverableCommandConfig<
+      FacadeGameState,
+      TCommandInput,
+      TDiscoveryInput,
+      TSteps
+    >
   | NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>;
 
 export type CommandDefinition<FacadeGameState extends BaseGameState> = {
@@ -371,8 +390,15 @@ export type DiscoverableCommandAccumulator<
   FacadeGameState extends BaseGameState = BaseGameState,
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = TCommandInput,
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
 > = Pick<
-  DiscoverableCommandConfig<FacadeGameState, TCommandInput, TDiscoveryInput>,
+  DiscoverableCommandConfig<
+    FacadeGameState,
+    TCommandInput,
+    TDiscoveryInput,
+    TSteps
+  >,
   "commandId" | "commandSchema" | "discovery"
 > &
   Partial<
@@ -380,7 +406,8 @@ export type DiscoverableCommandAccumulator<
       DiscoverableCommandConfig<
         FacadeGameState,
         TCommandInput,
-        TDiscoveryInput
+        TDiscoveryInput,
+        TSteps
       >,
       "isAvailable" | "validate" | "execute"
     >
@@ -391,11 +418,14 @@ export type CommandBuilderAccumulator<
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = TCommandInput,
   THasDiscovery extends boolean = false,
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
 > = THasDiscovery extends true
   ? DiscoverableCommandAccumulator<
       FacadeGameState,
       TCommandInput,
-      TDiscoveryInput
+      TDiscoveryInput,
+      TSteps
     >
   : NonDiscoverableCommandAccumulator<FacadeGameState, TCommandInput>;
 
@@ -412,7 +442,7 @@ type BuildCommandInput<
   THasDiscovery extends boolean,
 > = THasDiscovery extends true ? TDiscoveryInput : TCommandInput;
 
-type DiscoveryInitialInput<
+export type DiscoveryInitialInput<
   TSteps extends readonly AnyDiscoveryStepDefinition[],
 > =
   Extract<TSteps[number], { initial: true }> extends {
@@ -428,13 +458,15 @@ type BuildBuilderMethod<
   THasDiscovery extends boolean,
   THasValidate extends boolean,
   THasExecute extends boolean,
+  TSteps extends readonly AnyDiscoveryStepDefinition[],
 > = THasValidate extends true
   ? THasExecute extends true
     ? {
         build(): DefinedCommand<
           FacadeGameState,
           TCommandInput,
-          BuildCommandInput<TCommandInput, TDiscoveryInput, THasDiscovery>
+          BuildCommandInput<TCommandInput, TDiscoveryInput, THasDiscovery>,
+          TSteps
         >;
       }
     : NoBuilderMethod
@@ -444,6 +476,8 @@ export type CommandBuilder<
   FacadeGameState extends BaseGameState = BaseGameState,
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = never,
+  TSteps extends readonly AnyDiscoveryStepDefinition[] =
+    readonly AnyDiscoveryStepDefinition[],
   THasDiscovery extends boolean = false,
   THasAvailability extends boolean = false,
   THasValidate extends boolean = false,
@@ -452,18 +486,19 @@ export type CommandBuilder<
   THasDiscovery,
   {
     discoverable<
-      TSteps extends readonly [
+      const TNextSteps extends readonly [
         AnyDiscoveryStepDefinition,
         ...AnyDiscoveryStepDefinition[],
       ],
     >(
       configure: (
-        step: DiscoveryStepFactory<FacadeGameState, TCommandInput, TSteps>,
-      ) => TSteps,
+        step: DiscoveryStepFactory<FacadeGameState, TCommandInput>,
+      ) => TNextSteps,
     ): CommandBuilder<
       FacadeGameState,
       TCommandInput,
-      DiscoveryInitialInput<TSteps>,
+      DiscoveryInitialInput<TNextSteps>,
+      TNextSteps,
       true,
       THasAvailability,
       THasValidate,
@@ -482,6 +517,7 @@ export type CommandBuilder<
         FacadeGameState,
         TCommandInput,
         TDiscoveryInput,
+        TSteps,
         THasDiscovery,
         true,
         THasValidate,
@@ -503,6 +539,7 @@ export type CommandBuilder<
         FacadeGameState,
         TCommandInput,
         TDiscoveryInput,
+        TSteps,
         THasDiscovery,
         THasAvailability,
         true,
@@ -524,6 +561,7 @@ export type CommandBuilder<
         FacadeGameState,
         TCommandInput,
         TDiscoveryInput,
+        TSteps,
         THasDiscovery,
         THasAvailability,
         THasValidate,
@@ -537,7 +575,8 @@ export type CommandBuilder<
     TDiscoveryInput,
     THasDiscovery,
     THasValidate,
-    THasExecute
+    THasExecute,
+    TSteps
   >;
 
 export interface InternalValidationContext<
@@ -593,11 +632,11 @@ export type DiscoveryContext<
 };
 
 export type CommandDiscoveryResult<
-  TStep extends string = string,
-  TNextInput extends DiscoveryData = DiscoveryData,
-  TOutput extends DiscoveryData = DiscoveryData,
-  TCommandInput extends CommandData = CommandData,
-  TNextStep extends string = string,
+  TStep extends string,
+  TNextInput extends DiscoveryData,
+  TOutput extends DiscoveryData,
+  TCommandInput extends CommandData,
+  TNextStep extends string,
 > =
   | {
       complete: false;
@@ -608,6 +647,48 @@ export type CommandDiscoveryResult<
       complete: true;
       input: TCommandInput;
     };
+
+export type AnyCommandDiscoveryResult = CommandDiscoveryResult<
+  string,
+  DiscoveryData,
+  DiscoveryData,
+  CommandData,
+  string
+>;
+
+type DiscoveryStepOutput<TStep extends AnyDiscoveryStepDefinition> =
+  TStep extends {
+    outputSchema: CommandSchema<infer TOutput>;
+  }
+    ? TOutput
+    : never;
+
+type CommandDiscoveryOpenResult<
+  TSteps extends readonly AnyDiscoveryStepDefinition[],
+> = {
+  [TStepId in TSteps[number]["stepId"]]: {
+    complete: false;
+    step: TStepId;
+    options: Array<
+      ValidatedDiscoveryStepOption<
+        TSteps,
+        DiscoveryStepOutput<Extract<TSteps[number], { stepId: TStepId }>>
+      >
+    >;
+  };
+}[TSteps[number]["stepId"]];
+
+export type CommandDiscoveryResultFor<TDefinition> = TDefinition extends {
+  discovery: DiscoveryDefinition<infer TSteps>;
+  commandSchema: CommandSchema<infer TCommandInput>;
+}
+  ?
+      | CommandDiscoveryOpenResult<TSteps>
+      | {
+          complete: true;
+          input: TCommandInput;
+        }
+  : never;
 
 export interface InternalExecuteContext<
   FacadeGameState extends BaseGameState,

@@ -7,6 +7,7 @@ import type {
   DiscoverableCommandAccumulator,
   DiscoverableCommandConfig,
   DiscoveryDefinition,
+  DiscoveryInitialInput,
   DiscoveryStepBuilder,
   DiscoveryStepContext,
   DiscoveryStepInitialBuilder,
@@ -17,6 +18,7 @@ import type {
   DiscoveryStepResolvedBuilder,
   NonDiscoverableCommandAccumulator,
   NonDiscoverableCommandConfig,
+  AnyDiscoveryStepDefinition,
 } from "./types/command";
 import { commandDefinitionBrand as brand } from "./types/command";
 import { assertSerializableSchema } from "./schema";
@@ -195,21 +197,34 @@ function createDiscoveryStepBuilder<
 export function createCommandFactory<FacadeGameState extends BaseGameState>() {
   function brandCommandDefinition<
     TCommandInput extends Record<string, unknown>,
+    TDiscoveryInput extends Record<string, unknown> = TCommandInput,
+    TSteps extends readonly AnyDiscoveryStepDefinition[] =
+      readonly AnyDiscoveryStepDefinition[],
   >(
     definition:
       | NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>
-      | DiscoverableCommandConfig<FacadeGameState, TCommandInput>,
-  ): DefinedCommand<FacadeGameState, TCommandInput> {
+      | DiscoverableCommandConfig<
+          FacadeGameState,
+          TCommandInput,
+          TDiscoveryInput,
+          TSteps
+        >,
+  ): DefinedCommand<FacadeGameState, TCommandInput, TDiscoveryInput, TSteps> {
     return Object.defineProperty(definition, brand, {
       value: true,
       enumerable: false,
       configurable: false,
       writable: false,
-    }) as DefinedCommand<FacadeGameState, TCommandInput>;
+    }) as DefinedCommand<
+      FacadeGameState,
+      TCommandInput,
+      TDiscoveryInput,
+      TSteps
+    >;
   }
 
-  function finalizeDiscoveryDefinition(
-    steps: readonly DiscoveryStepDefinition<
+  function finalizeDiscoveryDefinition<
+    TSteps extends readonly DiscoveryStepDefinition<
       FacadeGameState,
       string,
       Record<string, unknown>,
@@ -219,7 +234,7 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
         context: DiscoveryStepContext<FacadeGameState, Record<string, unknown>>,
       ) => unknown
     >[],
-  ): DiscoveryDefinition {
+  >(steps: TSteps): DiscoveryDefinition<TSteps> {
     if (steps.length === 0) {
       throw new Error("command_builder_missing_discovery_step");
     }
@@ -248,12 +263,14 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
     return {
       startStep: initialStepId,
       steps,
-    } as DiscoveryDefinition;
+    };
   }
 
   function createBuilder<
     TCommandInput extends Record<string, unknown>,
     TDiscoveryInput extends Record<string, unknown> = TCommandInput,
+    TSteps extends readonly AnyDiscoveryStepDefinition[] =
+      readonly AnyDiscoveryStepDefinition[],
     THasDiscovery extends boolean = false,
     THasAvailability extends boolean = false,
     THasValidate extends boolean = false,
@@ -263,12 +280,14 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
       FacadeGameState,
       TCommandInput,
       TDiscoveryInput,
-      THasDiscovery
+      THasDiscovery,
+      TSteps
     >,
   ): CommandBuilder<
     FacadeGameState,
     TCommandInput,
     TDiscoveryInput,
+    TSteps,
     THasDiscovery,
     THasAvailability,
     THasValidate,
@@ -276,7 +295,7 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
   > {
     return {
       discoverable<
-        TSteps extends readonly [
+        const TNextSteps extends readonly [
           DiscoveryStepDefinition<BaseGameState>,
           ...DiscoveryStepDefinition<BaseGameState>[],
         ],
@@ -287,36 +306,21 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
           ) => DiscoveryStepBuilder<
             FacadeGameState,
             TCommandInput,
-            TSteps,
+            readonly AnyDiscoveryStepDefinition[],
             TStepId
           >,
-        ) => TSteps,
+        ) => TNextSteps,
       ) {
         function discoveryStepFactory<TStepId extends string>(stepId: TStepId) {
           return createDiscoveryStepBuilder<
             FacadeGameState,
             TCommandInput,
-            TStepId,
-            TSteps
+            TStepId
           >(stepId);
         }
 
         const steps = configure(discoveryStepFactory);
-        const discovery = finalizeDiscoveryDefinition(
-          steps as readonly DiscoveryStepDefinition<
-            FacadeGameState,
-            string,
-            Record<string, unknown>,
-            Record<string, unknown>,
-            boolean,
-            (
-              context: DiscoveryStepContext<
-                FacadeGameState,
-                Record<string, unknown>
-              >,
-            ) => unknown
-          >[],
-        );
+        const discovery = finalizeDiscoveryDefinition(steps);
 
         const nextAccumulator = {
           ...accumulator,
@@ -324,12 +328,14 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
         } as DiscoverableCommandAccumulator<
           FacadeGameState,
           TCommandInput,
-          TDiscoveryInput
+          DiscoveryInitialInput<TNextSteps>,
+          TNextSteps
         >;
 
         return createBuilder<
           TCommandInput,
-          TDiscoveryInput,
+          DiscoveryInitialInput<TNextSteps>,
+          TNextSteps,
           true,
           THasAvailability,
           THasValidate,
@@ -345,12 +351,14 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
           FacadeGameState,
           TCommandInput,
           TDiscoveryInput,
-          THasDiscovery
+          THasDiscovery,
+          TSteps
         >;
 
         return createBuilder<
           TCommandInput,
           TDiscoveryInput,
+          TSteps,
           THasDiscovery,
           true,
           THasValidate,
@@ -366,12 +374,14 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
           FacadeGameState,
           TCommandInput,
           TDiscoveryInput,
-          THasDiscovery
+          THasDiscovery,
+          TSteps
         >;
 
         return createBuilder<
           TCommandInput,
           TDiscoveryInput,
+          TSteps,
           THasDiscovery,
           THasAvailability,
           true,
@@ -387,12 +397,14 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
           FacadeGameState,
           TCommandInput,
           TDiscoveryInput,
-          THasDiscovery
+          THasDiscovery,
+          TSteps
         >;
 
         return createBuilder<
           TCommandInput,
           TDiscoveryInput,
+          TSteps,
           THasDiscovery,
           THasAvailability,
           THasValidate,
@@ -415,12 +427,18 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
           execute: accumulator.execute,
         } as
           | NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>
-          | DiscoverableCommandConfig<FacadeGameState, TCommandInput>);
+          | DiscoverableCommandConfig<
+              FacadeGameState,
+              TCommandInput,
+              TDiscoveryInput,
+              TSteps
+            >);
       },
     } as CommandBuilder<
       FacadeGameState,
       TCommandInput,
       TDiscoveryInput,
+      TSteps,
       THasDiscovery,
       THasAvailability,
       THasValidate,

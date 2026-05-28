@@ -1,5 +1,9 @@
 import type { CommandDefinition } from "./types/command";
-import type { StageDefinition, StageDefinitionMap } from "./types/progression";
+import type {
+  CommandDefinitionsFromStageDefinition,
+  StageDefinition,
+  StageDefinitionMap,
+} from "./types/progression";
 import type { RuntimeState } from "./types/state";
 import type { RNGApi } from "./types/rng";
 import {
@@ -42,6 +46,7 @@ export interface GameSetupContext<
 export interface GameDefinition<
   FacadeGameState extends GameState,
   SetupInput extends object | undefined = undefined,
+  CommandDefinitions = CommandDefinition<FacadeGameState>,
 > {
   name: string;
   commands: CommandDefinitionMap<FacadeGameState>;
@@ -53,14 +58,16 @@ export interface GameDefinition<
   initialStage: StageDefinition<FacadeGameState>;
   stages: Record<string, StageDefinition<FacadeGameState>>;
   setup?: (context: GameSetupContext<FacadeGameState, SetupInput>) => void;
+  readonly __commandDefinitions: CommandDefinitions;
 }
 
 interface GameDefinitionBuilderState<
   FacadeGameState extends GameState = GameState,
   SetupInput extends object | undefined = undefined,
+  CommandDefinitions = CommandDefinition<FacadeGameState>,
 > extends Partial<
   Omit<
-    GameDefinition<FacadeGameState, SetupInput>,
+    GameDefinition<FacadeGameState, SetupInput, CommandDefinitions>,
     | "commands"
     | "stateFacade"
     | "canonicalGameStateSchema"
@@ -68,6 +75,7 @@ interface GameDefinitionBuilderState<
     | "defaultCanonicalGameState"
     | "stages"
     | "setup"
+    | "__commandDefinitions"
   >
 > {
   name: string;
@@ -79,10 +87,12 @@ interface GameDefinitionBuilderState<
 export class GameDefinitionBuilder<
   FacadeGameState extends GameState = GameState,
   SetupInput extends object | undefined = undefined,
+  CommandDefinitions = CommandDefinition<FacadeGameState>,
 > {
   private readonly config: GameDefinitionBuilderState<
     FacadeGameState,
-    SetupInput
+    SetupInput,
+    CommandDefinitions
   >;
 
   constructor(name: string) {
@@ -104,7 +114,11 @@ export class GameDefinitionBuilder<
 
   setupInput<TSchema extends ObjectFieldType<Record<string, FieldType>>>(
     schema: TSchema,
-  ): GameDefinitionBuilder<FacadeGameState, SetupInputFromSchema<TSchema>> {
+  ): GameDefinitionBuilder<
+    FacadeGameState,
+    SetupInputFromSchema<TSchema>,
+    CommandDefinitions
+  > {
     if (schema.kind !== "object") {
       throw new Error("setup_input_schema_must_be_object");
     }
@@ -112,16 +126,27 @@ export class GameDefinitionBuilder<
     this.config.setupInputSchema = schema;
     return this as unknown as GameDefinitionBuilder<
       FacadeGameState,
-      SetupInputFromSchema<TSchema>
+      SetupInputFromSchema<TSchema>,
+      CommandDefinitions
     >;
   }
 
-  initialStage(initialStage: StageDefinition<FacadeGameState>): this {
+  initialStage<InitialStage extends StageDefinition<FacadeGameState>>(
+    initialStage: InitialStage,
+  ): GameDefinitionBuilder<
+    FacadeGameState,
+    SetupInput,
+    CommandDefinitionsFromStageDefinition<InitialStage>
+  > {
     this.config.initialStage = initialStage;
-    return this;
+    return this as unknown as GameDefinitionBuilder<
+      FacadeGameState,
+      SetupInput,
+      CommandDefinitionsFromStageDefinition<InitialStage>
+    >;
   }
 
-  build(): GameDefinition<FacadeGameState, SetupInput> {
+  build(): GameDefinition<FacadeGameState, SetupInput, CommandDefinitions> {
     if (!this.config.rootState) {
       throw new Error("root_state_required");
     }
@@ -153,6 +178,7 @@ export class GameDefinitionBuilder<
       initialStage: this.config.initialStage,
       stages,
       setup: this.config.setup,
+      __commandDefinitions: undefined as CommandDefinitions,
     };
   }
 

@@ -65,6 +65,28 @@ type CommandFromDefinition<Definition> =
 export type CommandsFromDefinitions<Definitions extends readonly unknown[]> =
   CommandFromDefinition<Definitions[number]>;
 
+export type CommandDefinitionsFromStageDefinition<TStage> =
+  TStage extends SingleActivePlayerStageDefinition<
+    infer TGameState,
+    infer Commands,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  >
+    ? Commands extends readonly DefinedCommand<TGameState>[]
+      ? Commands[number]
+      : never
+    : TStage extends MultiActivePlayerStageDefinition<
+          infer TGameState,
+          object,
+          infer Commands,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          any
+        >
+      ? Commands extends readonly DefinedCommand<TGameState>[]
+        ? Commands[number]
+        : never
+      : never;
+
 export interface SingleActivePlayerSelectionContext<
   GameState extends BaseGameState,
 > {

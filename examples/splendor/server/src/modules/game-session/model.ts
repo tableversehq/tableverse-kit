@@ -1,6 +1,6 @@
 import type {
   CanonicalState,
-  CommandDiscoveryResult,
+  AnyCommandDiscoveryResult,
   Command,
   Discovery,
   ExecutionResult,
@@ -99,7 +99,7 @@ export interface HostedGameExecutor<TState extends CanonicalState<object>> {
   discoverCommand(
     state: TState,
     discovery: Discovery,
-  ): CommandDiscoveryResult | null;
+  ): AnyCommandDiscoveryResult | null;
   /** Generate a player-specific view of the game state (hides opponent hands, etc.). */
   getView(state: TState, viewer: Viewer): unknown;
 }
@@ -169,7 +169,7 @@ export type GameCommandResult =
       events: GameEvent[];
     };
 
-export type GameDiscoveryResult = CommandDiscoveryResult | null;
+export type GameDiscoveryResult = AnyCommandDiscoveryResult | null;
 
 export interface MarkDisconnectedInput {
   gameSessionId: string;

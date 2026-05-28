@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import type {
-  CommandDiscoveryResult,
+  AnyCommandDiscoveryResult,
   DiscoveryStepOption,
 } from "@tabletop-kit/engine";
 import { DiscoveryState } from "../src/client/discovery-state.ts";
 import type { ExecutionResult } from "../src/client/types.ts";
 
 interface FakeClient {
-  discover: (request: unknown) => Promise<CommandDiscoveryResult>;
+  discover: (request: unknown) => Promise<AnyCommandDiscoveryResult>;
   execute: (command: unknown) => Promise<ExecutionResult>;
 }
 
@@ -47,7 +47,7 @@ describe("DiscoveryState", () => {
   });
 
   test("start() advances to discovering and stores open result", async () => {
-    const open: CommandDiscoveryResult = {
+    const open: AnyCommandDiscoveryResult = {
       complete: false,
       step: "gem",
       options: [makeOption({ id: "blue" })],
@@ -67,7 +67,7 @@ describe("DiscoveryState", () => {
   });
 
   test("start() forwarding a complete result moves to ready_to_confirm", async () => {
-    const complete: CommandDiscoveryResult = {
+    const complete: AnyCommandDiscoveryResult = {
       complete: true,
       input: { foo: 1 },
     };
@@ -85,12 +85,12 @@ describe("DiscoveryState", () => {
   });
 
   test("pick() advances using option.nextStep and appends to trail", async () => {
-    const openOne: CommandDiscoveryResult = {
+    const openOne: AnyCommandDiscoveryResult = {
       complete: false,
       step: "gem",
       options: [makeOption({ id: "blue", nextStep: "gem" })],
     };
-    const openTwo: CommandDiscoveryResult = {
+    const openTwo: AnyCommandDiscoveryResult = {
       complete: false,
       step: "gem",
       options: [makeOption({ id: "white", nextStep: "gem" })],
@@ -155,11 +155,11 @@ describe("DiscoveryState", () => {
   });
 
   test("cancel() returns to idle and ignores in-flight discover replies", async () => {
-    let resolve: ((value: CommandDiscoveryResult) => void) | null = null;
+    let resolve: ((value: AnyCommandDiscoveryResult) => void) | null = null;
     const state = new DiscoveryState(
       fakeClient({
         discover: () =>
-          new Promise<CommandDiscoveryResult>((res) => {
+          new Promise<AnyCommandDiscoveryResult>((res) => {
             resolve = res;
           }),
       }) as never,

@@ -15,7 +15,19 @@ export interface GeneratedDiscoveryStepDescriptor {
 
 export interface GeneratedDiscoveryDescriptor {
   startStep: string;
-  steps: GeneratedDiscoveryStepDescriptor[];
+  steps: readonly GeneratedDiscoveryStepDescriptor[];
+}
+
+interface SourceDiscoveryStepDescriptor {
+  stepId: string;
+  inputSchema: unknown;
+  outputSchema: unknown;
+  resolve?: unknown;
+}
+
+interface SourceDiscoveryDescriptor {
+  startStep: string;
+  steps: readonly SourceDiscoveryStepDescriptor[];
 }
 
 export interface GeneratedCommandDescriptor {
@@ -109,7 +121,7 @@ export function describeGameForGeneration<
 
 function normalizeDiscoveryDescriptor(
   commandId: string,
-  discovery: GeneratedDiscoveryDescriptor,
+  discovery: SourceDiscoveryDescriptor,
 ): GeneratedDiscoveryDescriptor {
   if (!Array.isArray(discovery.steps) || discovery.steps.length === 0) {
     throw new Error(`command_discovery_steps_required:${commandId}`);
@@ -136,19 +148,22 @@ function normalizeDiscoveryDescriptor(
     }
     knownStepIds.add(step.stepId);
 
-    if (!isObjectRecord(step.inputSchema)) {
+    const inputSchema = step.inputSchema;
+    const outputSchema = step.outputSchema;
+
+    if (!isCommandSchema(inputSchema)) {
       throw new Error(
         `command_discovery_step_missing_input_schema:${commandId}:${index}`,
       );
     }
 
-    if (!isObjectRecord(step.outputSchema)) {
+    if (!isCommandSchema(outputSchema)) {
       throw new Error(
         `command_discovery_step_missing_output_schema:${commandId}:${index}`,
       );
     }
 
-    if (typeof (step as { resolve?: unknown }).resolve !== "function") {
+    if (typeof step.resolve !== "function") {
       throw new Error(
         `command_discovery_step_missing_resolve:${commandId}:${index}`,
       );
@@ -156,8 +171,8 @@ function normalizeDiscoveryDescriptor(
 
     normalizedSteps.push({
       stepId: step.stepId,
-      inputSchema: step.inputSchema,
-      outputSchema: step.outputSchema,
+      inputSchema,
+      outputSchema,
     });
   }
 
@@ -177,6 +192,12 @@ function normalizeDiscoveryDescriptor(
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isCommandSchema(
+  value: unknown,
+): value is CommandSchema<Record<string, unknown>> {
+  return isObjectRecord(value);
 }
 
 function createVisibleStateSchema(

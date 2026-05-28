@@ -37,6 +37,7 @@ export type {
 } from "./schema";
 export type {
   CommandAvailabilityContext,
+  AnyCommandDiscoveryResult,
   CommandDefinition,
   CommandSchema,
   CommandDiscoveryResult,

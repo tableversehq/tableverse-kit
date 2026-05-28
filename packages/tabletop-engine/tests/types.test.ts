@@ -66,6 +66,7 @@ class CounterTypeState extends GameState {
 }
 
 class ScoreIncrementTypeState extends GameState {
+  @field(t.number())
   score = 0;
 
   increment() {}
@@ -434,7 +435,8 @@ test("discovery types compose for step-authored options and completion", () => {
       label: string;
       targetId: number;
     },
-    PlayCardInput
+    PlayCardInput,
+    "complete"
   > = {
     complete: false,
     step: "select_target",
@@ -462,7 +464,8 @@ test("discovery types compose for step-authored options and completion", () => {
       label: string;
       targetId: number;
     },
-    PlayCardInput
+    PlayCardInput,
+    "complete"
   > = {
     complete: true,
     input: {
@@ -868,6 +871,121 @@ test("command factory contextually types command lifecycle methods", () => {
     .build();
 
   expect(stage.id).toBe("turn");
+});
+
+test("game executor discoverCommand preserves full discovery result types", () => {
+  const defineCommand = createCommandFactory<ScoreIncrementTypeState>();
+  const defineStage = createStageFactory<ScoreIncrementTypeState>();
+
+  const command = defineCommand({
+    commandId: "gain_score",
+    commandSchema: t.object({
+      amount: t.number(),
+    }),
+  })
+    .discoverable((step) => [
+      step("select_amount")
+        .initial()
+        .input(t.object({}))
+        .output(
+          t.object({
+            label: t.string(),
+            amount: t.number(),
+          }),
+        )
+        .resolve(() => [
+          {
+            id: "one",
+            output: {
+              label: "One",
+              amount: 1,
+            },
+            nextInput: {
+              amount: 1,
+            },
+            nextStep: "confirm_selection",
+          },
+        ])
+        .build(),
+      step("confirm_selection")
+        .input(
+          t.object({
+            amount: t.number(),
+          }),
+        )
+        .output(
+          t.object({
+            confirmed: t.boolean(),
+          }),
+        )
+        .resolve(({ input }) => ({
+          complete: true as const,
+          input: {
+            amount: input.amount,
+          },
+        }))
+        .build(),
+    ])
+    .validate(() => ({ ok: true as const }))
+    .execute(() => {})
+    .build();
+  const commandStepProbe: "select_amount" | "confirm_selection" =
+    command.discovery!.steps[0]!.stepId;
+  void commandStepProbe;
+
+  const terminalStage = defineStage("terminal").automatic().build();
+  const initialStage = defineStage("turn")
+    .singleActivePlayer()
+    .activePlayer(() => "p1")
+    .commands([command])
+    .nextStages(() => ({
+      terminalStage,
+    }))
+    .transition(({ nextStages }) => nextStages.terminalStage)
+    .build();
+
+  const game = new GameDefinitionBuilder("typed-discovery-result")
+    .rootState(ScoreIncrementTypeState)
+    .initialStage(initialStage)
+    .build();
+  const executor = createGameExecutor(game);
+  const initialState = executor.createInitialState("seed");
+  const discoveryResult = executor.discoverCommand(initialState, {
+    type: "gain_score",
+    actorId: "p1",
+    step: "select_amount",
+    input: {},
+  });
+
+  if (discoveryResult?.complete === false) {
+    const step: "select_amount" | "confirm_selection" = discoveryResult.step;
+    void step;
+    const firstOptionForNextStep = discoveryResult.options[0];
+
+    if (firstOptionForNextStep?.nextStep === "confirm_selection") {
+      const amount: number = firstOptionForNextStep.nextInput.amount;
+      void amount;
+    }
+
+    if (discoveryResult.step === "select_amount") {
+      const firstOption = discoveryResult.options[0];
+      const label: string | undefined = firstOption?.output.label;
+      const amount: number | undefined = firstOption?.output.amount;
+
+      // @ts-expect-error open output should not expose undeclared fields
+      void firstOption?.output.missing;
+      void label;
+      void amount;
+    }
+  }
+
+  if (discoveryResult?.complete === true) {
+    const amount: number = discoveryResult.input.amount;
+
+    // @ts-expect-error completion input should be the final command input
+    void discoveryResult.input.selectedAmount;
+    void amount;
+  }
 });
 
 test("discovery resolver typing keeps next-step input and completion input correlated", () => {

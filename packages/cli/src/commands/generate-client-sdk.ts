@@ -26,7 +26,7 @@ interface DiscoveryStepDescriptor {
 
 interface DiscoveryDescriptor {
   startStep: string;
-  steps: DiscoveryStepDescriptor[];
+  steps: readonly DiscoveryStepDescriptor[];
 }
 
 export async function runGenerateClientSdkCommand(

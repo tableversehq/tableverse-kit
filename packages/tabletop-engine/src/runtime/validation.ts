@@ -18,8 +18,9 @@ export function assertSchemaValue(schema: TSchema, value: unknown): void {
 export function validateCanonicalGameState<
   FacadeGameState extends BaseGameState,
   SetupInput extends object | undefined,
+  CommandDefinitions,
 >(
-  game: GameDefinition<FacadeGameState, SetupInput>,
+  game: GameDefinition<FacadeGameState, SetupInput, CommandDefinitions>,
   gameState: CanonicalGameState<FacadeGameState>,
 ): void {
   assertSchemaValue(game.canonicalGameStateSchema, gameState);
@@ -28,8 +29,9 @@ export function validateCanonicalGameState<
 export function validateRuntimeState<
   FacadeGameState extends BaseGameState,
   SetupInput extends object | undefined,
+  CommandDefinitions,
 >(
-  game: GameDefinition<FacadeGameState, SetupInput>,
+  game: GameDefinition<FacadeGameState, SetupInput, CommandDefinitions>,
   runtimeState: RuntimeState,
 ): void {
   assertSchemaValue(game.runtimeStateSchema, runtimeState);
@@ -38,8 +40,9 @@ export function validateRuntimeState<
 export function validateCanonicalState<
   FacadeGameState extends BaseGameState,
   SetupInput extends object | undefined,
+  CommandDefinitions,
 >(
-  game: GameDefinition<FacadeGameState, SetupInput>,
+  game: GameDefinition<FacadeGameState, SetupInput, CommandDefinitions>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
 ): void {
   validateCanonicalGameState(game, state.game);

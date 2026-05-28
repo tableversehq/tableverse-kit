@@ -1,6 +1,6 @@
 import type {
+  AnyCommandDiscoveryResult,
   Command,
-  CommandDiscoveryResult,
   Discovery,
 } from "@tabletop-kit/engine";
 
@@ -20,7 +20,7 @@ export type DiscoveryPayload = Omit<Discovery, "actorId">;
  * Discovery result union — open (more options to pick) or complete
  * (ready to confirm). Re-exported from the engine for hooks consumers.
  */
-export type DiscoveryResult = CommandDiscoveryResult;
+export type DiscoveryResult = AnyCommandDiscoveryResult;
 
 export interface TTKitGame {
   view: unknown;
