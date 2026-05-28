@@ -678,8 +678,8 @@ type CommandDiscoveryOpenResult<
   };
 }[TSteps[number]["stepId"]];
 
-export type CommandDiscoveryResultFromDefinition<TDefinition> =
-  TDefinition extends {
+export type CommandDiscoveryResultFromDefinitions<TDefinitions> =
+  TDefinitions extends {
     discovery: DiscoveryDefinition<infer TSteps>;
     commandSchema: CommandSchema<infer TCommandInput>;
   }
@@ -690,9 +690,6 @@ export type CommandDiscoveryResultFromDefinition<TDefinition> =
             input: TCommandInput;
           }
     : never;
-
-export type CommandDiscoveryResultFromDefinitions<TDefinitions> =
-  CommandDiscoveryResultFromDefinition<TDefinitions>;
 
 export interface InternalExecuteContext<
   FacadeGameState extends BaseGameState,
