@@ -5,7 +5,7 @@ import type {
   CommandSchema,
   DefinedCommand,
   DiscoverableCommandAccumulator,
-  DiscoverableCommandConfig,
+  DiscoverableCommandDefinition,
   DiscoveryDefinition,
   DiscoveryInitialInput,
   DiscoveryStepBuilder,
@@ -17,7 +17,7 @@ import type {
   DiscoveryStepReadyBuilder,
   DiscoveryStepResolvedBuilder,
   NonDiscoverableCommandAccumulator,
-  NonDiscoverableCommandConfig,
+  NonDiscoverableCommandDefinition,
   AnyDiscoveryStepDefinition,
 } from "./types/command";
 import { commandDefinitionBrand as brand } from "./types/command";
@@ -202,8 +202,8 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
       readonly AnyDiscoveryStepDefinition[],
   >(
     definition:
-      | NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>
-      | DiscoverableCommandConfig<
+      | NonDiscoverableCommandDefinition<FacadeGameState, TCommandInput>
+      | DiscoverableCommandDefinition<
           FacadeGameState,
           TCommandInput,
           TDiscoveryInput,
@@ -426,8 +426,8 @@ export function createCommandFactory<FacadeGameState extends BaseGameState>() {
           validate: accumulator.validate,
           execute: accumulator.execute,
         } as
-          | NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>
-          | DiscoverableCommandConfig<
+          | NonDiscoverableCommandDefinition<FacadeGameState, TCommandInput>
+          | DiscoverableCommandDefinition<
               FacadeGameState,
               TCommandInput,
               TDiscoveryInput,

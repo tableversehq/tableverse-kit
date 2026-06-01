@@ -21,11 +21,11 @@ export function assertSchemaValue(schema: TSchema, value: unknown): void {
 
 export function validateCanonicalGameState<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   game:
-    | GameDefinitionWithoutSetupInput<FacadeGameState, CommandDefinitions>
-    | GameDefinitionWithSetupInput<FacadeGameState, object, CommandDefinitions>,
+    | GameDefinitionWithoutSetupInput<FacadeGameState, TCommandDefinition>
+    | GameDefinitionWithSetupInput<FacadeGameState, object, TCommandDefinition>,
   gameState: CanonicalGameState<FacadeGameState>,
 ): void {
   assertSchemaValue(game.canonicalGameStateSchema, gameState);
@@ -33,11 +33,11 @@ export function validateCanonicalGameState<
 
 export function validateRuntimeState<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   game:
-    | GameDefinitionWithoutSetupInput<FacadeGameState, CommandDefinitions>
-    | GameDefinitionWithSetupInput<FacadeGameState, object, CommandDefinitions>,
+    | GameDefinitionWithoutSetupInput<FacadeGameState, TCommandDefinition>
+    | GameDefinitionWithSetupInput<FacadeGameState, object, TCommandDefinition>,
   runtimeState: RuntimeState,
 ): void {
   assertSchemaValue(game.runtimeStateSchema, runtimeState);
@@ -45,11 +45,11 @@ export function validateRuntimeState<
 
 export function validateCanonicalState<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   game:
-    | GameDefinitionWithoutSetupInput<FacadeGameState, CommandDefinitions>
-    | GameDefinitionWithSetupInput<FacadeGameState, object, CommandDefinitions>,
+    | GameDefinitionWithoutSetupInput<FacadeGameState, TCommandDefinition>
+    | GameDefinitionWithSetupInput<FacadeGameState, object, TCommandDefinition>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
 ): void {
   validateCanonicalGameState(game, state.game);

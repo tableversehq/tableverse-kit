@@ -48,10 +48,10 @@ import {
 
 type AnyGameDefinition<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 > =
-  | GameDefinitionWithoutSetupInput<FacadeGameState, CommandDefinitions>
-  | GameDefinitionWithSetupInput<FacadeGameState, object, CommandDefinitions>;
+  | GameDefinitionWithoutSetupInput<FacadeGameState, TCommandDefinition>
+  | GameDefinitionWithSetupInput<FacadeGameState, object, TCommandDefinition>;
 
 export interface GameExecutor<
   GameState extends object,
@@ -81,9 +81,9 @@ export interface GameExecutor<
 
 function createCommandGameView<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
   options?: {
     readonly?: boolean;
@@ -103,9 +103,9 @@ type CreateInitialStateFn<
 
 function createInitialRuntimeState<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   rngSeed: string | number,
 ): RuntimeState {
   const runtime: RuntimeState = {
@@ -130,9 +130,9 @@ function createInitialRuntimeState<
 
 function initializeGameState<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   input: object | undefined,
   rngSeed: string | number,
 ): CanonicalState<CanonicalGameState<FacadeGameState>> {
@@ -204,9 +204,9 @@ function initializeGameState<
 
 function getCurrentStageDefinition<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
 ): StageDefinition<FacadeGameState> | undefined {
   return game.stages[state.runtime.progression.currentStage.id] as
@@ -222,10 +222,10 @@ function resolveStageNextStages<GameState extends BaseGameState>(
 
 function initializeStageMachine<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   rng: ReturnType<typeof createRNGService>,
 ): void {
   let currentStage = game.initialStage as
@@ -286,10 +286,10 @@ function initializeStageMachine<
 
 function advanceStageMachine<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   nextStage: StageDefinition<FacadeGameState>,
   rng: ReturnType<typeof createRNGService>,
   emitEvent: (event: GameEvent) => void,
@@ -358,34 +358,34 @@ function advanceStageMachine<
 export function createGameExecutor<
   FacadeGameState extends BaseGameState,
   SetupInput extends object,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   game: GameDefinitionWithSetupInput<
     FacadeGameState,
     SetupInput,
-    CommandDefinitions
+    TCommandDefinition
   >,
 ): GameExecutor<
   CanonicalGameState<FacadeGameState>,
   SetupInput,
-  CommandDefinitions
+  TCommandDefinition
 >;
 
 export function createGameExecutor<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: GameDefinitionWithoutSetupInput<FacadeGameState, CommandDefinitions>,
+  game: GameDefinitionWithoutSetupInput<FacadeGameState, TCommandDefinition>,
 ): GameExecutor<
   CanonicalGameState<FacadeGameState>,
   undefined,
-  CommandDefinitions
+  TCommandDefinition
 >;
 
 export function createGameExecutor<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
->(game: AnyGameDefinition<FacadeGameState, CommandDefinitions>) {
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
+>(game: AnyGameDefinition<FacadeGameState, TCommandDefinition>) {
   if (game.setupInputSchema) {
     return createGameExecutorWithSetup(game);
   }
@@ -397,17 +397,17 @@ export function createGameExecutor<
 // `createGameExecutor` preserve the caller's concrete SetupInput type.
 function createGameExecutorWithSetup<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   game: GameDefinitionWithSetupInput<
     FacadeGameState,
     object,
-    CommandDefinitions
+    TCommandDefinition
   >,
 ): GameExecutor<
   CanonicalGameState<FacadeGameState>,
   object,
-  CommandDefinitions
+  TCommandDefinition
 > {
   return {
     createInitialState(input, rngSeed) {
@@ -419,13 +419,13 @@ function createGameExecutorWithSetup<
 
 function createGameExecutorWithoutSetup<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: GameDefinitionWithoutSetupInput<FacadeGameState, CommandDefinitions>,
+  game: GameDefinitionWithoutSetupInput<FacadeGameState, TCommandDefinition>,
 ): GameExecutor<
   CanonicalGameState<FacadeGameState>,
   undefined,
-  CommandDefinitions
+  TCommandDefinition
 > {
   return {
     createInitialState(rngSeed) {
@@ -437,11 +437,11 @@ function createGameExecutorWithoutSetup<
 
 function createExecutorMethods<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
 ): Omit<
-  GameExecutor<CanonicalGameState<FacadeGameState>, never, CommandDefinitions>,
+  GameExecutor<CanonicalGameState<FacadeGameState>, never, TCommandDefinition>,
   "createInitialState"
 > {
   return {
@@ -605,7 +605,7 @@ function createExecutorMethods<
         return {
           complete: true,
           input: completion.input,
-        } as CommandDiscoveryResultFor<CommandDefinitions>;
+        } as CommandDiscoveryResultFor<TCommandDefinition>;
       }
 
       const discoveryOptions: Array<DiscoveryStepOption> = [];
@@ -646,7 +646,7 @@ function createExecutorMethods<
         complete: false,
         step: discovery.step,
         options: discoveryOptions,
-      } as CommandDiscoveryResultFor<CommandDefinitions>;
+      } as CommandDiscoveryResultFor<TCommandDefinition>;
     },
 
     executeCommand(state, command) {
@@ -947,10 +947,10 @@ function isActorAllowedInCurrentStage(
 
 function executeCommandAgainstState<
   FacadeGameState extends BaseGameState,
-  CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
+  TCommandDefinition extends CommandDefinitionShape<FacadeGameState>,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, TCommandDefinition>,
   definition: CommandDefinition<FacadeGameState>,
   command: Command,
   rng: ReturnType<typeof createRNGService>,

@@ -310,7 +310,7 @@ export interface DiscoveryDefinition<
   steps: TSteps;
 }
 
-export type DiscoverableCommandConfig<
+export type DiscoverableCommandDefinition<
   FacadeGameState extends BaseGameState,
   TCommandInput extends CommandData = CommandData,
   TDiscoveryInput extends DiscoveryData = DiscoveryData,
@@ -323,7 +323,7 @@ export type DiscoverableCommandConfig<
   _discoveryInput?: TDiscoveryInput;
 } & CommandLifecycleMethods<FacadeGameState, TCommandInput>;
 
-export type NonDiscoverableCommandConfig<
+export type NonDiscoverableCommandDefinition<
   FacadeGameState extends BaseGameState,
   TCommandInput extends CommandData = CommandData,
 > = {
@@ -353,13 +353,13 @@ export type CommandDefinitionShape<
   TSteps extends readonly AnyDiscoveryStepDefinition[] =
     readonly AnyDiscoveryStepDefinition[],
 > =
-  | DiscoverableCommandConfig<
+  | DiscoverableCommandDefinition<
       FacadeGameState,
       TCommandInput,
       TDiscoveryInput,
       TSteps
     >
-  | NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>;
+  | NonDiscoverableCommandDefinition<FacadeGameState, TCommandInput>;
 
 export type CommandDefinition<FacadeGameState extends BaseGameState> = {
   commandId: string;
@@ -376,12 +376,12 @@ export type NonDiscoverableCommandAccumulator<
   FacadeGameState extends BaseGameState = BaseGameState,
   TCommandInput extends CommandData = CommandData,
 > = Pick<
-  NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>,
+  NonDiscoverableCommandDefinition<FacadeGameState, TCommandInput>,
   "commandId" | "commandSchema"
 > &
   Partial<
     Pick<
-      NonDiscoverableCommandConfig<FacadeGameState, TCommandInput>,
+      NonDiscoverableCommandDefinition<FacadeGameState, TCommandInput>,
       "isAvailable" | "validate" | "execute"
     >
   >;
@@ -393,7 +393,7 @@ export type DiscoverableCommandAccumulator<
   TSteps extends readonly AnyDiscoveryStepDefinition[] =
     readonly AnyDiscoveryStepDefinition[],
 > = Pick<
-  DiscoverableCommandConfig<
+  DiscoverableCommandDefinition<
     FacadeGameState,
     TCommandInput,
     TDiscoveryInput,
@@ -403,7 +403,7 @@ export type DiscoverableCommandAccumulator<
 > &
   Partial<
     Pick<
-      DiscoverableCommandConfig<
+      DiscoverableCommandDefinition<
         FacadeGameState,
         TCommandInput,
         TDiscoveryInput,
