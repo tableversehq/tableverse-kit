@@ -46,7 +46,7 @@ import {
   validateCanonicalState,
 } from "./validation";
 
-type AnyGameExecutorDefinition<
+type AnyGameDefinition<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 > =
@@ -83,7 +83,7 @@ function createCommandGameView<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
   options?: {
     readonly?: boolean;
@@ -105,7 +105,7 @@ function createInitialRuntimeState<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   rngSeed: string | number,
 ): RuntimeState {
   const runtime: RuntimeState = {
@@ -132,7 +132,7 @@ function initializeGameState<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   input: object | undefined,
   rngSeed: string | number,
 ): CanonicalState<CanonicalGameState<FacadeGameState>> {
@@ -206,7 +206,7 @@ function getCurrentStageDefinition<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
 ): StageDefinition<FacadeGameState> | undefined {
   return game.stages[state.runtime.progression.currentStage.id] as
@@ -225,7 +225,7 @@ function initializeStageMachine<
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   rng: ReturnType<typeof createRNGService>,
 ): void {
   let currentStage = game.initialStage as
@@ -289,7 +289,7 @@ function advanceStageMachine<
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   nextStage: StageDefinition<FacadeGameState>,
   rng: ReturnType<typeof createRNGService>,
   emitEvent: (event: GameEvent) => void,
@@ -385,7 +385,7 @@ export function createGameExecutor<
 export function createGameExecutor<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
->(game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>) {
+>(game: AnyGameDefinition<FacadeGameState, CommandDefinitions>) {
   if (game.setupInputSchema) {
     return createGameExecutorWithSetup(game);
   }
@@ -439,7 +439,7 @@ function createExecutorMethods<
   FacadeGameState extends BaseGameState,
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
 ): Omit<
   GameExecutor<CanonicalGameState<FacadeGameState>, never, CommandDefinitions>,
   "createInitialState"
@@ -950,7 +950,7 @@ function executeCommandAgainstState<
   CommandDefinitions extends CommandDefinitionShape<FacadeGameState>,
 >(
   state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: AnyGameExecutorDefinition<FacadeGameState, CommandDefinitions>,
+  game: AnyGameDefinition<FacadeGameState, CommandDefinitions>,
   definition: CommandDefinition<FacadeGameState>,
   command: Command,
   rng: ReturnType<typeof createRNGService>,
