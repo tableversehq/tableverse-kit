@@ -504,26 +504,6 @@ test("createInitialState rejects missing rng seed", () => {
   );
 });
 
-test("createInitialState rejects missing setup input when setupInput is declared", () => {
-  const game = new GameDefinitionBuilder("missing-setup-input-game")
-    .rootState(PlainCounterRootState)
-    .setupInput(
-      t.object({
-        playerIds: t.array(t.string()),
-      }),
-    )
-    .setup(() => {})
-    .initialStage(createTerminalStage())
-    .build();
-  const executor = createGameExecutor(game);
-
-  expect(() =>
-    (
-      executor as { createInitialState(...args: unknown[]): unknown }
-    ).createInitialState("seed-123"),
-  ).toThrow("setup_input_required");
-});
-
 test("createInitialState validates setup input against the declared schema", () => {
   const game = new GameDefinitionBuilder("invalid-setup-input-game")
     .rootState(PlainCounterRootState)

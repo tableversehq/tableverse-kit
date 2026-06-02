@@ -648,8 +648,11 @@ test("game definition builder preserves facade generic before rootState", () => 
 
 test("game definition defaults canonical state from the facade shape", () => {
   function assertGameDefinitionDefaults() {
-    const definition =
-      undefined as unknown as GameDefinition<TypedCounterRootState>;
+    const definition = undefined as unknown as GameDefinition<
+      TypedCounterRootState,
+      undefined,
+      never
+    >;
     const counterValue: number =
       definition.defaultCanonicalGameState.counter.value;
 
