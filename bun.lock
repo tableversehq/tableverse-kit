@@ -119,7 +119,7 @@
         "typescript": "^5",
       },
     },
-    "packages/tabletop-engine": {
+    "packages/engine": {
       "name": "@tabletop-kit/engine",
       "version": "0.0.0",
       "dependencies": {
@@ -344,7 +344,7 @@
 
     "@tabletop-kit/cli": ["@tabletop-kit/cli@workspace:packages/cli"],
 
-    "@tabletop-kit/engine": ["@tabletop-kit/engine@workspace:packages/tabletop-engine"],
+    "@tabletop-kit/engine": ["@tabletop-kit/engine@workspace:packages/engine"],
 
     "@tabletop-kit/ui": ["@tabletop-kit/ui@workspace:packages/ui"],
 

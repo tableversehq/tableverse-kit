@@ -65,7 +65,7 @@ needed for local artifacts.
 
 Important workspace areas:
 
-- `packages/tabletop-engine`
+- `packages/engine`
   source for the published `@tabletop-kit/engine` package
 - `packages/cli`
   source for the `@tabletop-kit/cli` package and `ttk` command
@@ -155,7 +155,7 @@ Common verification commands:
 ```bash
 bun run lint
 bunx tsc -b
-bun test --cwd packages/tabletop-engine
+bun test --cwd packages/engine
 bun test --cwd packages/cli
 bun test --cwd examples/splendor/engine
 bun test --cwd examples/splendor/terminal

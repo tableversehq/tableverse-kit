@@ -9,7 +9,7 @@ artifacts from your game definition.
 
 ## Packages
 
-- [`@tabletop-kit/engine`](./packages/tabletop-engine)
+- [`@tabletop-kit/engine`](./packages/engine)
   transport-agnostic rules/runtime engine
 - [`@tabletop-kit/cli`](./packages/cli)
   local tooling package that installs the `ttk` command
@@ -99,7 +99,7 @@ export default defineConfig({
 bun install
 bun run lint
 bunx tsc -b
-bun test --cwd packages/tabletop-engine
+bun test --cwd packages/engine
 bun test --cwd packages/cli
 ```
 

@@ -5,7 +5,7 @@
       "path": "./packages/cli"
     },
     {
-      "path": "./packages/tabletop-engine"
+      "path": "./packages/engine"
     },
     {
       "path": "./examples/splendor/engine"

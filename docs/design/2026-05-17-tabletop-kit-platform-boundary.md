@@ -2,7 +2,7 @@
 
 ## Context
 
-The project is growing beyond `tabletop-engine`.
+The project is growing beyond `@tabletop-kit/engine`.
 
 The open-source surface is expected to include:
 
@@ -46,7 +46,7 @@ Public repository:
 ```txt
 tabletop-kit/
   packages/
-    tabletop-engine/
+    engine/
     @tabletop-kit/ui/
     @tabletop-kit/cli/
 ```
@@ -100,7 +100,7 @@ protocols or deployment internals.
 
 ## AsyncAPI And Client SDK Generation
 
-AsyncAPI should no longer be treated as a core `tabletop-engine` feature or as
+AsyncAPI should no longer be treated as a core `@tabletop-kit/engine` feature or as
 the source of truth for client SDK generation.
 
 The earlier direction treated AsyncAPI as a public hosted protocol contract.
@@ -137,7 +137,7 @@ the primary architecture.
 
 ## Engine Boundary
 
-`tabletop-engine` should remain transport-agnostic.
+`@tabletop-kit/engine` should remain transport-agnostic.
 
 It should define:
 
@@ -237,7 +237,7 @@ is:
 
 This decision means the codebase should keep the platform boundary explicit:
 
-- `tabletop-engine` should not export protocol descriptors or AsyncAPI
+- `@tabletop-kit/engine` should not export protocol descriptors or AsyncAPI
   generation.
 - The public CLI should keep generic type/schema generation.
 - Hosted protocol artifacts and platform-targeted SDK generation should live

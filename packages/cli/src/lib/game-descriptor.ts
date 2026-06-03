@@ -2,8 +2,7 @@ import { Type, type TSchema } from "@sinclair/typebox";
 import type {
   CommandSchema,
   FieldType,
-  GameDefinition,
-  GameState,
+  AnyGameDefinition,
   SerializableFieldType,
 } from "@tabletop-kit/engine";
 
@@ -88,10 +87,9 @@ interface FieldVisibilityConfig {
 
 type VisibilityMode = "hidden" | "visible_to_self";
 
-export function describeGameForGeneration<
-  FacadeGameState extends GameState,
-  SetupInput extends object | undefined = undefined,
->(game: GameDefinition<FacadeGameState, SetupInput>): GeneratedGameDescriptor {
+export function describeGameForGeneration(
+  game: AnyGameDefinition,
+): GeneratedGameDescriptor {
   const commands: Record<string, GeneratedCommandDescriptor> = {};
 
   for (const [commandId, command] of Object.entries(game.commands)) {

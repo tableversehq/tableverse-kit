@@ -100,6 +100,14 @@ export type GameDefinition<
       TCommandDefinition
     >;
 
+export type AnyGameDefinition =
+  | GameDefinitionWithoutSetupInput<GameState, CommandDefinition<GameState>>
+  | GameDefinitionWithSetupInput<
+      GameState,
+      object,
+      CommandDefinition<GameState>
+    >;
+
 export class GameDefinitionBuilder<
   FacadeGameState extends GameState = GameState,
   TCommandDefinition extends CommandDefinition<FacadeGameState> = never,

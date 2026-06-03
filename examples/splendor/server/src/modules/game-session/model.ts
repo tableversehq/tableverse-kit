@@ -82,7 +82,7 @@ export interface GameSessionStore<
 }
 
 /**
- * Adapter around the tabletop-engine executor.
+ * Adapter around the @tabletop-kit/engine executor.
  * Provides game creation, command execution, and per-player view generation.
  */
 export interface HostedGameExecutor<TState extends CanonicalState<object>> {

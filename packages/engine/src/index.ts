@@ -23,6 +23,7 @@ export { createSnapshot, restoreSnapshot } from "./snapshot/snapshot";
 export { runScenario } from "./testing/harness";
 
 export type {
+  AnyGameDefinition,
   GameDefinition,
   GameDefinitionWithSetupInput,
   GameDefinitionWithoutSetupInput,

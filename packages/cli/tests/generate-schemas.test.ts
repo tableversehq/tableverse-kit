@@ -11,14 +11,12 @@ async function writeCliConfig(cwd: string): Promise<void> {
   const configFile = join(cwd, "tabletop.config.ts");
   const configSource = [
     `import { defineConfig } from ${JSON.stringify(
-      pathToFileURL(
-        join(repoRoot, "packages", "tabletop-engine", "src", "config.ts"),
-      ).href,
+      pathToFileURL(join(repoRoot, "packages", "engine", "src", "config.ts"))
+        .href,
     )};`,
     `import { t } from ${JSON.stringify(
-      pathToFileURL(
-        join(repoRoot, "packages", "tabletop-engine", "src", "index.ts"),
-      ).href,
+      pathToFileURL(join(repoRoot, "packages", "engine", "src", "index.ts"))
+        .href,
     )};`,
     "",
     "export default defineConfig({",
