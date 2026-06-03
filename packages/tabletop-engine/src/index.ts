@@ -26,7 +26,8 @@ export type {
   GameDefinition,
   GameDefinitionWithSetupInput,
   GameDefinitionWithoutSetupInput,
-  GameSetupContext,
+  GameSetupContextWithInput,
+  GameSetupContextWithoutInput,
 } from "./game-definition";
 export type { GameExecutor } from "./runtime/game-executor";
 export type {

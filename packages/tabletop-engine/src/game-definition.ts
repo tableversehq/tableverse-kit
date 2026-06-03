@@ -36,9 +36,17 @@ type SetupInputFromSchema<
     ? ObjectSchemaStatic<TProperties>
     : undefined;
 
-export interface GameSetupContext<
+export interface GameSetupContextWithoutInput<
   FacadeGameState extends GameState,
-  SetupInput extends object | undefined = undefined,
+> {
+  game: FacadeGameState;
+  runtime: RuntimeState;
+  rng: RNGApi;
+}
+
+export interface GameSetupContextWithInput<
+  FacadeGameState extends GameState,
+  SetupInput extends object,
 > {
   game: FacadeGameState;
   runtime: RuntimeState;
@@ -66,7 +74,7 @@ export interface GameDefinitionWithoutSetupInput<
   TCommandDefinition extends CommandDefinition<FacadeGameState>,
 > extends BaseGameDefinition<FacadeGameState, TCommandDefinition> {
   setupInputSchema?: undefined;
-  setup?: (context: GameSetupContext<FacadeGameState, undefined>) => void;
+  setup?: (context: GameSetupContextWithoutInput<FacadeGameState>) => void;
 }
 
 export interface GameDefinitionWithSetupInput<
@@ -75,7 +83,9 @@ export interface GameDefinitionWithSetupInput<
   TCommandDefinition extends CommandDefinition<FacadeGameState>,
 > extends BaseGameDefinition<FacadeGameState, TCommandDefinition> {
   setupInputSchema: ObjectFieldType<Record<string, FieldType>>;
-  setup?: (context: GameSetupContext<FacadeGameState, SetupInput>) => void;
+  setup?: (
+    context: GameSetupContextWithInput<FacadeGameState, SetupInput>,
+  ) => void;
 }
 
 export type GameDefinition<
@@ -144,7 +154,7 @@ export class GameDefinitionBuilder<
   }
 
   setup(
-    setup: (context: GameSetupContext<FacadeGameState, undefined>) => void,
+    setup: (context: GameSetupContextWithoutInput<FacadeGameState>) => void,
   ): GameDefinitionBuilderWithoutSetupInput<
     FacadeGameState,
     TCommandDefinition
@@ -182,7 +192,7 @@ export class GameDefinitionBuilderWithoutSetupInput<
   private rootStateClass?: GameStateClass<FacadeGameState>;
   private initialStageDefinition?: StageDefinition<FacadeGameState>;
   private setupCallback?: (
-    context: GameSetupContext<FacadeGameState, undefined>,
+    context: GameSetupContextWithoutInput<FacadeGameState>,
   ) => void;
 
   constructor(
@@ -190,7 +200,7 @@ export class GameDefinitionBuilderWithoutSetupInput<
     rootState: GameStateClass<FacadeGameState> | undefined,
     initialStage: StageDefinition<FacadeGameState> | undefined,
     setup:
-      | ((context: GameSetupContext<FacadeGameState, undefined>) => void)
+      | ((context: GameSetupContextWithoutInput<FacadeGameState>) => void)
       | undefined,
   ) {
     this.name = name;
@@ -224,7 +234,7 @@ export class GameDefinitionBuilderWithoutSetupInput<
   }
 
   setup(
-    setup: (context: GameSetupContext<FacadeGameState, undefined>) => void,
+    setup: (context: GameSetupContextWithoutInput<FacadeGameState>) => void,
   ): this {
     this.setupCallback = setup;
     return this;
@@ -257,7 +267,7 @@ export class GameDefinitionBuilderWithSetupInput<
   private rootStateClass?: GameStateClass<FacadeGameState>;
   private initialStageDefinition?: StageDefinition<FacadeGameState>;
   private setupCallback?: (
-    context: GameSetupContext<FacadeGameState, SetupInput>,
+    context: GameSetupContextWithInput<FacadeGameState, SetupInput>,
   ) => void;
 
   constructor(
@@ -266,7 +276,9 @@ export class GameDefinitionBuilderWithSetupInput<
     rootState: GameStateClass<FacadeGameState> | undefined,
     initialStage: StageDefinition<FacadeGameState> | undefined,
     setup:
-      | ((context: GameSetupContext<FacadeGameState, SetupInput>) => void)
+      | ((
+          context: GameSetupContextWithInput<FacadeGameState, SetupInput>,
+        ) => void)
       | undefined,
   ) {
     this.name = name;
@@ -308,7 +320,9 @@ export class GameDefinitionBuilderWithSetupInput<
   }
 
   setup(
-    setup: (context: GameSetupContext<FacadeGameState, SetupInput>) => void,
+    setup: (
+      context: GameSetupContextWithInput<FacadeGameState, SetupInput>,
+    ) => void,
   ): this {
     this.setupCallback = setup;
     return this;
