@@ -626,6 +626,20 @@ test("game definition builder rejects non-object setup input schemas", () => {
   expect(assertInvalidSetupInputSchema).toBeFunction();
 });
 
+test("setup transition blocks setupInput at the type level", () => {
+  const builder = new GameDefinitionBuilder("setup-then-setup-input").setup(
+    () => {},
+  );
+
+  function assertSetupInputUnavailable() {
+    // @ts-expect-error setupInput is unavailable after .setup()
+    builder.setupInput(t.object({}));
+  }
+
+  expect(builder).toBeObject();
+  expect(assertSetupInputUnavailable).toBeFunction();
+});
+
 test("game definition builder preserves facade generic before rootState", () => {
   const builder = new GameDefinitionBuilder<TypedCounterRootState>(
     "typed-facade-builder",

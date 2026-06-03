@@ -1,4 +1,8 @@
-export { GameDefinitionBuilder } from "./game-definition";
+export {
+  GameDefinitionBuilder,
+  GameDefinitionBuilderWithoutSetupInput,
+  GameDefinitionBuilderWithSetupInput,
+} from "./game-definition";
 export { createCommandFactory } from "./command-factory";
 export { createStageFactory } from "./stage-factory";
 export { createGameExecutor } from "./runtime/game-executor";
@@ -22,7 +26,8 @@ export type {
   GameDefinition,
   GameDefinitionWithSetupInput,
   GameDefinitionWithoutSetupInput,
-  GameSetupContext,
+  GameSetupContextWithInput,
+  GameSetupContextWithoutInput,
 } from "./game-definition";
 export type { GameExecutor } from "./runtime/game-executor";
 export type {

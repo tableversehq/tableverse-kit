@@ -176,7 +176,6 @@ function initializeGameState<
       }),
       runtime,
       rng,
-      input: undefined,
     });
   }
 
