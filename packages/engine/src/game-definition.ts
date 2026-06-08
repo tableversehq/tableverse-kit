@@ -17,6 +17,7 @@ import {
   compileCanonicalGameStateSchema,
   createDefaultCanonicalGameState,
 } from "./state-facade/canonical";
+import { compileVisibleStateSchema } from "./state-facade/view-schema";
 import { compileRuntimeStateSchema } from "./runtime/runtime-schema";
 import { assertSchemaValue } from "./runtime/validation";
 import type {
@@ -64,6 +65,7 @@ interface BaseGameDefinition<
   commands: CommandDefinitionMap<StateClassOf<RootState>>;
   stateFacade: CompiledStateFacadeDefinition;
   canonicalGameStateSchema: ObjectFieldType<Record<string, FieldType>>;
+  visibleStateSchema: TSchema;
   runtimeStateSchema: TSchema;
   defaultCanonicalGameState: CanonicalStateOf<RootState>;
   initialStage: StageDefinition<StateClassOf<RootState>>;
@@ -372,6 +374,7 @@ function assembleBaseDefinition<
   const commands = compileCommandMapFromStages(stages);
   const stateFacade = compileStateFacadeDefinition(rootState);
   const canonicalGameStateSchema = compileCanonicalGameStateSchema(rootState);
+  const visibleStateSchema = compileVisibleStateSchema(stateFacade);
   const runtimeStateSchema = compileRuntimeStateSchema(stages);
   const defaultCanonicalGameState = createDefaultCanonicalGameState(rootState);
   assertSchemaValue(canonicalGameStateSchema, defaultCanonicalGameState);
@@ -382,6 +385,7 @@ function assembleBaseDefinition<
     commands,
     stateFacade,
     canonicalGameStateSchema,
+    visibleStateSchema,
     runtimeStateSchema,
     defaultCanonicalGameState,
     initialStage,
