@@ -1,9 +1,8 @@
 import { expect, test } from "bun:test";
 // @ts-expect-error legacy canonical helper types should be removed from the public API
 import type { CanonicalGameStateOf as RemovedCanonicalGameStateOf } from "../src/index";
-// @ts-expect-error legacy canonical helper types should be removed from the public API
-import type { CanonicalStateOf as RemovedCanonicalStateOf } from "../src/index";
 import type {
+  CanonicalStateOf,
   CommandAvailabilityContext,
   Command,
   CommandDiscoveryResult,
@@ -12,13 +11,16 @@ import type {
   DiscoveryContext,
   ExecutionResult,
   GameEvent,
+  StateClassOf,
   ValidationOutcome,
+  ViewOf,
 } from "../src/index";
 import {
   configureVisibility,
   createGameExecutor,
   createCommandFactory,
   createStageFactory,
+  defineGameState,
   field,
   t,
 } from "../src/index";
@@ -37,7 +39,6 @@ import {
   type GameDefinition,
 } from "../src/game-definition";
 void (0 as unknown as RemovedCanonicalGameStateOf<never>);
-void (0 as unknown as RemovedCanonicalStateOf<never>);
 
 class TypedCounterChildState extends GameState {
   @field(t.number())
@@ -147,6 +148,83 @@ configureVisibility(InvalidTypedVisibilityState, ({ field }) => ({
     }),
   ],
 }));
+
+test("defineGameState infers canonical hydrated and visible state types", () => {
+  class TypedTokenCountsState {
+    white = 0;
+
+    totalCount(): number {
+      return this.white;
+    }
+  }
+
+  const TypedTokenCounts = defineGameState()
+    .model({
+      white: t.number(),
+    })
+    .stateClass(TypedTokenCountsState)
+    .build();
+
+  class TypedPlayerState {
+    id = "";
+    tokens = new TypedTokenCountsState();
+    reservedCardIds: number[] = [];
+
+    canReserveMoreCards(): boolean {
+      return this.reservedCardIds.length < 3;
+    }
+  }
+
+  const TypedPlayer = defineGameState()
+    .model({
+      id: t.string(),
+      tokens: t.state(TypedTokenCounts),
+      reservedCardIds: t.array(t.number()),
+    })
+    .stateClass(TypedPlayerState)
+    .visibility((v) => [
+      v.ownedBy("id"),
+      v.field("reservedCardIds").visibleToSelf({
+        hidden: {
+          schema: t.object({ count: t.number() }),
+          derive: (cards) => ({ count: cards.length }),
+        },
+      }),
+    ])
+    .build();
+
+  type Canonical = CanonicalStateOf<typeof TypedPlayer>;
+  type Hydrated = StateClassOf<typeof TypedPlayer>;
+  type View = ViewOf<typeof TypedPlayer>;
+
+  expectTypeOf<Canonical>().toEqualTypeOf<{
+    id: string;
+    tokens: { white: number };
+    reservedCardIds: number[];
+  }>();
+
+  expectTypeOf<Hydrated>().toEqualTypeOf<TypedPlayerState>();
+  expectTypeOf<View["reservedCardIds"]>().toEqualTypeOf<
+    | number[]
+    | {
+        __hidden: true;
+        value: { count: number };
+      }
+  >();
+  expect(TypedPlayer).toBeDefined();
+
+  class MissingReservedCardsState {
+    id = "";
+  }
+
+  defineGameState()
+    .model({
+      id: t.string(),
+      reservedCardIds: t.array(t.number()),
+    })
+    // @ts-expect-error stateClass must satisfy model fields
+    .stateClass(MissingReservedCardsState);
+});
 
 test("foundational runtime types compose", () => {
   const event: GameEvent = {
