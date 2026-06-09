@@ -438,11 +438,10 @@ function createExecutorMethods<
   return {
     getView(state, viewer) {
       validateCanonicalState(game, state);
-      return getVisibleStateView(
-        state,
-        viewer,
-        game.stateFacade,
-      ) as VisibleState<ViewOf<RootState>>;
+      return getVisibleStateView<
+        CanonicalStateOf<RootState>,
+        ViewOf<RootState>
+      >(state, viewer, game.stateFacade);
     },
 
     listAvailableCommands(state, options) {

@@ -9,25 +9,34 @@ import { hydrateStateNode } from "./hydrate";
 import type { CanonicalState } from "../types/state";
 import type { Viewer, VisibleState } from "../types/visibility";
 
-export function getView<TGameState extends object>(
-  state: CanonicalState<TGameState>,
+export function getView<TCanonicalGame extends object>(
+  state: CanonicalState<TCanonicalGame>,
+  viewer: Viewer,
+): VisibleState<TCanonicalGame>;
+
+export function getView<
+  TCanonicalGame extends object,
+  TVisibleGame extends object,
+>(
+  state: CanonicalState<TCanonicalGame>,
+  viewer: Viewer,
+  compiled: CompiledStateFacadeDefinition,
+): VisibleState<TVisibleGame>;
+
+export function getView(
+  state: CanonicalState<object>,
   viewer: Viewer,
   compiled?: CompiledStateFacadeDefinition,
 ): VisibleState<object> {
   if (!compiled) {
     return {
-      game: structuredClone(state.game) as object,
+      game: structuredClone(state.game),
       progression: structuredClone(state.runtime.progression),
     };
   }
 
   return {
-    game: projectStateNode(
-      compiled,
-      compiled.root,
-      state.game,
-      viewer,
-    ) as object,
+    game: projectStateNode(compiled, compiled.root, state.game, viewer),
     progression: structuredClone(state.runtime.progression),
   };
 }
@@ -38,7 +47,7 @@ function projectStateNode(
   backing: unknown,
   viewer: Viewer,
   ownerPlayerId?: string,
-): unknown {
+): object {
   if (!backing || typeof backing !== "object" || Array.isArray(backing)) {
     return {};
   }

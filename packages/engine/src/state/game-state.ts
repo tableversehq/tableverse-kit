@@ -230,7 +230,7 @@ export class GameStateVisibilityBuilder<
       model: this.stateModel,
       stateClass: this.stateClassConstructor,
       visibility: this.visibilityEntries,
-    } as GameStateDefinition<
+    } satisfies GameStateDefinition<
       CanonicalStateOfModel<TModel>,
       TStateClass,
       ApplyVisibility<TModel, TEntries>
@@ -313,48 +313,131 @@ function createVisibilityBuilder<
       };
     },
     field(fieldName) {
-      return {
-        hidden(options?: {
-          schema: SerializableFieldType;
-          derive: (value: unknown, state: Readonly<TStateClass>) => unknown;
-        }) {
-          if (options) {
-            assertSerializableSchema(options.schema);
-          }
-
-          return {
-            kind: "field",
-            fieldName,
-            mode: "hidden",
-            schema: options?.schema,
-            derive: options?.derive,
-          };
-        },
-        visibleToSelf(options?: {
-          hidden?: {
-            schema: SerializableFieldType;
-            derive: (value: unknown, state: Readonly<TStateClass>) => unknown;
-          };
-        }) {
-          if (options?.hidden) {
-            assertSerializableSchema(options.hidden.schema);
-          }
-
-          return {
-            kind: "field",
-            fieldName,
-            mode: "visibleToSelf",
-            schema: options?.hidden?.schema,
-            derive: options?.hidden?.derive,
-          };
-        },
-      } as VisibilityFieldBuilder<
+      return createVisibilityFieldBuilder<
         typeof fieldName,
         TModel[typeof fieldName],
         TStateClass
-      >;
+      >(fieldName);
     },
   };
+}
+
+function createVisibilityFieldBuilder<
+  TFieldName extends string,
+  TField extends FieldType,
+  TStateClass extends object,
+>(
+  fieldName: TFieldName,
+): VisibilityFieldBuilder<TFieldName, TField, TStateClass> {
+  return new VisibilityFieldBuilderImpl<TFieldName, TField, TStateClass>(
+    fieldName,
+  );
+}
+
+class VisibilityFieldBuilderImpl<
+  TFieldName extends string,
+  TField extends FieldType,
+  TStateClass extends object,
+> implements VisibilityFieldBuilder<TFieldName, TField, TStateClass> {
+  constructor(private readonly fieldName: TFieldName) {}
+
+  hidden(): FieldVisibilityEntry<
+    TFieldName,
+    "hidden",
+    CanonicalFieldValue<TField>,
+    TStateClass,
+    HiddenValue
+  >;
+  hidden<TSchema extends SerializableFieldType>(options: {
+    schema: TSchema;
+    derive: (
+      value: CanonicalFieldValue<TField>,
+      state: Readonly<TStateClass>,
+    ) => SerializableFieldStatic<TSchema>;
+  }): FieldVisibilityEntry<
+    TFieldName,
+    "hidden",
+    CanonicalFieldValue<TField>,
+    TStateClass,
+    HiddenValue<SerializableFieldStatic<TSchema>>
+  >;
+  hidden(options?: {
+    schema: SerializableFieldType;
+    derive: (
+      value: CanonicalFieldValue<TField>,
+      state: Readonly<TStateClass>,
+    ) => unknown;
+  }): FieldVisibilityEntry<
+    TFieldName,
+    "hidden",
+    CanonicalFieldValue<TField>,
+    TStateClass,
+    HiddenValue | HiddenValue<unknown>
+  > {
+    if (options) {
+      assertSerializableSchema(options.schema);
+    }
+
+    return {
+      kind: "field",
+      fieldName: this.fieldName,
+      mode: "hidden",
+      schema: options?.schema,
+      derive: options?.derive,
+    };
+  }
+
+  visibleToSelf(options?: {
+    hidden?: undefined;
+  }): FieldVisibilityEntry<
+    TFieldName,
+    "visibleToSelf",
+    CanonicalFieldValue<TField>,
+    TStateClass,
+    CanonicalFieldValue<TField> | HiddenValue
+  >;
+  visibleToSelf<TSchema extends SerializableFieldType>(options: {
+    hidden: {
+      schema: TSchema;
+      derive: (
+        value: CanonicalFieldValue<TField>,
+        state: Readonly<TStateClass>,
+      ) => SerializableFieldStatic<TSchema>;
+    };
+  }): FieldVisibilityEntry<
+    TFieldName,
+    "visibleToSelf",
+    CanonicalFieldValue<TField>,
+    TStateClass,
+    CanonicalFieldValue<TField> | HiddenValue<SerializableFieldStatic<TSchema>>
+  >;
+  visibleToSelf(options?: {
+    hidden?: {
+      schema: SerializableFieldType;
+      derive: (
+        value: CanonicalFieldValue<TField>,
+        state: Readonly<TStateClass>,
+      ) => unknown;
+    };
+  }): FieldVisibilityEntry<
+    TFieldName,
+    "visibleToSelf",
+    CanonicalFieldValue<TField>,
+    TStateClass,
+    CanonicalFieldValue<TField> | HiddenValue | HiddenValue<unknown>
+  > {
+    if (options?.hidden) {
+      assertSerializableSchema(options.hidden.schema);
+    }
+
+    return {
+      kind: "field",
+      fieldName: this.fieldName,
+      mode: "visibleToSelf",
+      schema: options?.hidden?.schema,
+      derive: options?.hidden?.derive,
+    };
+  }
 }
 
 function validateVisibilityEntries(
