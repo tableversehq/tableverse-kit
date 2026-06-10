@@ -98,11 +98,11 @@ function createCommandGameView<
 }
 
 type CreateInitialStateFn<
-  GameState extends object,
+  GameData extends object,
   SetupInput extends object | undefined,
 > = [SetupInput] extends [undefined]
-  ? (rngSeed: string | number) => CanonicalState<GameState>
-  : (input: SetupInput, rngSeed: string | number) => CanonicalState<GameState>;
+  ? (rngSeed: string | number) => CanonicalState<GameData>
+  : (input: SetupInput, rngSeed: string | number) => CanonicalState<GameData>;
 
 function createInitialRuntimeState<
   RootState extends GameState,

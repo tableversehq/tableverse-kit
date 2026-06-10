@@ -17,7 +17,7 @@ export interface RuntimeState {
   history: HistoryState;
 }
 
-export interface CanonicalState<GameState extends object = object> {
-  game: GameState;
+export interface CanonicalState<GameData extends object = object> {
+  game: GameData;
   runtime: RuntimeState;
 }

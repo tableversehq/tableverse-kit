@@ -5,25 +5,25 @@ import type {
   SingleActivePlayerStageDefinition,
 } from "../../src/types/progression";
 
-export function createTerminalStage<GameState extends object>(
+export function createTerminalStage<HydratedState extends object>(
   id = "gameEnd",
-): AutomaticStageDefinition<GameState> {
-  return createStageFactory<GameState>()(id).automatic().build();
+): AutomaticStageDefinition<HydratedState> {
+  return createStageFactory<HydratedState>()(id).automatic().build();
 }
 
-export function createSelfLoopingTurnStage<GameState extends object>(
-  commands: readonly DefinedCommand<GameState>[],
+export function createSelfLoopingTurnStage<HydratedState extends object>(
+  commands: readonly DefinedCommand<HydratedState>[],
   options?: {
     id?: string;
     activePlayerId?: string;
   },
-): SingleActivePlayerStageDefinition<GameState> {
-  const defineStage = createStageFactory<GameState>();
+): SingleActivePlayerStageDefinition<HydratedState> {
+  const defineStage = createStageFactory<HydratedState>();
   const turnStage = createTurnStage();
 
   return turnStage;
 
-  function createTurnStage(): SingleActivePlayerStageDefinition<GameState> {
+  function createTurnStage(): SingleActivePlayerStageDefinition<HydratedState> {
     return defineStage(options?.id ?? "turn")
       .singleActivePlayer()
       .activePlayer(() => options?.activePlayerId ?? "player-1")
