@@ -1,9 +1,16 @@
-import type { CanonicalState, GameExecutor } from "@tabletop-kit/engine";
+import type {
+  AnyGameStateDefinition,
+  CanonicalState,
+  CanonicalStateOf,
+  GameExecutor,
+} from "@tabletop-kit/engine";
 import type { TTKitClient, TTKitGame } from "../client/types.ts";
 
-export interface CreateInProcessClientOptions<GameState extends object> {
+export interface CreateInProcessClientOptions<
+  RootState extends AnyGameStateDefinition,
+> {
   viewerId: string;
-  initialState: CanonicalState<GameState>;
+  initialState: CanonicalState<CanonicalStateOf<RootState>>;
 }
 
 /**
@@ -24,11 +31,11 @@ export interface CreateInProcessClientOptions<GameState extends object> {
  */
 export function createInProcessClient<
   G extends TTKitGame,
-  GameState extends object,
+  RootState extends AnyGameStateDefinition,
   SetupInput extends object | undefined = undefined,
 >(
-  executor: GameExecutor<GameState, SetupInput>,
-  options: CreateInProcessClientOptions<GameState>,
+  executor: GameExecutor<RootState, SetupInput>,
+  options: CreateInProcessClientOptions<RootState>,
 ): TTKitClient<G> {
   let state = options.initialState;
   let version = 0;
@@ -61,7 +68,7 @@ export function createInProcessClient<
   // automatic / multi-active-player stages where there is no single
   // active player to switch to.
   const alignViewerWithActivePlayer = (
-    nextState: CanonicalState<GameState>,
+    nextState: CanonicalState<CanonicalStateOf<RootState>>,
   ): void => {
     const stage = nextState.runtime.progression.currentStage;
     if (stage.kind !== "activePlayer") return;

@@ -8,7 +8,6 @@ import type {
   SplendorTerminalCommand,
   SplendorTerminalDiscoveryRequest,
   SplendorTerminalDiscoveryResult,
-  SplendorVisibleState,
 } from "./types.ts";
 
 export const DEFAULT_PLAYER_IDS = ["you", "bot-1", "bot-2", "bot-3"] as const;
@@ -34,7 +33,7 @@ export class SplendorTerminalSession {
     return this.gameExecutor.getView(this.state, {
       kind: "player",
       playerId: this.viewerId,
-    }) as SplendorVisibleState;
+    });
   }
 
   getActivity() {
