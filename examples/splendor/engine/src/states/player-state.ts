@@ -1,9 +1,10 @@
-import { configureVisibility, field, GameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tabletop-kit/engine";
 import { developmentCardsById } from "../data/cards.ts";
 import type { CardCost, DevelopmentCard } from "../data/types.ts";
 import { type GemTokenColor } from "./constants.ts";
 import {
   type ReturnTokensPayload,
+  TokenCounts,
   TokenCountsState,
 } from "./token-counts-state.ts";
 
@@ -29,20 +30,15 @@ const hiddenReservedCardSchema = t.object({
   count: t.number(),
 });
 
-export class SplendorPlayerState extends GameState {
-  @field(t.string())
+export class SplendorPlayerState {
   id = "";
 
-  @field(t.state(() => TokenCountsState))
   tokens!: TokenCountsState;
 
-  @field(t.array(t.number()))
   reservedCardIds: number[] = [];
 
-  @field(t.array(t.number()))
   purchasedCardIds: number[] = [];
 
-  @field(t.array(t.number()))
   nobleIds: number[] = [];
 
   static create(playerId: string): SplendorPlayerState {
@@ -173,16 +169,26 @@ export class SplendorPlayerState extends GameState {
   }
 }
 
-configureVisibility(SplendorPlayerState, ({ field }) => ({
-  ownedBy: field.id,
-  fields: [
-    field.reservedCardIds.visibleToSelf({
-      schema: hiddenReservedCardSchema,
-      derive(reservedCardIds) {
-        return {
-          count: reservedCardIds.length,
-        };
+export const SplendorPlayer = defineGameState()
+  .model({
+    id: t.string(),
+    tokens: t.state(TokenCounts),
+    reservedCardIds: t.array(t.number()),
+    purchasedCardIds: t.array(t.number()),
+    nobleIds: t.array(t.number()),
+  })
+  .stateClass(SplendorPlayerState)
+  .visibility((v) => [
+    v.ownedBy("id"),
+    v.field("reservedCardIds").visibleToSelf({
+      hidden: {
+        schema: hiddenReservedCardSchema,
+        derive(reservedCardIds) {
+          return {
+            count: reservedCardIds.length,
+          };
+        },
       },
     }),
-  ],
-}));
+  ])
+  .build();

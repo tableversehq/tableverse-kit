@@ -9,17 +9,16 @@ import type {
 import type { GameEvent } from "../types/event";
 import type { CanonicalState } from "../types/state";
 import type { RNGApi } from "../types/rng";
-import type { CanonicalGameState } from "../state-facade/canonical";
-import type { GameState as BaseGameState } from "../state-facade/metadata";
 
 export function createValidationContext<
-  FacadeGameState extends BaseGameState,
+  CanonicalGameState extends object,
+  HydratedState extends object,
   TCommandInput extends Command,
 >(
-  state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: Readonly<FacadeGameState>,
+  state: CanonicalState<CanonicalGameState>,
+  game: Readonly<HydratedState>,
   command: TCommandInput,
-): InternalValidationContext<FacadeGameState, TCommandInput> {
+): InternalValidationContext<HydratedState, TCommandInput, CanonicalGameState> {
   return {
     state,
     game,
@@ -29,13 +28,14 @@ export function createValidationContext<
 }
 
 export function createCommandAvailabilityContext<
-  FacadeGameState extends BaseGameState,
+  CanonicalGameState extends object,
+  HydratedState extends object,
 >(
-  state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: Readonly<FacadeGameState>,
+  state: CanonicalState<CanonicalGameState>,
+  game: Readonly<HydratedState>,
   commandType: string,
   actorId: string,
-): InternalCommandAvailabilityContext<FacadeGameState> {
+): InternalCommandAvailabilityContext<HydratedState, CanonicalGameState> {
   return {
     state,
     game,
@@ -46,13 +46,18 @@ export function createCommandAvailabilityContext<
 }
 
 export function createDiscoveryContext<
-  FacadeGameState extends BaseGameState,
+  CanonicalGameState extends object,
+  HydratedState extends object,
   TDiscoveryInput extends Record<string, unknown>,
 >(
-  state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: Readonly<FacadeGameState>,
+  state: CanonicalState<CanonicalGameState>,
+  game: Readonly<HydratedState>,
   discovery: Discovery<TDiscoveryInput>,
-): InternalDiscoveryContext<FacadeGameState, TDiscoveryInput> {
+): InternalDiscoveryContext<
+  HydratedState,
+  TDiscoveryInput,
+  CanonicalGameState
+> {
   return {
     ...createCommandAvailabilityContext(
       state,
@@ -66,15 +71,16 @@ export function createDiscoveryContext<
 }
 
 export function createExecuteContext<
-  FacadeGameState extends BaseGameState,
+  CanonicalGameState extends object,
+  HydratedState extends object,
   TCommandInput extends Command,
 >(
-  state: CanonicalState<CanonicalGameState<FacadeGameState>>,
-  game: FacadeGameState,
+  state: CanonicalState<CanonicalGameState>,
+  game: HydratedState,
   command: TCommandInput,
   rng: RNGApi,
   emitEvent: (event: GameEvent) => void,
-): InternalExecuteContext<FacadeGameState, TCommandInput> {
+): InternalExecuteContext<HydratedState, TCommandInput, CanonicalGameState> {
   return {
     state,
     command,

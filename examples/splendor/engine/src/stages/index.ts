@@ -1,7 +1,4 @@
-import {
-  createStageFactory,
-  type SingleActivePlayerStageDefinition,
-} from "@tabletop-kit/engine";
+import { createStageFactory } from "@tabletop-kit/engine";
 import { createCommands } from "../commands/index.ts";
 import type { SplendorGameState } from "../state.ts";
 import { createCheckVictoryConditionStage } from "./check-victory-condition.ts";
@@ -11,11 +8,7 @@ import { createPlayerTurnStage } from "./player-turn.ts";
 import { createResolveNobleStage } from "./resolve-noble.ts";
 import { createReturnExcessiveTokensStage } from "./return-excessive-tokens.ts";
 
-export interface SplendorStages {
-  initialStage: SingleActivePlayerStageDefinition<SplendorGameState>;
-}
-
-export function createSplendorStages(): SplendorStages {
+export function createSplendorStages() {
   const defineStage = createStageFactory<SplendorGameState>();
   const commands = createCommands();
 

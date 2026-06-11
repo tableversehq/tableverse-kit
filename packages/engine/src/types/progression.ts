@@ -2,7 +2,6 @@ import type { Command, DefinedCommand } from "./command";
 import type { GameEvent } from "./event";
 import type { RNGApi } from "./rng";
 import type { FieldType, ObjectFieldType } from "../schema";
-import type { GameState as BaseGameState } from "../state-facade/metadata";
 import type { RuntimeState } from "./state";
 
 export const stageDefinitionBrand = Symbol("tabletop-engine.stage-definition");
@@ -42,20 +41,20 @@ export interface ProgressionState {
     | null;
 }
 
-export type StageDefinitionMap<FacadeGameState extends BaseGameState> = Record<
+export type StageDefinitionMap<HydratedState extends object> = Record<
   string,
-  StageDefinition<FacadeGameState>
+  StageDefinition<HydratedState>
 >;
 
 export type StageDefinitionResolver<
-  FacadeGameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<FacadeGameState> =
-    StageDefinitionMap<FacadeGameState>,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
 > = () => NextStages;
 
 type CommandFromDefinition<Definition> =
   Definition extends DefinedCommand<
-    BaseGameState,
+    object,
     infer Input extends Record<string, unknown>,
     Record<string, unknown>
   >
@@ -67,159 +66,167 @@ export type CommandsFromDefinitions<Definitions extends readonly unknown[]> =
 
 export type CommandDefinitionsFromStageDefinition<TStage> =
   TStage extends SingleActivePlayerStageDefinition<
-    infer TGameState,
+    infer THydratedState,
     infer Commands,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   >
-    ? Commands extends readonly DefinedCommand<TGameState>[]
+    ? Commands extends readonly DefinedCommand<THydratedState>[]
       ? Commands[number]
       : never
     : TStage extends MultiActivePlayerStageDefinition<
-          infer TGameState,
+          infer THydratedState,
           object,
           infer Commands,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           any
         >
-      ? Commands extends readonly DefinedCommand<TGameState>[]
+      ? Commands extends readonly DefinedCommand<THydratedState>[]
         ? Commands[number]
         : never
       : never;
 
 export interface SingleActivePlayerSelectionContext<
-  GameState extends BaseGameState,
+  HydratedState extends object,
 > {
-  game: Readonly<GameState>;
+  game: Readonly<HydratedState>;
   runtime: Readonly<RuntimeState>;
 }
 
 export interface SingleActivePlayerTransitionContext<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   TCommand extends Command = Command,
-  NextStages extends StageDefinitionMap<GameState> =
-    StageDefinitionMap<GameState>,
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
 > {
-  game: Readonly<GameState>;
+  game: Readonly<HydratedState>;
   runtime: Readonly<RuntimeState>;
   command: TCommand;
   nextStages: Readonly<NextStages>;
 }
 
-export interface AutomaticStageRunContext<GameState extends BaseGameState> {
-  game: GameState;
+export interface AutomaticStageRunContext<HydratedState extends object> {
+  game: HydratedState;
   runtime: Readonly<RuntimeState>;
   rng: RNGApi;
   emitEvent(event: GameEvent): void;
 }
 
 export interface AutomaticStageTransitionContext<
-  GameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<GameState> =
-    StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
 > {
-  game: Readonly<GameState>;
+  game: Readonly<HydratedState>;
   runtime: Readonly<RuntimeState>;
   nextStages: Readonly<NextStages>;
 }
 
 export interface MultiActivePlayerMemoryContext<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object = object,
 > {
-  game: Readonly<GameState>;
+  game: Readonly<HydratedState>;
   runtime: Readonly<RuntimeState>;
   memory: Memory;
 }
 
 export interface MultiActivePlayerSubmitContext<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object = object,
   TCommand extends Command = Command,
-> extends MultiActivePlayerMemoryContext<GameState, Memory> {
+> extends MultiActivePlayerMemoryContext<HydratedState, Memory> {
   command: TCommand;
   execute(command: TCommand): void;
 }
 
 export interface MultiActivePlayerTransitionContext<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object = object,
-  NextStages extends StageDefinitionMap<GameState> =
-    StageDefinitionMap<GameState>,
-> extends MultiActivePlayerMemoryContext<GameState, Memory> {
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
+> extends MultiActivePlayerMemoryContext<HydratedState, Memory> {
   nextStages: Readonly<NextStages>;
 }
 
 export interface SingleActivePlayerStageDefinition<
-  GameState extends BaseGameState,
-  Commands extends readonly DefinedCommand<GameState>[] =
-    readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState> =
-    StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  Commands extends readonly DefinedCommand<HydratedState>[] =
+    readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
 > extends StageDefinitionBrand {
   id: string;
   kind: "activePlayer";
-  activePlayer(context: SingleActivePlayerSelectionContext<GameState>): string;
+  activePlayer(
+    context: SingleActivePlayerSelectionContext<HydratedState>,
+  ): string;
   commands: Commands;
-  nextStages?: StageDefinitionResolver<GameState, NextStages>;
+  nextStages?: StageDefinitionResolver<HydratedState, NextStages>;
   transition(
     context: SingleActivePlayerTransitionContext<
-      GameState,
+      HydratedState,
       CommandsFromDefinitions<Commands>,
       NextStages
     >,
   ):
-    | SingleActivePlayerStageDefinition<GameState>
+    | SingleActivePlayerStageDefinition<HydratedState>
     | NextStages[keyof NextStages];
 }
 
 export interface AutomaticStageDefinition<
-  GameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<GameState> =
-    StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
 > extends StageDefinitionBrand {
   id: string;
   kind: "automatic";
-  run?(context: AutomaticStageRunContext<GameState>): void;
-  nextStages?: StageDefinitionResolver<GameState, NextStages>;
+  run?(context: AutomaticStageRunContext<HydratedState>): void;
+  nextStages?: StageDefinitionResolver<HydratedState, NextStages>;
   transition?(
-    context: AutomaticStageTransitionContext<GameState, NextStages>,
-  ): AutomaticStageDefinition<GameState> | NextStages[keyof NextStages];
+    context: AutomaticStageTransitionContext<HydratedState, NextStages>,
+  ): AutomaticStageDefinition<HydratedState> | NextStages[keyof NextStages];
 }
 
 export interface MultiActivePlayerStageDefinition<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object = object,
-  Commands extends readonly DefinedCommand<GameState>[] =
-    readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState> =
-    StageDefinitionMap<GameState>,
+  Commands extends readonly DefinedCommand<HydratedState>[] =
+    readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState> =
+    StageDefinitionMap<HydratedState>,
 > extends StageDefinitionBrand {
   id: string;
   kind: "multiActivePlayer";
   memorySchema: ObjectFieldType<Record<string, FieldType>>;
   memory(): Memory;
   activePlayers(
-    context: MultiActivePlayerMemoryContext<GameState, Memory>,
+    context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
   ): string[];
   commands: Commands;
   onSubmit(
     context: MultiActivePlayerSubmitContext<
-      GameState,
+      HydratedState,
       Memory,
       CommandsFromDefinitions<Commands>
     >,
   ): void;
   isComplete(
-    context: MultiActivePlayerMemoryContext<GameState, Memory>,
+    context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
   ): boolean;
-  nextStages?: StageDefinitionResolver<GameState, NextStages>;
+  nextStages?: StageDefinitionResolver<HydratedState, NextStages>;
   transition(
-    context: MultiActivePlayerTransitionContext<GameState, Memory, NextStages>,
-  ): MultiActivePlayerStageDefinition<GameState> | NextStages[keyof NextStages];
+    context: MultiActivePlayerTransitionContext<
+      HydratedState,
+      Memory,
+      NextStages
+    >,
+  ):
+    | MultiActivePlayerStageDefinition<HydratedState>
+    | NextStages[keyof NextStages];
 }
 
-export type StageDefinition<GameState extends BaseGameState> =
-  | SingleActivePlayerStageDefinition<GameState>
-  | AutomaticStageDefinition<GameState>
-  | MultiActivePlayerStageDefinition<GameState>;
+export type StageDefinition<HydratedState extends object> =
+  | SingleActivePlayerStageDefinition<HydratedState>
+  | AutomaticStageDefinition<HydratedState>
+  | MultiActivePlayerStageDefinition<HydratedState>;

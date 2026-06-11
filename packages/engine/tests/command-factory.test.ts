@@ -3,15 +3,15 @@ import * as tabletopEngine from "../src";
 
 const { createCommandFactory, t } = tabletopEngine;
 
-class TurnCommandState extends tabletopEngine.GameState {
+class TurnCommandState {
   turns = 0;
 }
 
-class ScoreCommandState extends tabletopEngine.GameState {
+class ScoreCommandState {
   score = 0;
 }
 
-class CounterCommandState extends tabletopEngine.GameState {
+class CounterCommandState {
   counter = 0;
 }
 

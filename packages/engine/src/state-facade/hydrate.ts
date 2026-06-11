@@ -3,18 +3,19 @@ import type {
   CompiledStateFacadeDefinition,
 } from "./compile";
 import type { FieldType } from "../schema";
-import type { GameState, GameStateClass } from "./metadata";
+import type { AnyGameStateDefinition, StateClassOf } from "../state/game-state";
 
-export function hydrateStateFacade<TState extends GameState>(
+export function hydrateStateFacade<TState extends AnyGameStateDefinition>(
   compiled: CompiledStateFacadeDefinition,
   backing: object,
   options?: {
     readonly?: boolean;
+    allowDirectMutation?: boolean;
   },
-): TState {
+): StateClassOf<TState> {
   const mutationContext: MutationContext = {
     readonlyMode: options?.readonly ?? false,
-    mutationDepth: 0,
+    mutationDepth: options?.allowDirectMutation ? 1 : 0,
   };
 
   return hydrateStateInstance(
@@ -22,41 +23,42 @@ export function hydrateStateFacade<TState extends GameState>(
     compiled.root,
     backing,
     mutationContext,
-  ) as TState;
+  ) as StateClassOf<TState>;
 }
 
-export function hydrateStateNode<TState extends object>(
+export function hydrateStateNode<TState extends AnyGameStateDefinition>(
   compiled: CompiledStateFacadeDefinition,
-  target: GameStateClass,
+  state: TState,
   backing: object,
   options?: {
     readonly?: boolean;
+    allowDirectMutation?: boolean;
   },
-): TState {
+): StateClassOf<TState> {
   const mutationContext: MutationContext = {
     readonlyMode: options?.readonly ?? false,
-    mutationDepth: 0,
+    mutationDepth: options?.allowDirectMutation ? 1 : 0,
   };
 
   return hydrateStateInstance(
     compiled,
-    target,
+    state,
     backing,
     mutationContext,
-  ) as TState;
+  ) as StateClassOf<TState>;
 }
 
 function hydrateStateInstance(
   compiled: CompiledStateFacadeDefinition,
-  target: GameStateClass,
+  state: AnyGameStateDefinition,
   backing: object,
   mutationContext: MutationContext,
 ): object {
-  const definition = getCompiledStateDefinition(compiled, target);
-  const instance = new target();
+  const definition = getCompiledStateDefinition(compiled, state);
+  const instance = new state.stateClass();
   const nestedCache = new Map<string, unknown>();
 
-  for (const [fieldName, field] of Object.entries(definition.fields)) {
+  for (const [fieldName, field] of Object.entries(definition.model)) {
     if (isPrimitiveDataField(field)) {
       Object.defineProperty(instance, fieldName, {
         enumerable: true,
@@ -132,7 +134,7 @@ function hydrateFieldValue(
   if (field.kind === "state") {
     return hydrateStateInstance(
       compiled,
-      field.target(),
+      field.target,
       backing,
       mutationContext,
     );
@@ -320,12 +322,14 @@ function createObjectFacade(
 
 function getCompiledStateDefinition(
   compiled: CompiledStateFacadeDefinition,
-  target: GameStateClass,
+  state: AnyGameStateDefinition,
 ): CompiledStateDefinition {
-  const definition = compiled.states[target.name];
+  const definition = compiled.states.get(state);
 
   if (!definition) {
-    throw new Error(`compiled_state_not_found:${target.name || "anonymous"}`);
+    throw new Error(
+      `compiled_state_not_found:${state.stateClass.name || "anonymous"}`,
+    );
   }
 
   return definition;

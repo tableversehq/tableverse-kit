@@ -8,8 +8,8 @@ This package currently provides:
 
 - canonical `{ game, runtime }` state types
 - command definitions with `validate` and `execute`
-- state facade metadata via `GameState`, `@field(...)`, and `t`
-- `rootState(...)` authoring on `GameDefinitionBuilder`
+- state metadata via `defineGameState(...)`, plain state classes, and `t`
+- `.state(...)` authoring on `GameDefinitionBuilder`
 - hydrated state facades for command execution, validation, availability, and discovery
 - transactional command execution
 - nested progression definitions with engine-managed lifecycle resolution
@@ -44,20 +44,25 @@ authoring against a root facade class.
 import {
   createCommandFactory,
   createStageFactory,
-  field,
+  defineGameState,
   GameDefinitionBuilder,
-  GameState,
   t,
 } from "@tabletop-kit/engine";
 
-class CounterState extends GameState {
-  @field(t.number())
+class CounterState {
   value!: number;
 
   increment() {
     this.value += 1;
   }
 }
+
+const Counter = defineGameState()
+  .model({
+    value: t.number(),
+  })
+  .stateClass(CounterState)
+  .build();
 
 const defineCommand = createCommandFactory<CounterState>();
 const increment = defineCommand({
@@ -78,7 +83,7 @@ const turnStage = createStageFactory<CounterState>()("turn")
   .build();
 
 const game = new GameDefinitionBuilder("counter")
-  .rootState(CounterState)
+  .state(Counter)
   .initialStage(turnStage)
   .build();
 ```

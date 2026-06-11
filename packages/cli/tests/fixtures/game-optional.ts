@@ -1,24 +1,29 @@
 import {
   createStageFactory,
-  field,
-  GameState,
   GameDefinitionBuilder,
+  defineGameState,
   t,
 } from "@tabletop-kit/engine";
 
-class OptionalFactoryGameState extends GameState {
-  @field(t.number())
+class OptionalFactoryState {
   counter = 0;
 }
+
+const OptionalFactoryGameState = defineGameState()
+  .model({
+    counter: t.number(),
+  })
+  .stateClass(OptionalFactoryState)
+  .build();
 
 export default function createOptionalFixtureGame(
   ...args: [{ verbose?: boolean }?]
 ) {
   void args;
-  const stageFactory = createStageFactory<OptionalFactoryGameState>();
+  const stageFactory = createStageFactory<OptionalFactoryState>();
 
   return new GameDefinitionBuilder("fixture-optional")
-    .rootState(OptionalFactoryGameState)
+    .state(OptionalFactoryGameState)
     .initialStage(stageFactory("done").automatic().build())
     .build();
 }

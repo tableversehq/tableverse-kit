@@ -9,9 +9,9 @@ import type {
   OptionalFieldType,
   PrimitiveFieldType,
   RecordFieldType,
-  StateFieldTargetFactory,
   StringFieldType,
 } from "./types";
+import type { AnyGameStateDefinition } from "../state/game-state";
 import { fieldKind } from "./types";
 
 export type {
@@ -30,7 +30,6 @@ export type {
   SerializableFieldStatic,
   RecordFieldType,
   SerializableFieldType,
-  StateFieldTargetFactory,
   StringFieldType,
 } from "./types";
 
@@ -131,7 +130,9 @@ export const t = {
     }) as unknown as OptionalFieldType<TItem>;
   },
 
-  state(target: StateFieldTargetFactory): NestedStateFieldType {
+  state<TState extends AnyGameStateDefinition>(
+    target: TState,
+  ): NestedStateFieldType<TState> {
     return {
       [fieldKind]: "state",
       kind: "state",

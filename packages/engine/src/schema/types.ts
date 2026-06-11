@@ -5,11 +5,12 @@ import type {
   TSchema,
   TString,
 } from "@sinclair/typebox";
-import type { GameStateClass } from "../state-facade/metadata";
+import type {
+  CanonicalStateOf,
+  AnyGameStateDefinition,
+} from "../state/game-state";
 
 export const fieldKind = Symbol("tabletop-engine.schema-field-kind");
-
-export type StateFieldTargetFactory = () => GameStateClass;
 
 export type NumberFieldType = TNumber & {
   readonly [fieldKind]: "number";
@@ -26,10 +27,12 @@ export type BooleanFieldType = TBoolean & {
   kind: "boolean";
 };
 
-export interface NestedStateFieldType {
+export interface NestedStateFieldType<
+  TState extends AnyGameStateDefinition = AnyGameStateDefinition,
+> {
   readonly [fieldKind]: "state";
   kind: "state";
-  target: StateFieldTargetFactory;
+  target: TState;
 }
 
 // Recursive field composition still needs broad defaults internally.
@@ -102,24 +105,29 @@ type FieldStatic<TField> = TField extends { readonly [fieldKind]: "number" }
       : TField extends { readonly [fieldKind]: "array"; item: infer TItem }
         ? ArraySchemaStatic<TItem>
         : TField extends {
-              readonly [fieldKind]: "record";
-              key: infer TKey;
-              value: infer TValue;
+              readonly [fieldKind]: "state";
+              target: infer TState;
             }
-          ? RecordSchemaStatic<TKey, TValue>
+          ? CanonicalStateOf<TState>
           : TField extends {
-                readonly [fieldKind]: "object";
-                properties: infer TProperties extends Record<string, unknown>;
+                readonly [fieldKind]: "record";
+                key: infer TKey;
+                value: infer TValue;
               }
-            ? ObjectSchemaStatic<TProperties>
+            ? RecordSchemaStatic<TKey, TValue>
             : TField extends {
-                  readonly [fieldKind]: "optional";
-                  item: infer TItem;
+                  readonly [fieldKind]: "object";
+                  properties: infer TProperties extends Record<string, unknown>;
                 }
-              ? OptionalSchemaStatic<TItem>
-              : TField extends TSchema
-                ? Static<TField>
-                : never;
+              ? ObjectSchemaStatic<TProperties>
+              : TField extends {
+                    readonly [fieldKind]: "optional";
+                    item: infer TItem;
+                  }
+                ? OptionalSchemaStatic<TItem>
+                : TField extends TSchema
+                  ? Static<TField>
+                  : never;
 
 type OptionalObjectPropertyKeys<TProperties> = {
   [K in keyof TProperties]-?: TProperties[K] extends {

@@ -1,10 +1,5 @@
-import { Type, type TSchema } from "@sinclair/typebox";
-import type {
-  CommandSchema,
-  FieldType,
-  AnyGameDefinition,
-  SerializableFieldType,
-} from "@tabletop-kit/engine";
+import type { TSchema } from "@sinclair/typebox";
+import type { CommandSchema, AnyGameDefinition } from "@tabletop-kit/engine";
 
 export interface GeneratedDiscoveryStepDescriptor {
   stepId: string;
@@ -68,25 +63,6 @@ export function toJsonSchema(schema: unknown): Record<string, unknown> {
   return candidate;
 }
 
-interface CompiledStateFacadeDefinition {
-  root: {
-    name: string;
-  };
-  states: Record<string, CompiledStateDefinition>;
-}
-
-interface CompiledStateDefinition {
-  fields: Record<string, FieldType>;
-  fieldVisibility: Record<string, FieldVisibilityConfig>;
-}
-
-interface FieldVisibilityConfig {
-  mode: VisibilityMode;
-  schema?: SerializableFieldType;
-}
-
-type VisibilityMode = "hidden" | "visible_to_self";
-
 export function describeGameForGeneration(
   game: AnyGameDefinition,
 ): GeneratedGameDescriptor {
@@ -111,9 +87,7 @@ export function describeGameForGeneration(
   return {
     name: game.name,
     commands,
-    viewSchema: createVisibleStateSchema(
-      game.stateFacade as CompiledStateFacadeDefinition | undefined,
-    ),
+    viewSchema: game.visibleStateSchema,
   };
 }
 
@@ -197,146 +171,3 @@ function isCommandSchema(
 ): value is CommandSchema<Record<string, unknown>> {
   return isObjectRecord(value);
 }
-
-function createVisibleStateSchema(
-  compiled?: CompiledStateFacadeDefinition,
-): TSchema {
-  return Type.Object({
-    game: compiled
-      ? inferStateViewSchema(compiled, compiled.root.name)
-      : Type.Unknown(),
-    progression: progressionStateSchema,
-  });
-}
-
-function inferStateViewSchema(
-  compiled: CompiledStateFacadeDefinition,
-  stateName: string,
-): TSchema {
-  const state = compiled.states[stateName];
-
-  if (!state) {
-    throw new Error(`compiled_state_not_found:${stateName}`);
-  }
-
-  return Type.Object(
-    Object.fromEntries(
-      Object.entries(state.fields).map(([fieldName, fieldType]) => {
-        const visibility = state.fieldVisibility[fieldName]?.mode;
-
-        return [
-          fieldName,
-          inferFieldViewSchema(
-            compiled,
-            fieldType,
-            state.fieldVisibility[fieldName],
-            visibility,
-          ),
-        ];
-      }),
-    ),
-  );
-}
-
-function inferFieldViewSchema(
-  compiled: CompiledStateFacadeDefinition,
-  fieldType: FieldType,
-  fieldVisibility: FieldVisibilityConfig | undefined,
-  visibility?: VisibilityMode,
-): TSchema {
-  const visibleSchema = inferVisibleFieldSchema(compiled, fieldType);
-  const hiddenSchema = inferHiddenEnvelopeSchema(fieldVisibility?.schema);
-
-  if (visibility === "hidden") {
-    return hiddenSchema;
-  }
-
-  if (visibility === "visible_to_self") {
-    return Type.Union([visibleSchema, hiddenSchema]);
-  }
-
-  return visibleSchema;
-}
-
-function inferVisibleFieldSchema(
-  compiled: CompiledStateFacadeDefinition,
-  fieldType: FieldType,
-): TSchema {
-  if (fieldType.kind === "state") {
-    return inferStateViewSchema(compiled, fieldType.target().name);
-  }
-
-  if (fieldType.kind === "array") {
-    return Type.Array(inferVisibleFieldSchema(compiled, fieldType.item));
-  }
-
-  if (fieldType.kind === "record") {
-    return Type.Record(
-      inferRecordKeySchema(fieldType.key),
-      inferVisibleFieldSchema(compiled, fieldType.value),
-    );
-  }
-
-  if (fieldType.kind === "object") {
-    return Type.Object(
-      Object.fromEntries(
-        Object.entries(fieldType.properties).map(([key, nestedField]) => [
-          key,
-          inferVisibleFieldSchema(compiled, nestedField),
-        ]),
-      ),
-    );
-  }
-
-  if (fieldType.kind === "optional") {
-    return Type.Optional(inferVisibleFieldSchema(compiled, fieldType.item));
-  }
-
-  return toTypeBoxSchema(fieldType);
-}
-
-function inferRecordKeySchema(fieldType: FieldType): TSchema {
-  if (fieldType.kind === "string") {
-    return fieldType;
-  }
-
-  return Type.String();
-}
-
-function toTypeBoxSchema(schema: SerializableFieldType | FieldType): TSchema {
-  if (schema.kind === "state") {
-    return Type.Unknown();
-  }
-
-  return schema;
-}
-
-function inferHiddenEnvelopeSchema(schema?: SerializableFieldType): TSchema {
-  if (!schema) {
-    return hiddenEnvelopeSchema;
-  }
-
-  return Type.Object({
-    __hidden: Type.Literal(true),
-    value: toTypeBoxSchema(schema),
-  });
-}
-
-const hiddenEnvelopeSchema = Type.Object({
-  __hidden: Type.Literal(true),
-});
-
-const progressionSegmentSchema = Type.Object({
-  id: Type.String(),
-  kind: Type.Optional(Type.String()),
-  parentId: Type.Optional(Type.String()),
-  childIds: Type.Array(Type.String()),
-  active: Type.Boolean(),
-  ownerId: Type.Optional(Type.String()),
-});
-
-const progressionStateSchema = Type.Object({
-  current: Type.Union([Type.String(), Type.Null()]),
-  rootId: Type.Union([Type.String(), Type.Null()]),
-  segments: Type.Record(Type.String(), progressionSegmentSchema),
-});

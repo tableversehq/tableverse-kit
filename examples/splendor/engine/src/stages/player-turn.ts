@@ -15,13 +15,17 @@ interface CreatePlayerTurnStageOptions {
   getReturnExcessiveTokensStage: () => SingleActivePlayerStageDefinition<SplendorGameState>;
 }
 
-export function createPlayerTurnStage({
+export function createPlayerTurnStage<
+  const TCommands extends readonly DefinedCommand<SplendorGameState>[],
+>({
   defineStage,
   commands,
   getResolveNobleStage,
   getCheckVictoryConditionStage,
   getReturnExcessiveTokensStage,
-}: CreatePlayerTurnStageOptions): SingleActivePlayerStageDefinition<SplendorGameState> {
+}: CreatePlayerTurnStageOptions & {
+  commands: TCommands;
+}): SingleActivePlayerStageDefinition<SplendorGameState, TCommands> {
   return defineStage("playerTurn")
     .singleActivePlayer()
     .activePlayer(({ game, runtime }) => {

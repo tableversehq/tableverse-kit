@@ -1,25 +1,19 @@
-import { field, GameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tabletop-kit/engine";
 import { TOKEN_COLORS, type TokenColor } from "./constants.ts";
 
 export type ReturnTokensPayload = Partial<Record<TokenColor, number>>;
 
-export class TokenCountsState extends GameState {
-  @field(t.number())
+export class TokenCountsState {
   white = 0;
 
-  @field(t.number())
   blue = 0;
 
-  @field(t.number())
   green = 0;
 
-  @field(t.number())
   red = 0;
 
-  @field(t.number())
   black = 0;
 
-  @field(t.number())
   gold = 0;
 
   static empty(): TokenCountsState {
@@ -117,3 +111,15 @@ export class TokenCountsState extends GameState {
     target.applyDelta(delta, 1);
   }
 }
+
+export const TokenCounts = defineGameState()
+  .model({
+    white: t.number(),
+    blue: t.number(),
+    green: t.number(),
+    red: t.number(),
+    black: t.number(),
+    gold: t.number(),
+  })
+  .stateClass(TokenCountsState)
+  .build();

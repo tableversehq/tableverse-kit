@@ -4,14 +4,14 @@ import {
   t,
 } from "@tabletop-kit/engine";
 import { setupSplendorGame } from "./setup.ts";
-import { SplendorGameState as SplendorRootState } from "./state.ts";
+import { SplendorGame as SplendorRootState } from "./state.ts";
 import { createSplendorStages } from "./stages/index.ts";
 
 export function createSplendorGame() {
   const { initialStage } = createSplendorStages();
 
   return new GameDefinitionBuilder("splendor")
-    .rootState(SplendorRootState)
+    .state(SplendorRootState)
     .setupInput(
       t.object({
         playerIds: t.array(t.string()),

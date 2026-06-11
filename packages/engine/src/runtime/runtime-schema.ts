@@ -5,12 +5,11 @@ import type {
   SingleActivePlayerStageDefinition,
   StageDefinition,
 } from "../types/progression";
-import type { GameState as BaseGameState } from "../state-facade/metadata";
 
 const seedSchema = Type.Union([Type.String(), Type.Number()]);
 
 function createAutomaticStageStateSchema(
-  stage: AutomaticStageDefinition<BaseGameState>,
+  stage: AutomaticStageDefinition<object>,
 ): TSchema {
   return Type.Object({
     id: Type.Literal(stage.id),
@@ -19,7 +18,7 @@ function createAutomaticStageStateSchema(
 }
 
 function createSingleActivePlayerStageStateSchema(
-  stage: SingleActivePlayerStageDefinition<BaseGameState>,
+  stage: SingleActivePlayerStageDefinition<object>,
 ): TSchema {
   return Type.Object({
     id: Type.Literal(stage.id),
@@ -29,7 +28,7 @@ function createSingleActivePlayerStageStateSchema(
 }
 
 function createMultiActivePlayerStageStateSchema(
-  stage: MultiActivePlayerStageDefinition<BaseGameState>,
+  stage: MultiActivePlayerStageDefinition<object>,
 ): TSchema {
   return Type.Object({
     id: Type.Literal(stage.id),
@@ -39,9 +38,7 @@ function createMultiActivePlayerStageStateSchema(
   });
 }
 
-function createStageStateSchema(
-  stage: StageDefinition<BaseGameState>,
-): TSchema {
+function createStageStateSchema(stage: StageDefinition<object>): TSchema {
   switch (stage.kind) {
     case "automatic":
       return createAutomaticStageStateSchema(stage);
@@ -64,8 +61,8 @@ function createUnionSchema(schemas: TSchema[]): TSchema {
   return Type.Union(schemas);
 }
 
-export function compileRuntimeStateSchema(
-  stages: Record<string, StageDefinition<BaseGameState>>,
+export function compileProgressionStateSchema(
+  stages: Record<string, StageDefinition<object>>,
 ): TSchema {
   const stageDefinitions = Object.values(stages);
   const currentStageSchema = createUnionSchema(
@@ -79,10 +76,16 @@ export function compileRuntimeStateSchema(
   ]);
 
   return Type.Object({
-    progression: Type.Object({
-      currentStage: currentStageSchema,
-      lastActingStage: lastActingStageSchema,
-    }),
+    currentStage: currentStageSchema,
+    lastActingStage: lastActingStageSchema,
+  });
+}
+
+export function compileRuntimeStateSchema(
+  stages: Record<string, StageDefinition<object>>,
+): TSchema {
+  return Type.Object({
+    progression: compileProgressionStateSchema(stages),
     rng: Type.Object({
       seed: seedSchema,
       cursor: Type.Number(),

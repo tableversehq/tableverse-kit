@@ -4,6 +4,7 @@ import { SPLENDOR_DISCOVERY_STEPS } from "../src/discovery.ts";
 import { createCommands } from "../src/commands/index.ts";
 import { returnTokensCommand } from "../src/commands/return-tokens.ts";
 import { createSplendorGame } from "../src/game";
+import { SplendorGame, SplendorPlayer } from "../src/state.ts";
 
 const TEST_SEED = "splendor-seed";
 
@@ -47,8 +48,8 @@ test("splendor setup follows official 2-player rules", () => {
 test("splendor game definition compiles a root state facade", () => {
   const game = createSplendorGame();
 
-  expect(game.stateFacade?.root.name).toBe("SplendorGameState");
-  const rootFields = game.stateFacade?.states.SplendorGameState?.fields;
+  expect(game.stateFacade?.root).toBe(SplendorGame);
+  const rootFields = game.stateFacade?.states.get(SplendorGame)?.model;
 
   expect(rootFields?.playerOrder?.kind).toBe("array");
   expect(rootFields?.bank?.kind).toBe("state");
@@ -57,7 +58,7 @@ test("splendor game definition compiles a root state facade", () => {
     throw new Error("expected players to compile as a state record");
   }
   expect(rootFields.players.value.kind).toBe("state");
-  expect(game.stateFacade?.states.SplendorPlayerState).toBeDefined();
+  expect(game.stateFacade?.states.get(SplendorPlayer)).toBeDefined();
 });
 
 test("splendor visible state hides deck contents and opponent reserved cards", () => {

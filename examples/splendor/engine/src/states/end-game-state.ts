@@ -1,10 +1,8 @@
-import { field, GameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tabletop-kit/engine";
 
-export class SplendorEndGameState extends GameState {
-  @field(t.string())
+export class SplendorEndGameState {
   triggeredByPlayerId!: string;
 
-  @field(t.string())
   endsAfterPlayerId!: string;
 
   static create(
@@ -17,3 +15,11 @@ export class SplendorEndGameState extends GameState {
     return endGame;
   }
 }
+
+export const SplendorEndGame = defineGameState()
+  .model({
+    triggeredByPlayerId: t.string(),
+    endsAfterPlayerId: t.string(),
+  })
+  .stateClass(SplendorEndGameState)
+  .build();

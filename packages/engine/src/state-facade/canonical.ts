@@ -1,35 +1,29 @@
 import { Value } from "@sinclair/typebox/value";
 import type { TSchema } from "@sinclair/typebox";
 import { t, type FieldType, type ObjectFieldType } from "../schema";
-import {
-  getStateMetadata,
-  type GameState,
-  type GameStateClass,
-} from "./metadata";
+import type {
+  CanonicalStateOf,
+  AnyGameStateDefinition,
+} from "../state/game-state";
 
-type NonFunctionPropertyKeys<TObject> = {
-  [K in keyof TObject]: TObject[K] extends (...args: never[]) => unknown
-    ? never
-    : K;
-}[keyof TObject];
-
-// Compile-time view of a facade state as canonical plain data, omitting methods.
-export type CanonicalGameState<TState> = TState extends readonly (infer TItem)[]
-  ? CanonicalGameState<TItem>[]
-  : TState extends object
-    ? {
-        [K in NonFunctionPropertyKeys<TState>]: CanonicalGameState<TState[K]>;
-      }
-    : TState;
+export type CanonicalGameState<TState> = TState extends AnyGameStateDefinition
+  ? CanonicalStateOf<TState>
+  : TState extends readonly (infer TItem)[]
+    ? CanonicalGameState<TItem>[]
+    : TState extends object
+      ? {
+          [K in keyof TState as TState[K] extends (...args: never[]) => unknown
+            ? never
+            : K]: CanonicalGameState<TState[K]>;
+        }
+      : TState;
 
 export function compileCanonicalGameStateSchema(
-  root: GameStateClass,
+  root: AnyGameStateDefinition,
 ): ObjectFieldType<Record<string, FieldType>> {
-  const metadata = getStateMetadata(root);
-
   return t.object(
     Object.fromEntries(
-      Object.entries(metadata.fields).map(([fieldName, field]) => [
+      Object.entries(root.model).map(([fieldName, field]) => [
         fieldName,
         compileFieldSchema(field),
       ]),
@@ -37,30 +31,29 @@ export function compileCanonicalGameStateSchema(
   );
 }
 
-export function createDefaultCanonicalGameState<TState extends GameState>(
-  root: GameStateClass<TState>,
-): CanonicalGameState<TState> {
+export function createDefaultCanonicalGameState<
+  TState extends AnyGameStateDefinition,
+>(root: TState): CanonicalStateOf<TState> {
   return createCanonicalStateObject(
     root,
-    new root(),
-  ) as CanonicalGameState<TState>;
+    new root.stateClass(),
+  ) as CanonicalStateOf<TState>;
 }
 
 function createCanonicalStateObject(
-  target: GameStateClass,
+  state: AnyGameStateDefinition,
   source: object,
 ): object {
-  const metadata = getStateMetadata(target);
-  const stateName = target.name || "anonymous";
+  const stateName = state.stateClass.name || "anonymous";
 
   for (const fieldName of Object.keys(source)) {
-    if (metadata.fields[fieldName] === undefined) {
+    if (state.model[fieldName] === undefined) {
       throw new Error(`undeclared_state_field_value:${stateName}.${fieldName}`);
     }
   }
 
   return Object.fromEntries(
-    Object.entries(metadata.fields).map(([fieldName, field]) => [
+    Object.entries(state.model).map(([fieldName, field]) => [
       fieldName,
       createCanonicalFieldValue(
         field,
@@ -76,7 +69,7 @@ function createCanonicalStateObject(
 
 function compileFieldSchema(field: FieldType): FieldType {
   if (field.kind === "state") {
-    return compileCanonicalGameStateSchema(field.target());
+    return compileCanonicalGameStateSchema(field.target);
   }
 
   if (field.kind === "array") {
@@ -129,9 +122,9 @@ function createUncheckedCanonicalFieldValue(
   },
 ): unknown {
   if (field.kind === "state") {
-    const source = value === undefined ? new (field.target())() : value;
+    const source = value === undefined ? new field.target.stateClass() : value;
     assertDefaultFieldObject(source, path, "object");
-    return createCanonicalStateObject(field.target(), source as object);
+    return createCanonicalStateObject(field.target, source as object);
   }
 
   if (field.kind === "optional") {
@@ -259,7 +252,7 @@ function throwInvalidDefaultFieldShape(
   expected: "array" | "object",
 ): never {
   throw new Error(
-    `invalid_default_field_shape:${path.stateName}.${path.fieldName}:${expected}`,
+    `invalid_default_field_shape:${path.stateName}.${path.fieldName}:expected_${expected}`,
   );
 }
 
@@ -272,6 +265,6 @@ function throwInvalidDefaultRecordKey(
   expected: "number" | "boolean",
 ): never {
   throw new Error(
-    `invalid_default_record_key:${path.stateName}.${path.fieldName}:${key}:${expected}`,
+    `invalid_default_record_key:${path.stateName}.${path.fieldName}:${key}:expected_${expected}`,
   );
 }

@@ -7,9 +7,13 @@ export {
 export { DEVELOPMENT_LEVELS, type DevelopmentLevel } from "./data/types.ts";
 export {
   type ReturnTokensPayload,
+  TokenCounts,
   TokenCountsState,
 } from "./states/token-counts-state.ts";
-export { SplendorBoardState } from "./states/board-state.ts";
-export { SplendorEndGameState } from "./states/end-game-state.ts";
-export { SplendorPlayerState } from "./states/player-state.ts";
-export { SplendorGameState } from "./states/game-state.ts";
+export { SplendorBoard, SplendorBoardState } from "./states/board-state.ts";
+export {
+  SplendorEndGame,
+  SplendorEndGameState,
+} from "./states/end-game-state.ts";
+export { SplendorPlayer, SplendorPlayerState } from "./states/player-state.ts";
+export { SplendorGame, SplendorGameState } from "./states/game-state.ts";

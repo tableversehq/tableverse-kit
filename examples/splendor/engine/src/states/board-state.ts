@@ -1,4 +1,4 @@
-import { configureVisibility, field, GameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tabletop-kit/engine";
 import type { DevelopmentLevel } from "../data/types.ts";
 
 const hiddenDeckSchema = t.object({
@@ -7,22 +7,19 @@ const hiddenDeckSchema = t.object({
   3: t.number(),
 });
 
-export class SplendorBoardState extends GameState {
-  @field(t.record(t.number(), t.array(t.number())))
+export class SplendorBoardState {
   faceUpByLevel: Record<DevelopmentLevel, number[]> = {
     1: [],
     2: [],
     3: [],
   };
 
-  @field(t.record(t.number(), t.array(t.number())))
   deckByLevel: Record<DevelopmentLevel, number[]> = {
     1: [],
     2: [],
     3: [],
   };
 
-  @field(t.array(t.number()))
   nobleIds: number[] = [];
 
   static createEmpty(): SplendorBoardState {
@@ -85,9 +82,15 @@ export class SplendorBoardState extends GameState {
   }
 }
 
-configureVisibility(SplendorBoardState, ({ field }) => ({
-  fields: [
-    field.deckByLevel.hidden({
+export const SplendorBoard = defineGameState()
+  .model({
+    faceUpByLevel: t.record(t.number(), t.array(t.number())),
+    deckByLevel: t.record(t.number(), t.array(t.number())),
+    nobleIds: t.array(t.number()),
+  })
+  .stateClass(SplendorBoardState)
+  .visibility((v) => [
+    v.field("deckByLevel").hidden({
       schema: hiddenDeckSchema,
       derive(deckByLevel) {
         return {
@@ -97,5 +100,5 @@ configureVisibility(SplendorBoardState, ({ field }) => ({
         };
       },
     }),
-  ],
-}));
+  ])
+  .build();

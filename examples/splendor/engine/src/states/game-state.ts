@@ -1,13 +1,13 @@
 import type { GameEvent } from "@tabletop-kit/engine";
-import { field, GameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tabletop-kit/engine";
 import { developmentCardsById } from "../data/cards.ts";
 import { nobleTilesById } from "../data/nobles.ts";
 import type { CardCost, DevelopmentCard, NobleTile } from "../data/types.ts";
 import { type GemTokenColor } from "./constants.ts";
-import { SplendorBoardState } from "./board-state.ts";
-import { SplendorEndGameState } from "./end-game-state.ts";
-import { SplendorPlayerState } from "./player-state.ts";
-import { TokenCountsState } from "./token-counts-state.ts";
+import { SplendorBoard, SplendorBoardState } from "./board-state.ts";
+import { SplendorEndGame, SplendorEndGameState } from "./end-game-state.ts";
+import { SplendorPlayer, SplendorPlayerState } from "./player-state.ts";
+import { TokenCounts, TokenCountsState } from "./token-counts-state.ts";
 
 const TOKEN_COLOR_MAP = {
   White: "white",
@@ -17,29 +17,18 @@ const TOKEN_COLOR_MAP = {
   Black: "black",
 } as const satisfies Record<keyof CardCost, GemTokenColor>;
 
-export class SplendorGameState extends GameState {
-  @field(t.array(t.string()))
+export class SplendorGameState {
   playerOrder: string[] = [];
 
-  @field(
-    t.record(
-      t.string(),
-      t.state(() => SplendorPlayerState),
-    ),
-  )
   players: Record<string, SplendorPlayerState> = {};
 
-  @field(t.state(() => TokenCountsState))
   bank!: TokenCountsState;
 
-  @field(t.state(() => SplendorBoardState))
   board!: SplendorBoardState;
 
-  @field(t.optional(t.state(() => SplendorEndGameState)))
-  endGame?: SplendorEndGameState;
+  endGame: SplendorEndGameState | undefined = undefined;
 
-  @field(t.optional(t.array(t.string())))
-  winnerIds?: string[];
+  winnerIds: string[] | undefined = undefined;
 
   static createInitial(playerIds: readonly string[]): SplendorGameState {
     const game = new SplendorGameState();
@@ -214,3 +203,15 @@ export class SplendorGameState extends GameState {
       .map((player) => player.id);
   }
 }
+
+export const SplendorGame = defineGameState()
+  .model({
+    playerOrder: t.array(t.string()),
+    players: t.record(t.string(), t.state(SplendorPlayer)),
+    bank: t.state(TokenCounts),
+    board: t.state(SplendorBoard),
+    endGame: t.optional(t.state(SplendorEndGame)),
+    winnerIds: t.optional(t.array(t.string())),
+  })
+  .stateClass(SplendorGameState)
+  .build();

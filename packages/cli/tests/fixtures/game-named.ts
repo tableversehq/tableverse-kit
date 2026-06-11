@@ -1,21 +1,26 @@
 import {
   createStageFactory,
-  field,
-  GameState,
   GameDefinitionBuilder,
+  defineGameState,
   t,
 } from "@tabletop-kit/engine";
 
-class FixtureState extends GameState {
-  @field(t.number())
+class FixtureState {
   value = 1;
 }
+
+const FixtureGameState = defineGameState()
+  .model({
+    value: t.number(),
+  })
+  .stateClass(FixtureState)
+  .build();
 
 export function createFixtureGame() {
   const stageFactory = createStageFactory<FixtureState>();
 
   return new GameDefinitionBuilder("fixture-named")
-    .rootState(FixtureState)
+    .state(FixtureGameState)
     .initialStage(stageFactory("done").automatic().build())
     .build();
 }

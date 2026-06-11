@@ -40,24 +40,31 @@ rules package:
 - command validation, execution, availability, and discovery
 - stage/progression lifecycle orchestration
 - deterministic RNG
-- class-authored state facades with `GameState`, `@field(...)`, and `t`
+- explicit state definitions with `defineGameState(...)`, plain state classes,
+  and `t`
 - hidden-information projection with `getView(...)`
-- visibility configuration through `configureVisibility(...)`
+- visibility configuration through the state builder
 - snapshots, replay helpers, and scenario testing
 
-Example state facade:
+Example state definition:
 
 ```ts
-import { field, GameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tabletop-kit/engine";
 
-class CounterState extends GameState {
-  @field(t.number())
+class CounterState {
   value = 0;
 
   increment() {
     this.value += 1;
   }
 }
+
+const Counter = defineGameState()
+  .model({
+    value: t.number(),
+  })
+  .stateClass(CounterState)
+  .build();
 ```
 
 ## CLI

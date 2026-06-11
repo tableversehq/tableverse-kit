@@ -17,7 +17,6 @@ import {
 } from "./types/progression";
 import { assertSerializableSchema } from "./schema";
 import type { FieldType, ObjectFieldType } from "./schema";
-import type { GameState as BaseGameState } from "./state-facade/metadata";
 
 type NoBuilderMethod = Record<never, never>;
 type NoNextStages = Record<string, never>;
@@ -26,9 +25,9 @@ type TExtractNextStages<Resolver> = Resolver extends () => infer NextStages
   : never;
 
 type SingleActivePlayerBuildMethod<
-  GameState extends BaseGameState,
-  Commands extends readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  Commands extends readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState>,
   HasActivePlayer extends boolean,
   HasCommands extends boolean,
   HasTransition extends boolean,
@@ -37,7 +36,7 @@ type SingleActivePlayerBuildMethod<
     ? HasTransition extends true
       ? {
           build(): SingleActivePlayerStageDefinition<
-            GameState,
+            HydratedState,
             Commands,
             NextStages
           >;
@@ -47,17 +46,17 @@ type SingleActivePlayerBuildMethod<
   : NoBuilderMethod;
 
 type AutomaticBuildMethod<
-  GameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState>,
 > = {
-  build(): AutomaticStageDefinition<GameState, NextStages>;
+  build(): AutomaticStageDefinition<HydratedState, NextStages>;
 };
 
 type MultiActivePlayerBuildMethod<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object,
-  Commands extends readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState>,
+  Commands extends readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState>,
   HasMemory extends boolean,
   HasActivePlayers extends boolean,
   HasCommands extends boolean,
@@ -74,7 +73,7 @@ type MultiActivePlayerBuildMethod<
             ? HasTransition extends true
               ? {
                   build(): MultiActivePlayerStageDefinition<
-                    GameState,
+                    HydratedState,
                     Memory,
                     Commands,
                     NextStages
@@ -89,40 +88,40 @@ type MultiActivePlayerBuildMethod<
   : NoBuilderMethod;
 
 export type SingleActivePlayerStageBuilder<
-  GameState extends BaseGameState,
-  Commands extends readonly DefinedCommand<GameState>[] =
-    readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState> = NoNextStages,
+  HydratedState extends object,
+  Commands extends readonly DefinedCommand<HydratedState>[] =
+    readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState> = NoNextStages,
   HasActivePlayer extends boolean = false,
   HasCommands extends boolean = false,
   HasTransition extends boolean = false,
 > = {
   activePlayer(
     activePlayer: (
-      context: SingleActivePlayerSelectionContext<GameState>,
+      context: SingleActivePlayerSelectionContext<HydratedState>,
     ) => string,
   ): SingleActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Commands,
     NextStages,
     true,
     HasCommands,
     HasTransition
   >;
-  commands<NextCommands extends readonly DefinedCommand<GameState>[]>(
+  commands<NextCommands extends readonly DefinedCommand<HydratedState>[]>(
     commands: NextCommands,
   ): SingleActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     NextCommands,
     NextStages,
     HasActivePlayer,
     true,
     HasTransition
   >;
-  nextStages<TNextStages extends StageDefinitionMap<GameState>>(
-    nextStages: StageDefinitionResolver<GameState, TNextStages>,
+  nextStages<TNextStages extends StageDefinitionMap<HydratedState>>(
+    nextStages: StageDefinitionResolver<HydratedState, TNextStages>,
   ): SingleActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Commands,
     TNextStages,
     HasActivePlayer,
@@ -132,15 +131,15 @@ export type SingleActivePlayerStageBuilder<
   transition(
     transition: (
       context: SingleActivePlayerTransitionContext<
-        GameState,
+        HydratedState,
         CommandsFromDefinitions<Commands>,
         NextStages
       >,
     ) =>
-      | SingleActivePlayerStageDefinition<GameState>
+      | SingleActivePlayerStageDefinition<HydratedState>
       | NextStages[keyof NextStages],
   ): SingleActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Commands,
     NextStages,
     HasActivePlayer,
@@ -148,7 +147,7 @@ export type SingleActivePlayerStageBuilder<
     true
   >;
 } & SingleActivePlayerBuildMethod<
-  GameState,
+  HydratedState,
   Commands,
   NextStages,
   HasActivePlayer,
@@ -157,28 +156,28 @@ export type SingleActivePlayerStageBuilder<
 >;
 
 export type AutomaticStageBuilder<
-  GameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<GameState> = NoNextStages,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState> = NoNextStages,
 > = {
   run(
-    run: (context: AutomaticStageRunContext<GameState>) => void,
-  ): AutomaticStageBuilder<GameState, NextStages>;
-  nextStages<TNextStages extends StageDefinitionMap<GameState>>(
-    nextStages: StageDefinitionResolver<GameState, TNextStages>,
-  ): AutomaticStageBuilder<GameState, TNextStages>;
+    run: (context: AutomaticStageRunContext<HydratedState>) => void,
+  ): AutomaticStageBuilder<HydratedState, NextStages>;
+  nextStages<TNextStages extends StageDefinitionMap<HydratedState>>(
+    nextStages: StageDefinitionResolver<HydratedState, TNextStages>,
+  ): AutomaticStageBuilder<HydratedState, TNextStages>;
   transition(
     transition: (
-      context: AutomaticStageTransitionContext<GameState, NextStages>,
-    ) => AutomaticStageDefinition<GameState> | NextStages[keyof NextStages],
-  ): AutomaticStageBuilder<GameState, NextStages>;
-} & AutomaticBuildMethod<GameState, NextStages>;
+      context: AutomaticStageTransitionContext<HydratedState, NextStages>,
+    ) => AutomaticStageDefinition<HydratedState> | NextStages[keyof NextStages],
+  ): AutomaticStageBuilder<HydratedState, NextStages>;
+} & AutomaticBuildMethod<HydratedState, NextStages>;
 
 export type MultiActivePlayerStageBuilder<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object = Record<string, never>,
-  Commands extends readonly DefinedCommand<GameState>[] =
-    readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState> = NoNextStages,
+  Commands extends readonly DefinedCommand<HydratedState>[] =
+    readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState> = NoNextStages,
   HasMemory extends boolean = false,
   HasActivePlayers extends boolean = false,
   HasCommands extends boolean = false,
@@ -191,7 +190,7 @@ export type MultiActivePlayerStageBuilder<
     memorySchema: ObjectFieldType<Record<string, FieldType>>,
     memory: () => NextMemory,
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     NextMemory,
     Commands,
     NextStages,
@@ -205,10 +204,10 @@ export type MultiActivePlayerStageBuilder<
   >;
   activePlayers(
     activePlayers: (
-      context: MultiActivePlayerMemoryContext<GameState, Memory>,
+      context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
     ) => string[],
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Memory,
     Commands,
     NextStages,
@@ -220,10 +219,10 @@ export type MultiActivePlayerStageBuilder<
     HasNextStages,
     HasTransition
   >;
-  commands<NextCommands extends readonly DefinedCommand<GameState>[]>(
+  commands<NextCommands extends readonly DefinedCommand<HydratedState>[]>(
     commands: NextCommands,
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Memory,
     NextCommands,
     NextStages,
@@ -238,13 +237,13 @@ export type MultiActivePlayerStageBuilder<
   onSubmit(
     onSubmit: (
       context: MultiActivePlayerSubmitContext<
-        GameState,
+        HydratedState,
         Memory,
         CommandsFromDefinitions<Commands>
       >,
     ) => void,
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Memory,
     Commands,
     NextStages,
@@ -258,10 +257,10 @@ export type MultiActivePlayerStageBuilder<
   >;
   isComplete(
     isComplete: (
-      context: MultiActivePlayerMemoryContext<GameState, Memory>,
+      context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
     ) => boolean,
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Memory,
     Commands,
     NextStages,
@@ -273,10 +272,10 @@ export type MultiActivePlayerStageBuilder<
     HasNextStages,
     HasTransition
   >;
-  nextStages<TNextStages extends StageDefinitionMap<GameState>>(
-    nextStages: StageDefinitionResolver<GameState, TNextStages>,
+  nextStages<TNextStages extends StageDefinitionMap<HydratedState>>(
+    nextStages: StageDefinitionResolver<HydratedState, TNextStages>,
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Memory,
     Commands,
     TNextStages,
@@ -291,15 +290,15 @@ export type MultiActivePlayerStageBuilder<
   transition(
     transition: (
       context: MultiActivePlayerTransitionContext<
-        GameState,
+        HydratedState,
         Memory,
         NextStages
       >,
     ) =>
-      | MultiActivePlayerStageDefinition<GameState>
+      | MultiActivePlayerStageDefinition<HydratedState>
       | NextStages[keyof NextStages],
   ): MultiActivePlayerStageBuilder<
-    GameState,
+    HydratedState,
     Memory,
     Commands,
     NextStages,
@@ -312,7 +311,7 @@ export type MultiActivePlayerStageBuilder<
     true
   >;
 } & MultiActivePlayerBuildMethod<
-  GameState,
+  HydratedState,
   Memory,
   Commands,
   NextStages,
@@ -325,91 +324,95 @@ export type MultiActivePlayerStageBuilder<
   HasTransition
 >;
 
-export interface StageFactory<GameState extends BaseGameState> {
+export interface StageFactory<HydratedState extends object> {
   (id: string): {
-    singleActivePlayer(): SingleActivePlayerStageBuilder<GameState>;
-    automatic(): AutomaticStageBuilder<GameState>;
-    multiActivePlayer(): MultiActivePlayerStageBuilder<GameState>;
+    singleActivePlayer(): SingleActivePlayerStageBuilder<HydratedState>;
+    automatic(): AutomaticStageBuilder<HydratedState>;
+    multiActivePlayer(): MultiActivePlayerStageBuilder<HydratedState>;
   };
 }
 
 type SingleActivePlayerAccumulator<
-  GameState extends BaseGameState,
-  Commands extends readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  Commands extends readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState>,
 > = {
   id: string;
   kind: "activePlayer";
   activePlayer?: (
-    context: SingleActivePlayerSelectionContext<GameState>,
+    context: SingleActivePlayerSelectionContext<HydratedState>,
   ) => string;
   commands?: Commands;
-  nextStages?: StageDefinitionResolver<GameState, NextStages>;
+  nextStages?: StageDefinitionResolver<HydratedState, NextStages>;
   transition?: (
     context: SingleActivePlayerTransitionContext<
-      GameState,
+      HydratedState,
       CommandsFromDefinitions<Commands>,
       NextStages
     >,
   ) =>
-    | SingleActivePlayerStageDefinition<GameState>
+    | SingleActivePlayerStageDefinition<HydratedState>
     | NextStages[keyof NextStages];
 };
 
 type AutomaticAccumulator<
-  GameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState>,
 > = {
   id: string;
   kind: "automatic";
-  run?: (context: AutomaticStageRunContext<GameState>) => void;
-  nextStages?: StageDefinitionResolver<GameState, NextStages>;
+  run?: (context: AutomaticStageRunContext<HydratedState>) => void;
+  nextStages?: StageDefinitionResolver<HydratedState, NextStages>;
   transition?: (
-    context: AutomaticStageTransitionContext<GameState, NextStages>,
-  ) => AutomaticStageDefinition<GameState> | NextStages[keyof NextStages];
+    context: AutomaticStageTransitionContext<HydratedState, NextStages>,
+  ) => AutomaticStageDefinition<HydratedState> | NextStages[keyof NextStages];
 };
 
 type MultiActivePlayerAccumulator<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object,
-  Commands extends readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState>,
+  Commands extends readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState>,
 > = {
   id: string;
   kind: "multiActivePlayer";
   memorySchema?: ObjectFieldType<Record<string, FieldType>>;
   memory?: () => Memory;
   activePlayers?: (
-    context: MultiActivePlayerMemoryContext<GameState, Memory>,
+    context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
   ) => string[];
   commands?: Commands;
   onSubmit?: (
     context: MultiActivePlayerSubmitContext<
-      GameState,
+      HydratedState,
       Memory,
       CommandsFromDefinitions<Commands>
     >,
   ) => void;
   isComplete?: (
-    context: MultiActivePlayerMemoryContext<GameState, Memory>,
+    context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
   ) => boolean;
-  nextStages?: StageDefinitionResolver<GameState, NextStages>;
+  nextStages?: StageDefinitionResolver<HydratedState, NextStages>;
   transition?: (
-    context: MultiActivePlayerTransitionContext<GameState, Memory, NextStages>,
+    context: MultiActivePlayerTransitionContext<
+      HydratedState,
+      Memory,
+      NextStages
+    >,
   ) =>
-    | MultiActivePlayerStageDefinition<GameState>
+    | MultiActivePlayerStageDefinition<HydratedState>
     | NextStages[keyof NextStages];
 };
 
 export function createStageFactory<
-  GameState extends BaseGameState,
->(): StageFactory<GameState> {
+  HydratedState extends object,
+>(): StageFactory<HydratedState> {
   return (id: string) => {
     return {
       singleActivePlayer() {
         return createSingleActivePlayerBuilder<
-          GameState,
-          readonly DefinedCommand<GameState>[],
+          HydratedState,
+          readonly DefinedCommand<HydratedState>[],
           NoNextStages
         >({
           id,
@@ -417,16 +420,16 @@ export function createStageFactory<
         });
       },
       automatic() {
-        return createAutomaticBuilder<GameState, NoNextStages>({
+        return createAutomaticBuilder<HydratedState, NoNextStages>({
           id,
           kind: "automatic",
         });
       },
       multiActivePlayer() {
         return createMultiActivePlayerBuilder<
-          GameState,
+          HydratedState,
           Record<string, never>,
-          readonly DefinedCommand<GameState>[],
+          readonly DefinedCommand<HydratedState>[],
           NoNextStages
         >({
           id,
@@ -438,16 +441,20 @@ export function createStageFactory<
 }
 
 function createSingleActivePlayerBuilder<
-  GameState extends BaseGameState,
-  Commands extends readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  Commands extends readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState>,
   HasActivePlayer extends boolean = false,
   HasCommands extends boolean = false,
   HasTransition extends boolean = false,
 >(
-  accumulator: SingleActivePlayerAccumulator<GameState, Commands, NextStages>,
+  accumulator: SingleActivePlayerAccumulator<
+    HydratedState,
+    Commands,
+    NextStages
+  >,
 ): SingleActivePlayerStageBuilder<
-  GameState,
+  HydratedState,
   Commands,
   NextStages,
   HasActivePlayer,
@@ -457,7 +464,7 @@ function createSingleActivePlayerBuilder<
   return {
     activePlayer(activePlayer) {
       return createSingleActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Commands,
         NextStages,
         true,
@@ -468,11 +475,11 @@ function createSingleActivePlayerBuilder<
         activePlayer,
       });
     },
-    commands<NextCommands extends readonly DefinedCommand<GameState>[]>(
+    commands<NextCommands extends readonly DefinedCommand<HydratedState>[]>(
       commands: NextCommands,
     ) {
       return createSingleActivePlayerBuilder<
-        GameState,
+        HydratedState,
         NextCommands,
         NextStages,
         HasActivePlayer,
@@ -485,7 +492,7 @@ function createSingleActivePlayerBuilder<
     },
     nextStages(nextStages) {
       return createSingleActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Commands,
         TExtractNextStages<typeof nextStages>,
         HasActivePlayer,
@@ -495,14 +502,14 @@ function createSingleActivePlayerBuilder<
         ...accumulator,
         nextStages,
       } as unknown as SingleActivePlayerAccumulator<
-        GameState,
+        HydratedState,
         Commands,
         TExtractNextStages<typeof nextStages>
       >);
     },
     transition(transition) {
       return createSingleActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Commands,
         NextStages,
         HasActivePlayer,
@@ -540,11 +547,11 @@ function createSingleActivePlayerBuilder<
 }
 
 function createAutomaticBuilder<
-  GameState extends BaseGameState,
-  NextStages extends StageDefinitionMap<GameState>,
+  HydratedState extends object,
+  NextStages extends StageDefinitionMap<HydratedState>,
 >(
-  accumulator: AutomaticAccumulator<GameState, NextStages>,
-): AutomaticStageBuilder<GameState, NextStages> {
+  accumulator: AutomaticAccumulator<HydratedState, NextStages>,
+): AutomaticStageBuilder<HydratedState, NextStages> {
   return {
     run(run) {
       return createAutomaticBuilder({
@@ -554,13 +561,13 @@ function createAutomaticBuilder<
     },
     nextStages(nextStages) {
       return createAutomaticBuilder<
-        GameState,
+        HydratedState,
         TExtractNextStages<typeof nextStages>
       >({
         ...accumulator,
         nextStages,
       } as unknown as AutomaticAccumulator<
-        GameState,
+        HydratedState,
         TExtractNextStages<typeof nextStages>
       >);
     },
@@ -584,10 +591,10 @@ function createAutomaticBuilder<
 }
 
 function createMultiActivePlayerBuilder<
-  GameState extends BaseGameState,
+  HydratedState extends object,
   Memory extends object,
-  Commands extends readonly DefinedCommand<GameState>[],
-  NextStages extends StageDefinitionMap<GameState>,
+  Commands extends readonly DefinedCommand<HydratedState>[],
+  NextStages extends StageDefinitionMap<HydratedState>,
   HasMemory extends boolean = false,
   HasActivePlayers extends boolean = false,
   HasCommands extends boolean = false,
@@ -597,13 +604,13 @@ function createMultiActivePlayerBuilder<
   HasTransition extends boolean = false,
 >(
   accumulator: MultiActivePlayerAccumulator<
-    GameState,
+    HydratedState,
     Memory,
     Commands,
     NextStages
   >,
 ): MultiActivePlayerStageBuilder<
-  GameState,
+  HydratedState,
   Memory,
   Commands,
   NextStages,
@@ -623,7 +630,7 @@ function createMultiActivePlayerBuilder<
       assertSerializableSchema(memorySchema);
 
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         NextMemory,
         Commands,
         NextStages,
@@ -639,7 +646,7 @@ function createMultiActivePlayerBuilder<
         memorySchema,
         memory,
       } as unknown as MultiActivePlayerAccumulator<
-        GameState,
+        HydratedState,
         NextMemory,
         Commands,
         NextStages
@@ -647,11 +654,11 @@ function createMultiActivePlayerBuilder<
     },
     activePlayers(
       activePlayers: (
-        context: MultiActivePlayerMemoryContext<GameState, Memory>,
+        context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
       ) => string[],
     ) {
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Memory,
         Commands,
         NextStages,
@@ -667,11 +674,11 @@ function createMultiActivePlayerBuilder<
         activePlayers,
       });
     },
-    commands<NextCommands extends readonly DefinedCommand<GameState>[]>(
+    commands<NextCommands extends readonly DefinedCommand<HydratedState>[]>(
       commands: NextCommands,
     ) {
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Memory,
         NextCommands,
         NextStages,
@@ -690,14 +697,14 @@ function createMultiActivePlayerBuilder<
     onSubmit(
       onSubmit: (
         context: MultiActivePlayerSubmitContext<
-          GameState,
+          HydratedState,
           Memory,
           CommandsFromDefinitions<Commands>
         >,
       ) => void,
     ) {
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Memory,
         Commands,
         NextStages,
@@ -715,11 +722,11 @@ function createMultiActivePlayerBuilder<
     },
     isComplete(
       isComplete: (
-        context: MultiActivePlayerMemoryContext<GameState, Memory>,
+        context: MultiActivePlayerMemoryContext<HydratedState, Memory>,
       ) => boolean,
     ) {
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Memory,
         Commands,
         NextStages,
@@ -735,11 +742,11 @@ function createMultiActivePlayerBuilder<
         isComplete,
       });
     },
-    nextStages<TNextStages extends StageDefinitionMap<GameState>>(
-      nextStages: StageDefinitionResolver<GameState, TNextStages>,
+    nextStages<TNextStages extends StageDefinitionMap<HydratedState>>(
+      nextStages: StageDefinitionResolver<HydratedState, TNextStages>,
     ) {
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Memory,
         Commands,
         TNextStages,
@@ -754,7 +761,7 @@ function createMultiActivePlayerBuilder<
         ...accumulator,
         nextStages,
       } as unknown as MultiActivePlayerAccumulator<
-        GameState,
+        HydratedState,
         Memory,
         Commands,
         TNextStages
@@ -763,16 +770,16 @@ function createMultiActivePlayerBuilder<
     transition(
       transition: (
         context: MultiActivePlayerTransitionContext<
-          GameState,
+          HydratedState,
           Memory,
           NextStages
         >,
       ) =>
-        | MultiActivePlayerStageDefinition<GameState>
+        | MultiActivePlayerStageDefinition<HydratedState>
         | NextStages[keyof NextStages],
     ) {
       return createMultiActivePlayerBuilder<
-        GameState,
+        HydratedState,
         Memory,
         Commands,
         NextStages,

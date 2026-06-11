@@ -6,9 +6,8 @@ import { reserveFaceUpCardCommand } from "./reserve-face-up-card.ts";
 import { returnTokensCommand } from "./return-tokens.ts";
 import { takeThreeDistinctGemsCommand } from "./take-three-distinct-gems.ts";
 import { takeTwoSameGemsCommand } from "./take-two-same-gems.ts";
-import type { SplendorCommand } from "./shared.ts";
 
-export function createCommands(): SplendorCommand[] {
+export function createCommands() {
   return [
     takeThreeDistinctGemsCommand,
     takeTwoSameGemsCommand,
@@ -16,7 +15,7 @@ export function createCommands(): SplendorCommand[] {
     reserveDeckCardCommand,
     buyFaceUpCardCommand,
     buyReservedCardCommand,
-  ];
+  ] as const;
 }
 
 export { chooseNobleCommand, returnTokensCommand };
