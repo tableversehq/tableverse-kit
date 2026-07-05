@@ -1,4 +1,4 @@
-import type { RuntimeState } from "@tabletop-kit/engine";
+import type { RuntimeState } from "@tableverse-kit/engine";
 
 export function getLastActingPlayerId(runtime: Readonly<RuntimeState>): string {
   const lastActingStage = runtime.progression.lastActingStage;

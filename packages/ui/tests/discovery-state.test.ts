@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type {
   AnyCommandDiscoveryResult,
   DiscoveryStepOption,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 import { DiscoveryState } from "../src/client/discovery-state.ts";
 import type { ExecutionResult } from "../src/client/types.ts";
 

@@ -1,7 +1,7 @@
 # splendor-example
 
 Workspace consumer package for implementing the base Splendor game on top of
-`@tabletop-kit/engine`.
+`@tableverse-kit/engine`.
 
 The example currently exercises:
 

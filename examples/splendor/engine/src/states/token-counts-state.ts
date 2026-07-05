@@ -1,4 +1,4 @@
-import { defineGameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tableverse-kit/engine";
 import { TOKEN_COLORS, type TokenColor } from "./constants.ts";
 
 export type ReturnTokensPayload = Partial<Record<TokenColor, number>>;

@@ -3,7 +3,7 @@ import type {
   CanonicalState,
   CanonicalStateOf,
   GameExecutor,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 import type { TTKitClient, TTKitGame } from "../client/types.ts";
 
 export interface CreateInProcessClientOptions<

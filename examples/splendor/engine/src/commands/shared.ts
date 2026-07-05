@@ -2,8 +2,8 @@ import type {
   CommandFactory,
   DefinedCommand,
   ValidationOutcome,
-} from "@tabletop-kit/engine";
-import { createCommandFactory } from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
+import { createCommandFactory } from "@tableverse-kit/engine";
 import {
   DEVELOPMENT_LEVELS,
   GEM_TOKEN_COLORS,

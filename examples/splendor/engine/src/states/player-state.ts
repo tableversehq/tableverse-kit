@@ -1,4 +1,4 @@
-import { defineGameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tableverse-kit/engine";
 import { developmentCardsById } from "../data/cards.ts";
 import type { CardCost, DevelopmentCard } from "../data/types.ts";
 import { type GemTokenColor } from "./constants.ts";

@@ -1,38 +1,45 @@
-# Tabletop Kit
+# Tableverse Kit
 
-Open-source TypeScript toolkit for building digital tabletop and board-game
-implementations.
+Open-source TypeScript toolkit for authoring digital tabletop and board-game
+implementations that run on [Tableverse](https://github.com/tableversehq).
 
-Tabletop Kit helps you model game state, validate and execute player commands,
+Tableverse Kit helps you model game state, validate and execute player commands,
 project hidden information per viewer, and generate local TypeScript and schema
 artifacts from your game definition.
 
+You author your rules and hand Tableverse a single `GameExecutor` — that is the
+whole entrypoint to your game's backend. Tableverse hosts the game and runs the
+servers, transport, rooms, and persistence for you, so you never wire up an HTTP
+or WebSocket server yourself. (The engine stays plain enough that you _can_ drive
+a `GameExecutor` from your own transport, but that is no longer a supported,
+first-class path.)
+
 ## Packages
 
-- [`@tabletop-kit/engine`](./packages/engine)
-  transport-agnostic rules/runtime engine
-- [`@tabletop-kit/cli`](./packages/cli)
-  local tooling package that installs the `ttk` command
-- `@tabletop-kit/ui`
+- [`@tableverse-kit/engine`](./packages/engine)
+  rules/runtime engine that compiles your game into a `GameExecutor` for Tableverse
+- [`@tableverse-kit/cli`](./packages/cli)
+  local tooling package that installs the `tvk` command
+- `@tableverse-kit/ui`
   planned UI package for reusable hooks and scaffolded components
 
 ## Install
 
 ```bash
-bun add @tabletop-kit/engine
-bun add -d @tabletop-kit/cli
+bun add @tableverse-kit/engine
+bun add -d @tableverse-kit/cli
 ```
 
 or:
 
 ```bash
-npm install @tabletop-kit/engine
-npm install --save-dev @tabletop-kit/cli
+npm install @tableverse-kit/engine
+npm install --save-dev @tableverse-kit/cli
 ```
 
 ## Engine
 
-`@tabletop-kit/engine` provides the runtime building blocks for a board-game
+`@tableverse-kit/engine` provides the runtime building blocks for a board-game
 rules package:
 
 - `GameDefinitionBuilder`
@@ -49,7 +56,7 @@ rules package:
 Example state definition:
 
 ```ts
-import { defineGameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tableverse-kit/engine";
 
 class CounterState {
   value = 0;
@@ -69,19 +76,19 @@ const Counter = defineGameState()
 
 ## CLI
 
-`@tabletop-kit/cli` installs the `ttk` command.
+`@tableverse-kit/cli` installs the `tvk` command.
 
 ```bash
-ttk generate types
-ttk generate schemas
-ttk generate client-sdk
-ttk validate
+tvk generate types
+tvk generate schemas
+tvk generate client-sdk
+tvk validate
 ```
 
-The CLI reads `tabletop.config.ts` from your project:
+The CLI reads `tableverse.config.ts` from your project:
 
 ```ts
-import { defineConfig } from "@tabletop-kit/engine/config";
+import { defineConfig } from "@tableverse-kit/engine/config";
 import { createGame } from "./src/game";
 
 export default defineConfig({

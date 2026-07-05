@@ -1,4 +1,4 @@
-import { t } from "@tabletop-kit/engine";
+import { t } from "@tableverse-kit/engine";
 import { completeDiscovery, SPLENDOR_DISCOVERY_STEPS } from "../discovery.ts";
 import {
   defineSplendorCommand,

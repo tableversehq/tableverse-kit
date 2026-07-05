@@ -3,7 +3,7 @@ import type {
   DefinedCommand,
   SingleActivePlayerStageDefinition,
   StageFactory,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 import type { SplendorGameState } from "../state.ts";
 import { getLastActingPlayerId } from "./shared.ts";
 

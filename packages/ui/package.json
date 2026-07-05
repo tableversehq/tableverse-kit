@@ -1,5 +1,5 @@
 {
-  "name": "@tabletop-kit/ui",
+  "name": "@tableverse-kit/ui",
   "version": "0.0.0",
   "type": "module",
   "private": false,
@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tabletop-kit/engine": "workspace:*"
+    "@tableverse-kit/engine": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

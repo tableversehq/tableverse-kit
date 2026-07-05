@@ -3,7 +3,7 @@ import {
   GameDefinitionBuilder,
   defineGameState,
   t,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 
 class OptionalFactoryState {
   counter = 0;

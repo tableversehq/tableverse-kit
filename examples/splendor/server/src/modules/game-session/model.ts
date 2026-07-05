@@ -6,7 +6,7 @@ import type {
   ExecutionResult,
   GameEvent,
   Viewer,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 import type { Clock } from "../../lib/clock";
 import type { RoomSnapshot } from "../room";
 import type { GameEndedPayload } from "../websocket";
@@ -82,7 +82,7 @@ export interface GameSessionStore<
 }
 
 /**
- * Adapter around the @tabletop-kit/engine executor.
+ * Adapter around the @tableverse-kit/engine executor.
  * Provides game creation, command execution, and per-player view generation.
  */
 export interface HostedGameExecutor<TState extends CanonicalState<object>> {

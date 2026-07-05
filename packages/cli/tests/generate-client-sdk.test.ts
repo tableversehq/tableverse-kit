@@ -8,7 +8,7 @@ import { run } from "../src/main.ts";
 const repoRoot = join(import.meta.dir, "..", "..", "..");
 
 async function writeCliConfig(cwd: string): Promise<void> {
-  const configFile = join(cwd, "tabletop.config.ts");
+  const configFile = join(cwd, "tableverse.config.ts");
   const configSource = [
     `import { defineConfig } from ${JSON.stringify(
       pathToFileURL(join(repoRoot, "packages", "engine", "src", "config.ts"))
@@ -100,7 +100,7 @@ async function writeCliConfig(cwd: string): Promise<void> {
 
 describe("generate client-sdk", () => {
   it("writes a typed client sdk surface for a game", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "ttk-sdk-"));
+    const cwd = await mkdtemp(join(tmpdir(), "tvk-sdk-"));
     await writeCliConfig(cwd);
 
     const result = await run(

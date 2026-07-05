@@ -1,4 +1,4 @@
-import type { DiscoveryStepOption } from "@tabletop-kit/engine";
+import type { DiscoveryStepOption } from "@tableverse-kit/engine";
 import {
   TOKEN_COLORS,
   type ReturnTokensPayload,

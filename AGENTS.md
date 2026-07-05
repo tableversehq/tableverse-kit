@@ -1,46 +1,65 @@
-# tabletop-kit
+# tableverse-kit
 
 ## Purpose
 
-`tabletop-kit` is the public open-source toolkit for building digital tabletop
-and board-game implementations.
+`tableverse-kit` is the public open-source game-authoring SDK for Tableverse.
 
-The repo currently contains the reusable rules/runtime engine, the generic CLI
-tooling that can inspect game definitions and generate local artifacts, and
-reference Splendor packages that exercise the engine in realistic consumers.
+It ships the authoring surface only: you model game state, define and execute
+player commands, and project hidden information, then hand Tableverse a single
+`GameExecutor`. Everything downstream of that executor — transport, HTTP/
+WebSocket servers, rooms, matchmaking, persistence, deployment, hosting — is
+Tableverse's job and is out of scope for this repo.
+
+The repo is open and public so customers can inspect exactly how their game
+executes and give feedback on the authoring surface. Requests aimed at transport
+or standalone hosting are intentionally out of charter, not features we are
+declining to build yet.
+
+The repo currently contains the rules/runtime engine, the CLI tooling that
+inspects game definitions and generates local artifacts, and reference Splendor
+packages that exercise the engine in realistic consumers.
 
 The intended public package family is:
 
-- `@tabletop-kit/engine`
-  transport-agnostic rules/runtime package
-- `@tabletop-kit/cli`
-  generic local developer tooling, installed with the `ttk` command
-- `@tabletop-kit/ui`
+- `@tableverse-kit/engine`
+  rules/runtime package that compiles a game into a `GameExecutor`
+- `@tableverse-kit/cli`
+  local authoring tooling, installed with the `tvk` command
+- `@tableverse-kit/ui`
   planned UI package for hooks and scaffolded components
 
 ## Platform Boundary
 
-Tabletop Kit is separate from the future hosted product, Tabletop Lab.
+Tableverse Kit is the authoring layer for the hosted product, Tableverse. The
+boundary between them is the `GameExecutor`: this repo owns everything needed to
+author a game and produce that executor; Tableverse owns everything downstream
+of it.
 
-Keep public, generic, reusable tooling in this repo. Hosted platform concerns
-belong outside this repository, including auth, rooms, matchmaking,
-deployment, upload flows, persistence products, billing, private hosted
-protocols, and platform-targeted SDK generation.
+Keep authoring tooling in this repo. Hosting and platform concerns belong to
+Tableverse and stay out of this repository, including transport, HTTP/WebSocket
+servers, auth, rooms, matchmaking, deployment, upload flows, persistence
+products, billing, private hosted protocols, and platform-targeted SDK
+generation.
 
-The public CLI may provide generic commands such as:
+We no longer target transport-agnostic, bring-your-own-server usage as a
+supported feature. A `GameExecutor` is plain enough that a determined user can
+drive it from their own transport, but that is not a path this repo supports,
+documents, or builds toward.
+
+The public CLI may provide authoring commands such as:
 
 ```bash
-ttk generate types
-ttk generate schemas
-ttk validate
+tvk generate types
+tvk generate schemas
+tvk validate
 ```
 
-Future platform commands such as `ttk lab deploy` should be implemented in
-private Tabletop Lab-owned packages or through a command handoff mechanism.
+Future platform commands such as `tvk lab deploy` should be implemented in
+private Tableverse-owned packages or through a command handoff mechanism.
 
 ## Implemented Runtime Surface
 
-`@tabletop-kit/engine` currently supports:
+`@tableverse-kit/engine` currently supports:
 
 - canonical `{ game, runtime }` state
 - `GameDefinitionBuilder`
@@ -55,7 +74,7 @@ private Tabletop Lab-owned packages or through a command handoff mechanism.
   and `visibleToSelf(...)`
 - snapshots, replay helpers, and scenario-style test harness support
 - config-file-driven artifact generation support through
-  `@tabletop-kit/engine/config`
+  `@tableverse-kit/engine/config`
 
 Protocol descriptors and AsyncAPI generation are no longer engine-owned public
 runtime surface. Current generic generation logic lives in the CLI where it is
@@ -66,11 +85,11 @@ needed for local artifacts.
 Important workspace areas:
 
 - `packages/engine`
-  source for the published `@tabletop-kit/engine` package
+  source for the published `@tableverse-kit/engine` package
 - `packages/cli`
-  source for the `@tabletop-kit/cli` package and `ttk` command
+  source for the `@tableverse-kit/cli` package and `tvk` command
 - `examples/splendor/engine`
-  reference game package built on `@tabletop-kit/engine`
+  reference game package built on `@tableverse-kit/engine`
 - `examples/splendor/terminal`
   terminal client for exercising command discovery and hosted-style gameplay
   locally
@@ -107,7 +126,8 @@ That currently means:
   persists plain canonical data
 - keep execution deterministic and replayable
 - colocate runtime schemas with the game code that owns them
-- keep transport decisions outside the core runtime
+- the engine's output is a `GameExecutor`; transport and hosting live in
+  Tableverse, not here
 - keep hosted platform details out of public packages
 - treat examples as real consumer documentation, not throwaway code
 
@@ -115,6 +135,7 @@ That currently means:
 
 Still out of scope for the public engine package:
 
+- transport-agnostic / bring-your-own-server integration as a supported feature
 - web framework integration
 - auth, lobby, matchmaking, or hosting product decisions
 - persistence product decisions
@@ -130,7 +151,7 @@ The following are intentionally not complete yet:
 - stack / queue resolution model
 - richer event-resolution model distinct from player-facing logs
 - persistence adapters
-- `@tabletop-kit/ui` package implementation
+- `@tableverse-kit/ui` package implementation
 - private Tabletop Lab command handoff
 
 ## Guidance For Future Work
@@ -138,11 +159,13 @@ The following are intentionally not complete yet:
 When editing this repo:
 
 - preserve the public naming direction around `GameExecutor`, `GameEvent`,
-  `GameState`, and the scoped `@tabletop-kit/*` package family
+  `GameState`, and the scoped `@tableverse-kit/*` package family
 - avoid reintroducing vague low-level naming in the consumer-facing API
-- keep the engine transport-agnostic even when adding tooling metadata
+- the supported contract is the `GameExecutor` handed to Tableverse; keep
+  transport out of the engine, but do not build toward bring-your-own-transport
+  as a supported path
 - prefer plain serializable outputs for hosted/client-facing data
-- keep generic generation in `@tabletop-kit/cli`, not in the engine runtime
+- keep generic generation in `@tableverse-kit/cli`, not in the engine runtime
 - keep platform-specific generation, deployment, auth, rooms, and persistence
   outside the public repo
 - treat examples as real consumer documentation

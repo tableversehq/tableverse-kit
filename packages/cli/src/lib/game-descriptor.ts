@@ -1,5 +1,5 @@
 import type { TSchema } from "@sinclair/typebox";
-import type { CommandSchema, AnyGameDefinition } from "@tabletop-kit/engine";
+import type { CommandSchema, AnyGameDefinition } from "@tableverse-kit/engine";
 
 export interface GeneratedDiscoveryStepDescriptor {
   stepId: string;

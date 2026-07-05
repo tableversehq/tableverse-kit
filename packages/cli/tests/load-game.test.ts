@@ -23,7 +23,7 @@ describe("createGenerationContext", () => {
   it("resolves the output directory from an explicit config file", async () => {
     const parsed = parseCommandArguments([
       "--config",
-      resolve(import.meta.dir, "fixtures", "tabletop.custom.config.ts"),
+      resolve(import.meta.dir, "fixtures", "tableverse.custom.config.ts"),
     ]);
 
     const context = await createGenerationContext(parsed, {
@@ -38,7 +38,7 @@ describe("createGenerationContext", () => {
 });
 
 describe("loadConfig", () => {
-  it("loads the default tabletop.config.ts from cwd", async () => {
+  it("loads the default tableverse.config.ts from cwd", async () => {
     const config = await loadConfig({
       cwd: resolve(import.meta.dir, "fixtures"),
     });
@@ -52,7 +52,7 @@ describe("loadConfig", () => {
       configPath: resolve(
         import.meta.dir,
         "fixtures",
-        "tabletop.custom.config.ts",
+        "tableverse.custom.config.ts",
       ),
     });
 

@@ -81,7 +81,7 @@ interface BundleContextValue<G extends TTKitGame> {
  *
  * ```ts
  * // src/game.ts
- * import { createGameHooks } from "@tabletop-kit/ui";
+ * import { createGameHooks } from "@tableverse-kit/ui";
  * import type { SplendorGame } from "./generated-types";
  *
  * export const {

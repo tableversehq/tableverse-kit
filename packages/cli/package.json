@@ -1,5 +1,5 @@
 {
-  "name": "@tabletop-kit/cli",
+  "name": "@tableverse-kit/cli",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -7,7 +7,7 @@
     ".": "./src/main.ts"
   },
   "bin": {
-    "ttk": "./src/main.ts"
+    "tvk": "./src/main.ts"
   },
   "scripts": {
     "test": "bun test",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41",
-    "@tabletop-kit/engine": "workspace:*"
+    "@tableverse-kit/engine": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

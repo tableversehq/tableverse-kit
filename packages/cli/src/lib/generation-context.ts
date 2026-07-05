@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import type { AnyGameDefinition } from "@tabletop-kit/engine";
+import type { AnyGameDefinition } from "@tableverse-kit/engine";
 import { loadConfig } from "./load-config.ts";
 import type { ParsedCommandArguments } from "./parse-args.ts";
 

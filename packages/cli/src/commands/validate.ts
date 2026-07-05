@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { assertSchemaValue } from "@tabletop-kit/engine";
+import { assertSchemaValue } from "@tableverse-kit/engine";
 import { failure, success, type RunResult } from "../lib/command-result.ts";
 import { createValidateHelpText } from "../lib/help-text.ts";
 import { createGenerationContext } from "../lib/generation-context.ts";

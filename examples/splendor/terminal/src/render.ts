@@ -1,4 +1,4 @@
-import type { GameEvent } from "@tabletop-kit/engine";
+import type { GameEvent } from "@tableverse-kit/engine";
 import {
   DEVELOPMENT_LEVELS,
   developmentCardsById,

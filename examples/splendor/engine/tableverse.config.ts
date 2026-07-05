@@ -1,4 +1,4 @@
-import { defineConfig } from "@tabletop-kit/engine/config";
+import { defineConfig } from "@tableverse-kit/engine/config";
 import { createSplendorGame } from "./src/game.ts";
 
 export default defineConfig({

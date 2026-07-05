@@ -2,7 +2,7 @@ import type {
   AnyCommandDiscoveryResult,
   Command,
   Discovery,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 
 /**
  * Client-side command payload. The engine's `Command` carries `actorId`,

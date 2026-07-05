@@ -1,4 +1,4 @@
-import type { AnyGameDefinition } from "@tabletop-kit/engine";
+import type { AnyGameDefinition } from "@tableverse-kit/engine";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 interface LoadConfigOptions {
@@ -23,7 +23,7 @@ export async function loadConfig(
 ): Promise<LoadedCliConfig> {
   const configFilePath = options.configPath
     ? resolve(options.cwd, options.configPath)
-    : resolve(options.cwd, "tabletop.config.ts");
+    : resolve(options.cwd, "tableverse.config.ts");
   const module = (await import(pathToFileURL(configFilePath).href)) as {
     default?: unknown;
   };

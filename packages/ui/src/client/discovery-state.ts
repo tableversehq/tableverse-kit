@@ -1,4 +1,4 @@
-import type { DiscoveryStepOption } from "@tabletop-kit/engine";
+import type { DiscoveryStepOption } from "@tableverse-kit/engine";
 import type { CommandPayload, TTKitClient, TTKitGame } from "./types.ts";
 
 export type DiscoveryStatus =

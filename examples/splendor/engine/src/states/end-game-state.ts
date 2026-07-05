@@ -1,4 +1,4 @@
-import { defineGameState, t } from "@tabletop-kit/engine";
+import { defineGameState, t } from "@tableverse-kit/engine";
 
 export class SplendorEndGameState {
   triggeredByPlayerId!: string;

@@ -1,4 +1,8 @@
-import type { CanonicalState, Command, Discovery } from "@tabletop-kit/engine";
+import type {
+  CanonicalState,
+  Command,
+  Discovery,
+} from "@tableverse-kit/engine";
 import { timestampBefore } from "../../lib/time";
 import { GameSessionError } from "./errors";
 import type {

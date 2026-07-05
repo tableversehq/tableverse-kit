@@ -2,7 +2,7 @@ import {
   createGameExecutor,
   GameDefinitionBuilder,
   t,
-} from "@tabletop-kit/engine";
+} from "@tableverse-kit/engine";
 import { setupSplendorGame } from "./setup.ts";
 import { SplendorGame as SplendorRootState } from "./state.ts";
 import { createSplendorStages } from "./stages/index.ts";

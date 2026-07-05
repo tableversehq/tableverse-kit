@@ -8,7 +8,7 @@ import { run } from "../src/main.ts";
 const repoRoot = join(import.meta.dir, "..", "..", "..");
 
 async function writeCliConfig(cwd: string): Promise<void> {
-  const configFile = join(cwd, "tabletop.config.ts");
+  const configFile = join(cwd, "tableverse.config.ts");
   const configSource = [
     `import { defineConfig } from ${JSON.stringify(
       pathToFileURL(join(repoRoot, "packages", "engine", "src", "config.ts"))
@@ -69,7 +69,7 @@ async function writeCliConfig(cwd: string): Promise<void> {
 
 describe("generate schemas", () => {
   it("writes schema artifacts for a game", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "ttk-schemas-"));
+    const cwd = await mkdtemp(join(tmpdir(), "tvk-schemas-"));
     await writeCliConfig(cwd);
 
     const result = await run(["generate", "schemas", "--outDir", "generated"], {

@@ -1,4 +1,4 @@
-import { createStageFactory } from "@tabletop-kit/engine";
+import { createStageFactory } from "@tableverse-kit/engine";
 import { createCommands } from "../commands/index.ts";
 import type { SplendorGameState } from "../state.ts";
 import { createCheckVictoryConditionStage } from "./check-victory-condition.ts";
