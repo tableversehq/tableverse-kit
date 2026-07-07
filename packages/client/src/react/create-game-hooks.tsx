@@ -13,8 +13,9 @@ import {
   type DiscoveryStatus,
   type OpenSnapshotResult,
   type PickOptionOf,
-} from "./discovery-state.ts";
-import type { TableverseClient, TableverseGame } from "./types.ts";
+} from "../client/discovery-state.ts";
+import { selectable, type SelectableState } from "../client/selectable.ts";
+import type { TableverseClient, TableverseGame } from "../client/types.ts";
 
 export interface TableverseProviderProps<G extends TableverseGame> {
   client: TableverseClient<G>;
@@ -33,12 +34,6 @@ export interface UseDiscoveryResult<G extends TableverseGame> {
   confirm: () => void;
   cancel: () => void;
 }
-
-export type SelectableState =
-  | "idle"
-  | "selectable"
-  | "selected"
-  | "unselectable";
 
 export interface UseSelectableResult<G extends TableverseGame> {
   state: SelectableState;
@@ -81,7 +76,7 @@ interface BundleContextValue<G extends TableverseGame> {
  *
  * ```ts
  * // src/game.ts
- * import { createGameHooks } from "@tableverse-kit/ui";
+ * import { createGameHooks } from "@tableverse-kit/client/react";
  * import type { SplendorGame } from "./generated-types";
  *
  * export const {
@@ -193,30 +188,12 @@ export function createGameHooks<G extends TableverseGame>(): GameHooks<G> {
     isTarget: (option: PickOptionOf<G>) => boolean,
   ): UseSelectableResult<G> {
     const discovery = useDiscovery();
+    const { state, option } = selectable(discovery, discoveryStep, isTarget);
 
-    if (discovery.trail.some(isTarget)) {
-      return { state: "selected", onClick: noop, option: null };
+    if (state === "selectable" && option !== null) {
+      return { state, option, onClick: () => discovery.pick(option) };
     }
-
-    if (discovery.open === null) {
-      return { state: "idle", onClick: noop, option: null };
-    }
-
-    if (discovery.open.step !== discoveryStep) {
-      return { state: "unselectable", onClick: noop, option: null };
-    }
-
-    const matching = discovery.open.options.find(isTarget);
-
-    if (!matching) {
-      return { state: "unselectable", onClick: noop, option: null };
-    }
-
-    return {
-      state: "selectable",
-      option: matching,
-      onClick: () => discovery.pick(matching),
-    };
+    return { state, option: null, onClick: noop };
   }
 
   function useTableverseClient(): TableverseClient<G> {

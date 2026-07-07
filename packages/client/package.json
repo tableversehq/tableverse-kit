@@ -1,10 +1,11 @@
 {
-  "name": "@tableverse-kit/ui",
+  "name": "@tableverse-kit/client",
   "version": "0.0.0",
   "type": "module",
   "private": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./react": "./src/react/index.ts"
   },
   "types": "./src/index.ts",
   "files": [
@@ -20,6 +21,11 @@
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "typescript": "^5"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -25,11 +25,14 @@ The intended public package family is:
   rules/runtime package that compiles a game into a `GameExecutor`
 - `@tableverse-kit/cli`
   local authoring tooling, installed with the `tvk` command
-- `@tableverse-kit/ui`
-  thin React bindings (hooks + provider) over the framework-neutral client.
-  A React binding is optional: the client is renderer-agnostic and can be
-  consumed directly by canvas/WebGL/WASM frontends. The previously planned
-  shadcn-style styled/copy-in component kit is cancelled — see
+- `@tableverse-kit/client`
+  the frontend client. Its React-free root (`@tableverse-kit/client`) ships the
+  renderer-agnostic `TableverseClient`, the in-process adapter, and the
+  interaction state machine — consumable directly by canvas/WebGL/WASM
+  frontends. Thin React hooks live in the optional `@tableverse-kit/client/react`
+  entry (`react` is an optional peer dependency). Renamed from the former
+  `@tableverse-kit/ui`; the previously planned shadcn-style styled/copy-in
+  component kit is cancelled — see
   `docs/design/2026-07-05-frontend-runtime-agnostic-client.md`.
 
 ## Platform Boundary
@@ -155,7 +158,7 @@ The following are intentionally not complete yet:
 - stack / queue resolution model
 - richer event-resolution model distinct from player-facing logs
 - persistence adapters
-- `@tableverse-kit/ui` React-bindings package implementation (thin hooks over
+- `@tableverse-kit/client/react` hooks implementation (thin React binding over
   the framework-neutral client; no styled component kit)
 - private Tabletop Lab command handoff
 

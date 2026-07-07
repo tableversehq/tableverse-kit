@@ -20,8 +20,9 @@ first-class path.)
   rules/runtime engine that compiles your game into a `GameExecutor` for Tableverse
 - [`@tableverse-kit/cli`](./packages/cli)
   local tooling package that installs the `tvk` command
-- `@tableverse-kit/ui`
-  planned UI package for reusable hooks and scaffolded components
+- `@tableverse-kit/client`
+  frontend client — renderer-agnostic `TableverseClient` at the root, optional
+  React hooks at `@tableverse-kit/client/react`
 
 ## Install
 

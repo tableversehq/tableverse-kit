@@ -119,21 +119,8 @@
         "typescript": "^5",
       },
     },
-    "packages/engine": {
-      "name": "@tableverse-kit/engine",
-      "version": "0.0.0",
-      "dependencies": {
-        "@sinclair/typebox": "^0.34.41",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
-    "packages/ui": {
-      "name": "@tableverse-kit/ui",
+    "packages/client": {
+      "name": "@tableverse-kit/client",
       "version": "0.0.0",
       "dependencies": {
         "@tableverse-kit/engine": "workspace:*",
@@ -145,6 +132,22 @@
       },
       "peerDependencies": {
         "react": "^18.0.0 || ^19.0.0",
+        "typescript": "^5",
+      },
+      "optionalPeers": [
+        "react",
+      ],
+    },
+    "packages/engine": {
+      "name": "@tableverse-kit/engine",
+      "version": "0.0.0",
+      "dependencies": {
+        "@sinclair/typebox": "^0.34.41",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
         "typescript": "^5",
       },
     },
@@ -344,9 +347,9 @@
 
     "@tableverse-kit/cli": ["@tableverse-kit/cli@workspace:packages/cli"],
 
-    "@tableverse-kit/engine": ["@tableverse-kit/engine@workspace:packages/engine"],
+    "@tableverse-kit/client": ["@tableverse-kit/client@workspace:packages/client"],
 
-    "@tableverse-kit/ui": ["@tableverse-kit/ui@workspace:packages/ui"],
+    "@tableverse-kit/engine": ["@tableverse-kit/engine@workspace:packages/engine"],
 
     "@tokenizer/inflate": ["@tokenizer/inflate@0.4.1", "", { "dependencies": { "debug": "^4.4.3", "token-types": "^6.1.1" } }, "sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA=="],
 

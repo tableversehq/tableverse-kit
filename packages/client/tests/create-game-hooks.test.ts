@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createGameHooks } from "../src/client/create-game-hooks.tsx";
+import { createGameHooks } from "../src/react/create-game-hooks.tsx";
 import type { TableverseClient, TableverseGame } from "../src/client/types.ts";
 
 interface FakeView {
