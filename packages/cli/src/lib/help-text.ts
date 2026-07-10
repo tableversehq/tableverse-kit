@@ -7,8 +7,6 @@ export function createGenerateHelpText(): string {
     "tvk generate",
     "",
     "Targets:",
-    "  types",
-    "  schemas",
     "  client-sdk",
     "",
     "Optional flags:",
@@ -18,11 +16,7 @@ export function createGenerateHelpText(): string {
 }
 
 export function createValidateHelpText(): string {
-  return [
-    "tvk validate",
-    "",
-    "Optional flags:",
-    "  --config <path>",
-    "  --snapshot <path>",
-  ].join("\n");
+  return ["tvk validate", "", "Optional flags:", "  --config <path>"].join(
+    "\n",
+  );
 }

@@ -80,8 +80,6 @@ const Counter = defineGameState()
 `@tableverse-kit/cli` installs the `tvk` command.
 
 ```bash
-tvk generate types
-tvk generate schemas
 tvk generate client-sdk
 tvk validate
 ```

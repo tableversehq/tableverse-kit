@@ -26,8 +26,6 @@ describe("tvk", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("tvk generate");
-    expect(result.stdout).toContain("types");
-    expect(result.stdout).toContain("schemas");
     expect(result.stdout).toContain("client-sdk");
   });
 
@@ -58,7 +56,7 @@ describe("tvk", () => {
   });
 
   it("rejects unexpected positional arguments after command parsing begins", async () => {
-    const result = await run(["generate", "types", "oops"]);
+    const result = await run(["generate", "client-sdk", "oops"]);
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("unexpected_positional_argument:oops");

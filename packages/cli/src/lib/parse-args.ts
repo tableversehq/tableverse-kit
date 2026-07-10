@@ -5,10 +5,9 @@ export function isHelpFlag(value: string | undefined): boolean {
 export interface ParsedCommandArguments {
   configPath?: string;
   outDir?: string;
-  snapshotPath?: string;
 }
 
-const supportedFlags = new Set(["--config", "--outDir", "--snapshot"]);
+const supportedFlags = new Set(["--config", "--outDir"]);
 const deprecatedFlags = new Set(["--game", "--export"]);
 
 export function parseCommandArguments(args: string[]): ParsedCommandArguments {
@@ -42,6 +41,5 @@ export function parseCommandArguments(args: string[]): ParsedCommandArguments {
   return {
     configPath: flags.get("--config"),
     outDir: flags.get("--outDir"),
-    snapshotPath: flags.get("--snapshot"),
   };
 }

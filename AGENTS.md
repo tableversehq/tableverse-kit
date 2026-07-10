@@ -56,8 +56,7 @@ documents, or builds toward.
 The public CLI may provide authoring commands such as:
 
 ```bash
-tvk generate types
-tvk generate schemas
+tvk generate client-sdk
 tvk validate
 ```
 

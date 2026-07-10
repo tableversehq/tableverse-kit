@@ -10,7 +10,6 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "generate:types": "tsx ../../../packages/cli/src/main.ts generate types --outDir generated",
     "generate:client-sdk": "tsx ../../../packages/cli/src/main.ts generate client-sdk --outDir generated"
   },
   "dependencies": {
