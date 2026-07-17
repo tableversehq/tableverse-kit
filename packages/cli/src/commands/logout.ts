@@ -19,9 +19,6 @@ export async function runLogoutCommand(
   }
 
   try {
-    // Clearing locally is the part that must happen, so do it first and take
-    // the removed entry with us: one pass over the file, and no window where a
-    // concurrent `login` writes an entry this rewrite would drop.
     const credentials = await ctx.tokenStore.remove(ctx.config.apiBaseUrl);
 
     if (!credentials) {
