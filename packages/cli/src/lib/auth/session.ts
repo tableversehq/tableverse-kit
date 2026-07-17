@@ -3,7 +3,8 @@ import {
   type PlatformClient,
   type TokenResponse,
 } from "../platform-client.ts";
-import type { Account, StoredCredentials, TokenStore } from "./token-store.ts";
+import type { Account } from "../api-schema.ts";
+import type { StoredCredentials, TokenStore } from "./token-store.ts";
 
 /** Refresh the access token this many ms before it actually expires. */
 const EXPIRY_SKEW_MS = 60 * 1000;

@@ -76,6 +76,22 @@ describe("file token store", () => {
     expect(await store.read(prod.apiBaseUrl)).toEqual(prod);
   });
 
+  // `/me` may legitimately return a null email (OAuth provider withheld it).
+  // Rejecting it here is what strands the user: `login` writes the file, then
+  // every command that reads it says "corrupt, delete it and run tvk login" —
+  // advice that loops straight back to writing the same file.
+  it("round-trips an account with no email", async () => {
+    const store = createFileTokenStore({ filePath: await tempFilePath() });
+    const entry = {
+      ...credentials("https://api-dev.tableverse.io"),
+      account: { id: "u_01HX3P9K2M", email: null },
+    };
+
+    await store.write(entry);
+
+    expect(await store.read(entry.apiBaseUrl)).toEqual(entry);
+  });
+
   it("rejects a credentials file that is not valid JSON", async () => {
     const store = createFileTokenStore({
       filePath: await fileContaining(

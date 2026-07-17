@@ -27,6 +27,24 @@ describe("tvk whoami", () => {
     expect(result.stdout).toBe("me@example.com");
   });
 
+  // `/me` returns `email: null` for an OAuth account whose provider withheld
+  // an email — legal per the platform contract. Printing "null" is useless, and
+  // rejecting it locks that user out of the CLI entirely.
+  it("falls back to the account id when the account has no email", async () => {
+    const result = await runWhoamiCommand(
+      [],
+      createTestContext({
+        tokenStore: createMemoryTokenStore([storedCredentials()]),
+        client: createFakeClient({
+          me: async () => ({ id: "u_01HX3P9K2M", email: null }),
+        }),
+      }),
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("u_01HX3P9K2M");
+  });
+
   it("fails cleanly when not logged in", async () => {
     const result = await runWhoamiCommand([], createTestContext());
 

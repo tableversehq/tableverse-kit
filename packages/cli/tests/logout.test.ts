@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { runLogoutCommand } from "../src/commands/logout.ts";
-import { PlatformRequestError } from "../src/lib/platform-client.ts";
+import {
+  PlatformRequestError,
+  PlatformResponseError,
+} from "../src/lib/platform-client.ts";
 import { CredentialsFileError } from "../src/lib/auth/token-store.ts";
 import {
   TEST_CONFIG,
@@ -86,6 +89,27 @@ describe("tvk logout", () => {
     expect(result.stderr).not.toContain("credentials_file_invalid:");
     // Deleting the file *is* logging out, so do not send them to `tvk login`.
     expect(result.stderr).not.toContain("tvk login");
+  });
+
+  // A wire-format disagreement is ours, not the user's: never show them the
+  // raw identifier, and never tell them to fix their credentials over it.
+  it("explains a response it could not understand without leaking the identifier", async () => {
+    const result = await runLogoutCommand(
+      [],
+      createTestContext({
+        tokenStore: {
+          read: async () => undefined,
+          write: async () => {},
+          remove: async () => {
+            throw new PlatformResponseError("/me", "/email");
+          },
+        },
+      }),
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).not.toContain("platform_response_invalid");
+    expect(result.stderr).toMatch(/update|report/i);
   });
 
   it("rejects unexpected positional arguments", async () => {

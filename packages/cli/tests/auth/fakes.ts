@@ -1,6 +1,6 @@
 import type { AuthContext } from "../../src/lib/auth/context.ts";
+import type { Account } from "../../src/lib/api-schema.ts";
 import type {
-  Account,
   StoredCredentials,
   TokenStore,
 } from "../../src/lib/auth/token-store.ts";

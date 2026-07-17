@@ -16,6 +16,32 @@ import {
 const REDIRECT_URI = "http://127.0.0.1:5555/callback";
 
 describe("tvk login", () => {
+  // An account with no email must still be storable and nameable, or `login`
+  // "succeeds" while writing a file that every later command rejects.
+  it("names the account by id, and stores it, when it has no email", async () => {
+    const tokenStore = createMemoryTokenStore();
+
+    const result = await runLoginCommand(
+      [],
+      createTestContext({
+        tokenStore,
+        authorize: async () => ({
+          code: "auth-code",
+          redirectUri: "http://127.0.0.1:5555/callback",
+        }),
+        client: createFakeClient({
+          me: async () => ({ id: "u_01HX3P9K2M", email: null }),
+        }),
+      }),
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("Logged in as u_01HX3P9K2M");
+    expect(await tokenStore.read(TEST_CONFIG.apiBaseUrl)).toMatchObject({
+      account: { id: "u_01HX3P9K2M", email: null },
+    });
+  });
+
   it("runs the PKCE flow, exchanges the code, and stores credentials", async () => {
     const tokenStore = createMemoryTokenStore();
     const exchangeAuthorizationCode = vi.fn(async () => ({

@@ -77,7 +77,7 @@ export async function runLoginCommand(
       credentialsFromTokens(ctx.config.apiBaseUrl, tokens, account, ctx.now()),
     );
 
-    return success(`Logged in as ${account.email}`);
+    return success(`Logged in as ${account.email ?? account.id}`);
   } catch (error) {
     return failure(
       describeAuthError(error, { config: ctx.config, command: "login" }),

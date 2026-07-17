@@ -1,4 +1,7 @@
-import { PlatformRequestError } from "../platform-client.ts";
+import {
+  PlatformRequestError,
+  PlatformResponseError,
+} from "../platform-client.ts";
 import type { PlatformConfig } from "../platform-config.ts";
 import {
   AuthorizationError,
@@ -87,6 +90,16 @@ export function describeAuthError(
     return [
       `Could not reach the platform at ${config.apiBaseUrl}.`,
       "Check your network connection, or set TABLEVERSE_API_URL if you meant a different deployment.",
+    ].join("\n");
+  }
+
+  // The CLI and the platform disagree about the wire format. Nothing the user
+  // did caused it and nothing they can do locally will fix it, so point at the
+  // two things that might: a newer CLI, or telling us.
+  if (error instanceof PlatformResponseError) {
+    return [
+      `The platform at ${config.apiBaseUrl} returned a response tvk did not understand (${error.endpoint}).`,
+      "Update tvk to the latest version; if it still happens, please report it.",
     ].join("\n");
   }
 

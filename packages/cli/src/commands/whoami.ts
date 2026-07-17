@@ -41,7 +41,10 @@ export async function runWhoamiCommand(
 
     const account = await ctx.client.me({ accessToken: session.accessToken });
 
-    return success(account.email);
+    // An OAuth provider may withhold the email, and printing "null" would name
+    // nobody. The id always identifies the account and keeps this one stable
+    // line of stdout that a script can read.
+    return success(account.email ?? account.id);
   } catch (error) {
     if (error instanceof PlatformRequestError && error.status === 401) {
       return failure(EXPIRED_MESSAGE);

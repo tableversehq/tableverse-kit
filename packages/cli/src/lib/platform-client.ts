@@ -1,4 +1,10 @@
-import type { Account } from "./auth/token-store.ts";
+import type { TSchema, Static } from "@sinclair/typebox";
+import { Value } from "@sinclair/typebox/value";
+import {
+  AccountSchema,
+  RawTokenResponseSchema,
+  type Account,
+} from "./api-schema.ts";
 
 export interface TokenResponse {
   accessToken: string;
@@ -35,13 +41,48 @@ export class PlatformRequestError extends Error {
   }
 }
 
-interface RawTokenResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
+/**
+ * The platform answered, but not with anything this CLI recognises. Distinct
+ * from `PlatformRequestError` (the platform said no, and we understood it):
+ * this means the CLI and the platform disagree about the wire format, which is
+ * ours to report, not the user's to fix.
+ */
+export class PlatformResponseError extends Error {
+  readonly endpoint: string;
+  readonly at?: string;
+
+  constructor(endpoint: string, at?: string) {
+    super(`platform_response_invalid:${endpoint}${at ? `:${at}` : ""}`);
+    this.name = "PlatformResponseError";
+    this.endpoint = endpoint;
+    this.at = at;
+  }
 }
 
-function toTokenResponse(raw: RawTokenResponse): TokenResponse {
+/**
+ * Checks a decoded response body against what the CLI requires of it. Without
+ * this a bad field would be cast away silently and only surface much later —
+ * an unreadable credentials file, or `undefined` somewhere far from the cause.
+ */
+function parseResponse<T extends TSchema>(
+  schema: T,
+  body: unknown,
+  endpoint: string,
+): Static<T> {
+  if (!Value.Check(schema, body)) {
+    // A JSON pointer to the first offending field; empty at the root, where it
+    // reads as punctuation rather than a location.
+    const at = Value.Errors(schema, body).First()?.path;
+
+    throw new PlatformResponseError(endpoint, at === "" ? undefined : at);
+  }
+
+  return body;
+}
+
+function toTokenResponse(
+  raw: Static<typeof RawTokenResponseSchema>,
+): TokenResponse {
   return {
     accessToken: raw.access_token,
     refreshToken: raw.refresh_token,
@@ -70,7 +111,9 @@ export function createPlatformClient(options: {
       throw new PlatformRequestError(response.status, endpoint);
     }
 
-    return toTokenResponse((await response.json()) as RawTokenResponse);
+    return toTokenResponse(
+      parseResponse(RawTokenResponseSchema, await response.json(), endpoint),
+    );
   }
 
   return {
@@ -113,7 +156,7 @@ export function createPlatformClient(options: {
         throw new PlatformRequestError(response.status, endpoint);
       }
 
-      return (await response.json()) as Account;
+      return parseResponse(AccountSchema, await response.json(), endpoint);
     },
   };
 }

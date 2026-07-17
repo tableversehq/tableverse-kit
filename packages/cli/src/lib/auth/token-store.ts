@@ -2,11 +2,7 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { Type, type Static } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
-
-const AccountSchema = Type.Object({
-  id: Type.String(),
-  email: Type.String(),
-});
+import { AccountSchema } from "../api-schema.ts";
 
 const StoredCredentialsSchema = Type.Object({
   apiBaseUrl: Type.String(),
@@ -17,7 +13,6 @@ const StoredCredentialsSchema = Type.Object({
   account: AccountSchema,
 });
 
-export type Account = Static<typeof AccountSchema>;
 export type StoredCredentials = Static<typeof StoredCredentialsSchema>;
 
 export interface TokenStore {
