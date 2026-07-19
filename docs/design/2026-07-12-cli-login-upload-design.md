@@ -34,7 +34,7 @@ that platform commands must live in private packages — see "Repo charter" belo
 
 ## Command surface
 
-Four commands are added to the existing thin dispatcher in
+Five commands are added to the existing thin dispatcher in
 `packages/cli/src/main.ts`. Each returns the existing `RunResult`
 (`stdout` / `stderr` / `exitCode`) contract.
 
@@ -43,6 +43,7 @@ Four commands are added to the existing thin dispatcher in
 | `tvk login`  | Loopback-PKCE browser flow; stores tokens locally.                                        |
 | `tvk logout` | Deletes stored tokens; best-effort server-side refresh-token revocation.                  |
 | `tvk whoami` | Prints the logged-in account via `GET /me`; the standard "is my auth working?" probe.     |
+| `tvk link`   | Binds this project directory to a game on the platform, creating one if needed.           |
 | `tvk upload` | Packages engine source + frontend bundle, uploads via presigned S3 URLs, polls the build. |
 
 ## Login: loopback PKCE
@@ -142,23 +143,90 @@ session coexist rather than overwriting each other. Both variables are listed in
 
 ## Upload: packaging, presigned transport, build polling
 
-`tvk upload` publishes one immutable version consisting of **two** artifacts:
-the engine TypeScript source and the pre-built static frontend bundle. The
-platform builds the engine artifact server-side; the CLI never ships a pre-built
-engine bundle.
+`tvk upload` publishes one immutable version consisting of **three** artifacts:
+the engine source, the frontend source, and the pre-built static frontend
+bundle. The platform builds the engine artifact server-side; the CLI never ships
+a pre-built engine bundle. The frontend bundle is what gets served today; the
+frontend source is retained, not built.
+
+### Source retention
+
+Each version stores the complete project source, and it must be complete enough
+to rebuild and to hand back — lockfiles and `package.json` included, not just
+the files the engine build happens to need. Completeness cannot be added
+retroactively: any version stored without it stays unrestorable forever.
+
+This buys machine-portability for developers with no version control, for whom a
+lost laptop is otherwise a lost game. The platform is a recovery path, not a
+VCS, and is not a place to host code you are working in.
+
+Retention has one real cost: source trees collect `.env` files, keys, and
+credentials, and retaining them makes any leak permanent. Packaging is therefore
+exclude-list driven, refuses on recognized secret files, and `tvk upload` states
+plainly that source is stored.
+
+### Game identity and linking
+
+A game's identity is a row in the platform database, and its primary key is the
+only thing that says which game an upload belongs to. It is opaque, immutable,
+and issued by the platform. Nothing derives it from `game.name`, which is
+display text the developer must stay free to change — renaming a game publishes
+the next version of that same game, exactly as renaming a site does not create a
+new site.
+
+The CLI's job is to remember which game a project directory belongs to, which it
+does with one generated file:
+
+```jsonc
+// .tableverse/game.json — written by tvk link, read by tvk upload
+{ "gameId": "gm_01HX3P9K2M" }
+```
+
+The file lives in the project directory and travels with the folder by whatever
+means its owner already moves folders. The CLI makes no assumption that the
+project is under version control: it never creates or edits a `.gitignore`, and
+a developer working alone in a folder on one machine is a fully supported case.
+Whether the project's source is published anywhere is the developer's decision
+and has no bearing on this design.
+
+`TABLEVERSE_GAME_ID` overrides the file when set, so scripted publishing needs
+no writable project directory.
+
+**`tvk link`** binds a directory. It lists the games the logged-in account owns
+and lets the developer pick one, or create a new one named from `game.name`;
+`--new` skips straight to creation. The developer never types or sees an
+identifier. The same picker is the recovery path: if `game.json` is deleted,
+re-running `tvk link` re-binds the directory, which matters because a project
+with no version control has nothing to restore the file from.
+
+Two mistakes are worth designing against explicitly:
+
+- **A copied project directory.** Duplicating a folder to start a second game
+  carries `game.json` with it, so an upload would silently ship a new version of
+  the original. Authorization cannot catch this — the same account owns both. So
+  `tvk upload` resolves the id to its name and prints
+  `Publishing to Slaylike (gm_01HX3P9K2M)` before it packages anything, putting
+  the wrong target in front of the developer while it is still cheap to stop.
+- **A directory linked to someone else's game.** The platform rejects the
+  upload; the CLI reports "this project is linked to a game you do not have
+  access to — run `tvk link --new` to publish it as your own" rather than a raw 403.
 
 ### Config additions
 
 `defineConfig` (in `@tableverse-kit/engine/config`) gains an optional `publish`
-block:
+block describing what to package. It carries no identity: `game.json` is
+CLI-written state, and keeping it out of a hand-authored TypeScript file means
+the CLI can rewrite it without parsing and preserving someone's source.
 
 ```ts
 defineConfig({
   game,
   publish: {
-    slug: "slaylike", // stable platform identity; defaults to slugify(game.name)
     engine: { root: "." }, // engine package source dir to package
-    frontend: { dist: "./web/dist" }, // pre-built static frontend to package
+    frontend: {
+      root: "./web", // frontend source dir to package
+      dist: "./web/dist", // pre-built static frontend to serve
+    },
   },
 });
 ```
@@ -168,25 +236,30 @@ required for `tvk upload`.
 
 ### Flow
 
-1. Load config; resolve `publish`. Verify `frontend.dist` exists and is
-   non-empty. If not, fail **before any network call** with "frontend bundle
-   not found — run your frontend build first."
-2. In a temp directory, build two gzipped tarballs and compute each one's
+1. Load config; resolve `publish`. Resolve the linked `gameId` from
+   `TABLEVERSE_GAME_ID` or `.tableverse/game.json`; if the directory is not
+   linked, stop and direct the developer to `tvk link`. Verify `frontend.dist`
+   exists and is non-empty. If not, fail **before any network call** with
+   "frontend bundle not found — run your frontend build first."
+2. `GET /games/:gameId` to resolve the display name, and print
+   `Publishing to <name> (<gameId>)`. A 403/404 here is where a stale or
+   foreign link surfaces, before any packaging work.
+3. In a temp directory, build three gzipped tarballs and compute each one's
    `sha256`:
-   - **engine** = the engine source under `engine.root`, excluding
-     `node_modules`, `dist`, `.git`, and other build output (include-list
-     driven).
-   - **frontend** = the contents of `frontend.dist`.
-3. `POST /versions` with `{ slug, engineSha256, frontendSha256 }` →
-   `{ versionId, enginePutUrl, frontendPutUrl, expiresAt }`. The two URLs are
-   short-lived presigned S3 `PUT` URLs.
-4. `PUT` each tarball **directly to its S3 URL** (bytes never transit
+   - **engine source** = everything under `engine.root`, excluding
+     `node_modules`, build output, and recognized secret files.
+   - **frontend source** = everything under `frontend.root`, same exclusions.
+   - **frontend bundle** = the contents of `frontend.dist`.
+4. `POST /versions` with `{ gameId, engineSourceSha256, frontendSourceSha256,
+frontendBundleSha256 }` → `{ versionId, putUrls, expiresAt }`. The URLs are
+   short-lived presigned S3 `PUT` URLs, one per artifact.
+5. `PUT` each tarball **directly to its S3 URL** (bytes never transit
    platform-api).
-5. `POST /versions/:versionId/build` → `{ buildId }`.
-6. Poll `GET /builds/:buildId` every ≈2s (with backoff and an overall timeout)
+6. `POST /versions/:versionId/build` → `{ buildId }`.
+7. Poll `GET /builds/:buildId` every ≈2s (with backoff and an overall timeout)
    until `status` is `ready` or `failed`. Step labels are streamed as they
    arrive (`type-check ✓ bundle ✓ smoke ✓`). On `ready`, print
-   `Published <slug>@v<N>`. On `failed`, print the failing step and `logsUrl`
+   `Published <name>@v<N>`. On `failed`, print the failing step and `logsUrl`
    and exit non-zero.
 
 ### Platform endpoints consumed
@@ -196,6 +269,9 @@ Full request/response shapes are in the contract doc. The CLI calls:
 - `POST /oauth/token` — token exchange and refresh.
 - `POST /auth/logout` — best-effort refresh-token revocation on `logout` (existing endpoint).
 - `GET /me` — account for `whoami`.
+- `GET /games` — the account's games, for the `tvk link` picker.
+- `POST /games` — create a game; returns its `gameId`.
+- `GET /games/:gameId` — resolve a linked id to its display name.
 - `POST /versions` — create a pending version; returns presigned S3 PUT URLs.
 - `PUT <presigned S3 URL>` — upload each tarball directly to S3.
 - `POST /versions/:versionId/build` — trigger the build.
@@ -214,12 +290,16 @@ New modules under `packages/cli/src/`, each with a single responsibility:
 - `lib/auth/session.ts` — "return a valid access token," performing
   refresh-if-needed. The single entry point authenticated commands call.
 - `lib/platform-client.ts` — typed wrapper over the platform HTTP API
-  (`token`, `me`, `createVersion`, `startBuild`, `getBuild`). Takes an
-  **injectable `fetch`** and `apiBaseUrl`.
+  (`token`, `me`, `listGames`, `createGame`, `getGame`, `createVersion`,
+  `startBuild`, `getBuild`). Takes an **injectable `fetch`** and `apiBaseUrl`.
+- `lib/link/game-link.ts` — read / write `.tableverse/game.json` and apply the
+  `TABLEVERSE_GAME_ID` override. The only module that knows where the link is
+  stored.
 - `lib/packaging/tarball.ts` — build the engine / frontend tarballs and compute
   `sha256`.
 - `commands/login.ts`, `commands/logout.ts`, `commands/whoami.ts`,
-  `commands/upload.ts` — orchestration only; return `RunResult`.
+  `commands/link.ts`, `commands/upload.ts` — orchestration only; return
+  `RunResult`.
 
 ### Testability
 
@@ -242,6 +322,14 @@ until the server ships.
   expired, retry `tvk upload`."
 - **Build `failed`:** non-zero exit with the failing step and `logsUrl`.
 - **Missing / empty `frontend.dist`:** fail before any network call.
+- **Unlinked project** (`upload` with no `game.json` and no
+  `TABLEVERSE_GAME_ID`): stop before packaging and point at `tvk link`.
+- **Link to an inaccessible game** (403/404 on `GET /games/:gameId`): report
+  that the project is linked to a game the account cannot reach and offer
+  `tvk link --new`, never a raw status code.
+- **Unreadable / malformed `game.json`:** treat it as a link failure naming the
+  file path, and direct to `tvk link` to rewrite it — the file is CLI-owned
+  state, so repair is a re-link, not hand-editing.
 - **Loopback port bind failure:** retry a couple of times, then a clear message.
 
 ## Repo charter and cleanup
@@ -263,3 +351,21 @@ until the server ships.
 - OS-keychain token storage.
 - Standalone frontend-only or engine-only publish commands.
 - The server-side endpoints (specified in the `tableverse` contract doc).
+- `tvk pull` / restore. Retention makes it possible; nothing ships until asked
+  for.
+
+### Backlog
+
+Source retention is stage one of three. The later stages are deliberately not
+designed here, and retaining complete source is what keeps them open:
+
+1. **Source retention** — this document.
+2. **Publish-time frontend build.** Batch work, minutes are acceptable, no idle
+   containers. Required before source can change without a developer's laptop in
+   the loop. `frontend.dist` becomes optional when this lands.
+3. **Live editing sandbox.** A running container per active editor with hot
+   reload — the operationally expensive stage. A tabletop frontend is a far
+   narrower target than a general web app, so the general-purpose sandbox may
+   not be the right shape; that is a question for its own design.
+
+GitHub sync sits alongside these rather than in the sequence.
