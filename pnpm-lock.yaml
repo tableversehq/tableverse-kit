@@ -116,6 +116,18 @@ importers:
         specifier: ^5
         version: 5.9.3
     devDependencies:
+      '@tableverse-kit/cli':
+        specifier: workspace:*
+        version: link:../cli
+      '@tableverse-kit/client':
+        specifier: workspace:*
+        version: link:../client
+      '@tableverse-kit/config':
+        specifier: workspace:*
+        version: link:../config
+      '@tableverse-kit/engine':
+        specifier: workspace:*
+        version: link:../engine
       '@types/node':
         specifier: ^24.13.2
         version: 24.13.2

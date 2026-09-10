@@ -31,6 +31,10 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@tableverse-kit/cli": "workspace:*",
+    "@tableverse-kit/client": "workspace:*",
+    "@tableverse-kit/config": "workspace:*",
+    "@tableverse-kit/engine": "workspace:*",
     "@types/node": "^24.13.2"
   },
   "peerDependencies": {

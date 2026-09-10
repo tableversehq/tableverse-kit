@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tableverse-kit/client": "{{tableverseVersion}}"
+    "@tableverse-kit/client": "{{clientVersion}}"
   },
   "devDependencies": {
     "{{projectName}}-engine": "0.0.0",

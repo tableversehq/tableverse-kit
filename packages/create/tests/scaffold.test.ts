@@ -35,7 +35,12 @@ describe("scaffold", () => {
     await scaffold({
       targetDir: target,
       projectName: "my-game",
-      tableverseVersion: "^1.2.3",
+      versions: {
+        cli: "^1.2.3",
+        config: "^1.2.4",
+        client: "^1.2.5",
+        engine: "^1.2.6",
+      },
     });
 
     const names = (await collectFiles(target)).map((path) =>
@@ -61,7 +66,12 @@ describe("scaffold", () => {
     await scaffold({
       targetDir: target,
       projectName: "my-game",
-      tableverseVersion: "^1.2.3",
+      versions: {
+        cli: "^1.2.3",
+        config: "^1.2.4",
+        client: "^1.2.5",
+        engine: "^1.2.6",
+      },
     });
 
     const rootManifest = JSON.parse(
@@ -70,7 +80,7 @@ describe("scaffold", () => {
     expect(rootManifest.name).toBe("my-game");
     expect(rootManifest.devDependencies["@tableverse-kit/cli"]).toBe("^1.2.3");
     expect(rootManifest.devDependencies["@tableverse-kit/config"]).toBe(
-      "^1.2.3",
+      "^1.2.4",
     );
     expect(rootManifest.workspaces).toEqual(["engine", "client"]);
     expect(rootManifest.scripts.dev).toBe("tvk dev");
@@ -92,7 +102,17 @@ describe("scaffold", () => {
       await readFile(join(target, "client", "package.json"), "utf8"),
     );
     expect(clientManifest.name).toBe("my-game-client");
+    expect(clientManifest.dependencies["@tableverse-kit/client"]).toBe(
+      "^1.2.5",
+    );
     expect(clientManifest.devDependencies["my-game-engine"]).toBe("0.0.0");
+
+    const engineManifest = JSON.parse(
+      await readFile(join(target, "engine", "package.json"), "utf8"),
+    );
+    expect(engineManifest.dependencies["@tableverse-kit/engine"]).toBe(
+      "^1.2.6",
+    );
   });
 
   test("creates one client that selects its connection", async () => {
@@ -100,7 +120,12 @@ describe("scaffold", () => {
     await scaffold({
       targetDir: target,
       projectName: "my-game",
-      tableverseVersion: "^1.2.3",
+      versions: {
+        cli: "^1.2.3",
+        config: "^1.2.4",
+        client: "^1.2.5",
+        engine: "^1.2.6",
+      },
     });
 
     const clientSource = await readFile(
@@ -115,7 +140,12 @@ describe("scaffold", () => {
     await scaffold({
       targetDir: target,
       projectName: "my-game",
-      tableverseVersion: "^1.2.3",
+      versions: {
+        cli: "^1.2.3",
+        config: "^1.2.4",
+        client: "^1.2.5",
+        engine: "^1.2.6",
+      },
     });
 
     for (const path of await collectFiles(target)) {

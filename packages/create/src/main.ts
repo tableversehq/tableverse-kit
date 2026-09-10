@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { scaffold } from "./scaffold.ts";
+import { scaffold, type TrackedPackage } from "./scaffold.ts";
 
 const usage = `Usage: create-tableverse <directory>
 
@@ -35,12 +35,12 @@ export async function run(argv: string[]): Promise<RunResult> {
   }
 
   const projectName = toProjectName(basename(targetDir));
-  const version = await readOwnVersion();
+  const versions = await readTableverseVersions();
 
   await scaffold({
     targetDir,
     projectName,
-    tableverseVersion: `^${version}`,
+    versions,
   });
 
   return { exitCode: 0, stdout: nextSteps(target), stderr: "" };
@@ -54,20 +54,68 @@ function toProjectName(raw: string): string {
   return slug || "tableverse-game";
 }
 
-async function readOwnVersion(): Promise<string> {
+function isDependencyRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+/**
+ * create-tableverse's own manifest tracks @tableverse-kit/cli, config,
+ * client, and engine as devDependencies (workspace:* in this repo) so
+ * `pnpm publish` resolves each to its real, independently released version
+ * at publish time, pinning every scaffold to whatever version of that
+ * package was actually current when this tool was published. Before a
+ * publish the range is still the literal workspace:* protocol, so this
+ * resolves it by reading the sibling package's own version directly out of
+ * the monorepo instead.
+ */
+async function versionOf(
+  pkg: TrackedPackage,
+  devDependencies: Record<string, unknown>,
+): Promise<string> {
+  const dependencyName = `@tableverse-kit/${pkg}`;
+  const range = devDependencies[dependencyName];
+  if (typeof range !== "string") {
+    throw new Error(`create_package_missing_dependency:${dependencyName}`);
+  }
+  if (!range.startsWith("workspace:")) {
+    return `^${range}`;
+  }
+
+  const siblingManifestPath = fileURLToPath(
+    new URL(`../../${pkg}/package.json`, import.meta.url),
+  );
+  const siblingManifest: unknown = JSON.parse(
+    await readFile(siblingManifestPath, "utf8"),
+  );
+  if (
+    !isDependencyRecord(siblingManifest) ||
+    typeof siblingManifest.version !== "string"
+  ) {
+    throw new Error(`create_package_missing_dependency:${dependencyName}`);
+  }
+  return `^${siblingManifest.version}`;
+}
+
+async function readTableverseVersions(): Promise<
+  Record<TrackedPackage, string>
+> {
   const manifestPath = fileURLToPath(
     new URL("../package.json", import.meta.url),
   );
   const manifest: unknown = JSON.parse(await readFile(manifestPath, "utf8"));
-  if (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    "version" in manifest &&
-    typeof manifest.version === "string"
-  ) {
-    return manifest.version;
-  }
-  throw new Error("create_package_missing_version");
+  const devDependencies =
+    isDependencyRecord(manifest) && isDependencyRecord(manifest.devDependencies)
+      ? manifest.devDependencies
+      : {};
+
+  const [cli, config, client, engine] = await Promise.all([
+    versionOf("cli", devDependencies),
+    versionOf("config", devDependencies),
+    versionOf("client", devDependencies),
+    versionOf("engine", devDependencies),
+  ]);
+
+  return { cli, config, client, engine };
 }
 
 function nextSteps(target: string): string {

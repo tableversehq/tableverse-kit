@@ -13,10 +13,14 @@ const emittedNames: Record<string, string> = {
   "_tsconfig.json": "tsconfig.json",
 };
 
+export const TRACKED_PACKAGES = ["cli", "config", "client", "engine"] as const;
+
+export type TrackedPackage = (typeof TRACKED_PACKAGES)[number];
+
 export interface ScaffoldOptions {
   targetDir: string;
   projectName: string;
-  tableverseVersion: string;
+  versions: Record<TrackedPackage, string>;
   templateDir?: string;
 }
 
@@ -53,7 +57,9 @@ async function copyTree(
 }
 
 function substitute(contents: string, options: ScaffoldOptions): string {
-  return contents
-    .replaceAll("{{projectName}}", options.projectName)
-    .replaceAll("{{tableverseVersion}}", options.tableverseVersion);
+  let result = contents.replaceAll("{{projectName}}", options.projectName);
+  for (const pkg of TRACKED_PACKAGES) {
+    result = result.replaceAll(`{{${pkg}Version}}`, options.versions[pkg]);
+  }
+  return result;
 }

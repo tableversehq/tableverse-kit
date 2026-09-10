@@ -10,8 +10,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
-    "@tableverse-kit/cli": "{{tableverseVersion}}",
-    "@tableverse-kit/config": "{{tableverseVersion}}",
+    "@tableverse-kit/cli": "{{cliVersion}}",
+    "@tableverse-kit/config": "{{configVersion}}",
     "typescript": "^5"
   }
 }
