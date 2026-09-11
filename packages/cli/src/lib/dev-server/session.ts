@@ -31,11 +31,13 @@ export interface DiscoveryRequest {
 
 export class DevSession {
   readonly #executor: AnyGameExecutor;
+  readonly #defaultPlayers: readonly string[];
   #state: CanonicalState | null = null;
   #version = 0;
 
   constructor(game: AnyGameDefinition) {
     this.#executor = createGameExecutor(game);
+    this.#defaultPlayers = seatRoster(game.playerBounds.min);
   }
 
   get initialized(): boolean {
@@ -58,11 +60,9 @@ export class DevSession {
     }
     // One uniform, cast-free call (see `AnyGameExecutor`): the dynamic host builds a
     // single init object and lets the runtime validate `setup` against the schema.
-    // Dev defaults to a single "p1" seat; a multiplayer game's dev client passes an
-    // explicit roster.
     this.#state = this.#executor.createInitialState({
       seed: init.seed ?? "dev",
-      players: init.players ?? ["p1"],
+      players: init.players ?? [...this.#defaultPlayers],
       setup: init.setup,
     });
     this.#version = 1;
@@ -119,4 +119,12 @@ export class DevSession {
 
 function player(playerId: string): Viewer {
   return { kind: "player", playerId };
+}
+
+/**
+ * Seats a dev session's roster: `p1`, `p2`, ... up to the smallest roster the
+ * game accepts, so a client that names no players still starts the match.
+ */
+function seatRoster(seats: number): readonly string[] {
+  return Array.from({ length: seats }, (_, index) => `p${index + 1}`);
 }

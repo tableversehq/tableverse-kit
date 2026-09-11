@@ -22,7 +22,7 @@ export interface DevTransportOptions {
   viewer: string;
   setupInput?: unknown;
   // The authoritative roster and seed the dev server hands the engine's init
-  // contract. Omitted, the server defaults to a single-seat dev match.
+  // contract.
   players?: string[];
   seed?: string | number;
   sse?: SseFactory;

@@ -27,7 +27,7 @@ class DemoState {
 
 const events = defineEvents({ scored: t.object({ points: t.number() }) });
 
-function buildGame() {
+function buildGame(playerBounds: { min: number; max: number }) {
   const state = defineGameState()
     .model({ count: t.number() })
     .stateClass(DemoState)
@@ -57,12 +57,13 @@ function buildGame() {
   return new GameDefinitionBuilder("demo")
     .state(state)
     .events(events)
-    .players({ min: 1, max: 8 })
+    .players(playerBounds)
     .initialStage(turn)
     .build();
 }
 
-const game = buildGame();
+const game = buildGame({ min: 1, max: 8 });
+const twoPlayerGame = buildGame({ min: 2, max: 4 });
 const executor = createGameExecutor(game);
 type Executor = typeof executor;
 
@@ -127,6 +128,19 @@ test("dev client connects, executes, and receives snapshots + events over the wi
   expect(received.some((event) => event.type === "scored")).toBe(true);
 
   await expect(client.getAvailableCommands()).resolves.toContain("score");
+
+  client.dispose();
+});
+
+test("dev client connects to a game that seats two players without passing a roster", async () => {
+  handle = await startDevServer(twoPlayerGame, { port: 0 });
+  const client = new TransportClient(
+    new DevTransport<Executor>(handle.url, { viewer: "p1", sse: nodeSse }),
+  );
+
+  await client.ready();
+  expect(client.getStatus()).toBe("ready");
+  expect(client.getView()).not.toBeNull();
 
   client.dispose();
 });
