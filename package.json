@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "lint": "eslint .",
     "changeset": "changeset",
-    "release": "changeset version && git add -A && git commit -m \"chore: version packages\"",
+    "release": "changeset version && git add packages .changeset && git commit -m \"chore: version packages\"",
     "release:publish": "changeset publish"
   },
   "devDependencies": {
