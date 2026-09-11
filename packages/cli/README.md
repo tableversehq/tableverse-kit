@@ -7,7 +7,7 @@ The `create-tableverse` scaffold installs it in your project root. To add it to
 an existing project:
 
 ```bash
-npm install --save-dev @tableverse-kit/cli@beta
+npm install --save-dev @tableverse-kit/cli
 ```
 
 Then run it from the project root, or any directory below it:

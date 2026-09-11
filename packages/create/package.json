@@ -20,8 +20,7 @@
     "templates/default"
   ],
   "publishConfig": {
-    "access": "public",
-    "tag": "beta"
+    "access": "public"
   },
   "dependencies": {
     "tsx": "^4.23.0"

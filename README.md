@@ -16,7 +16,7 @@ engine source → GameExecutor → Tableverse
 ## Quick start
 
 ```bash
-npm create tableverse@beta my-game
+npm create tableverse my-game
 cd my-game
 npm install
 npm run dev
@@ -38,12 +38,12 @@ The scaffold ships a playable scoring command and a plain TypeScript frontend.
 
 ## Install into an existing project
 
-The packages are in beta, so install them from the `beta` tag:
+The packages are in beta, and the default install gives you the current beta:
 
 ```bash
-npm install @tableverse-kit/engine@beta
-npm install --save-dev @tableverse-kit/cli@beta @tableverse-kit/config@beta
-npm install @tableverse-kit/client@beta
+npm install @tableverse-kit/engine
+npm install --save-dev @tableverse-kit/cli @tableverse-kit/config
+npm install @tableverse-kit/client
 ```
 
 Every package ships TypeScript source. Run the CLI through its `tvk` binary,

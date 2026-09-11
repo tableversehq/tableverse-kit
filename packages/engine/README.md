@@ -7,7 +7,7 @@ Your frontend never imports these rules. It talks to the executor through
 [`@tableverse-kit/client`](https://github.com/tableversehq/tableverse-kit/tree/main/packages/client).
 
 ```bash
-npm install @tableverse-kit/engine@beta
+npm install @tableverse-kit/engine
 ```
 
 ## The four parts of a game

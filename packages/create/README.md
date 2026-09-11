@@ -5,7 +5,7 @@ with an engine package holding your rules and a client package holding the
 frontend that renders them.
 
 ```bash
-npm create tableverse@beta token-race
+npm create tableverse token-race
 cd token-race
 npm install
 npm run dev

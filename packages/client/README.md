@@ -8,7 +8,7 @@ Use it from plain TypeScript, React, Vue, Svelte, or any other browser
 framework.
 
 ```bash
-npm install @tableverse-kit/client@beta
+npm install @tableverse-kit/client
 ```
 
 ## Create one typed client

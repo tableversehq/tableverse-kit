@@ -6,7 +6,7 @@ project. It gives `tableverse.config.ts` its types, and it is what
 and the platform read to build your game.
 
 ```bash
-npm install --save-dev @tableverse-kit/config@beta
+npm install --save-dev @tableverse-kit/config
 ```
 
 ## Usage

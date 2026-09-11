@@ -16,8 +16,7 @@
   },
   "types": "./src/index.ts",
   "publishConfig": {
-    "access": "public",
-    "tag": "beta"
+    "access": "public"
   },
   "files": [
     "src"

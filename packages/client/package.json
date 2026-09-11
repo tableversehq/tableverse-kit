@@ -27,8 +27,7 @@
     "src"
   ],
   "publishConfig": {
-    "access": "public",
-    "tag": "beta"
+    "access": "public"
   },
   "scripts": {
     "test": "vitest run",
