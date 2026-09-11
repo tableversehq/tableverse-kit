@@ -19,7 +19,7 @@ describe("openBrowser", () => {
     const child = fakeChild();
     vi.mocked(spawn).mockReturnValue(child as never);
 
-    await openBrowser("https://dev.tableverse.io/authorize");
+    await openBrowser("https://dev.example.test/authorize");
 
     expect(() =>
       child.emit(
@@ -31,7 +31,7 @@ describe("openBrowser", () => {
 });
 
 describe("resolveOpenCommand", () => {
-  const URL = "https://dev.tableverse.io/authorize";
+  const URL = "https://dev.example.test/authorize";
 
   it("defers to the platform's default https handler", () => {
     expect(resolveOpenCommand(URL, "linux")).toEqual({

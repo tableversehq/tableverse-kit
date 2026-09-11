@@ -4,7 +4,7 @@ import { createLoopbackAuthorize } from "../../src/lib/auth/loopback-authorize.t
 /** Builds an authorize URL that round-trips the loopback redirect + state. */
 function buildAuthorizeUrl(state: string) {
   return (redirectUri: string) => {
-    const url = new URL("https://dev.tableverse.io/authorize");
+    const url = new URL("https://dev.example.test/authorize");
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set("state", state);
     return url.toString();

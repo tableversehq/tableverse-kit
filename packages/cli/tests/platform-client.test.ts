@@ -16,7 +16,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 function makeClient(fetchImpl: FetchLike) {
   return createPlatformClient({
-    apiBaseUrl: "https://api-dev.tableverse.io",
+    apiBaseUrl: "https://api-dev.example.test",
     clientId: "tvk-cli",
     fetch: fetchImpl,
   });
@@ -106,7 +106,7 @@ describe("wire format does not leak into the file format", () => {
     const account = await client.me({ accessToken: "a" });
 
     const credentials = credentialsFromTokens(
-      "https://api-dev.tableverse.io",
+      "https://api-dev.example.test",
       { accessToken: "a", refreshToken: "r", expiresIn: 3600 },
       account,
       new Date("2026-07-12T18:00:00.000Z"),
@@ -139,7 +139,7 @@ describe("platform client", () => {
     });
 
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(url).toBe("https://api-dev.tableverse.io/oauth/token");
+    expect(url).toBe("https://api-dev.example.test/oauth/token");
     expect(JSON.parse(String(init?.body))).toEqual({
       grant_type: "authorization_code",
       code: "c",
@@ -155,7 +155,7 @@ describe("platform client", () => {
     await makeClient(fetchImpl).logout({ refreshToken: "r" });
 
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(url).toBe("https://api-dev.tableverse.io/auth/logout");
+    expect(url).toBe("https://api-dev.example.test/auth/logout");
     expect(init?.method).toBe("POST");
     expect(JSON.parse(String(init?.body))).toEqual({ refreshToken: "r" });
   });
@@ -199,7 +199,7 @@ describe("platform client", () => {
       "https://storage.example/project",
     );
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(url).toBe("https://api-dev.tableverse.io/versions");
+    expect(url).toBe("https://api-dev.example.test/versions");
     expect(JSON.parse(String(init?.body))).toEqual({
       gameId: "game-1",
       projectSourceSha256: "a".repeat(64),
@@ -229,7 +229,7 @@ describe("platform client", () => {
 
     expect(account).toEqual({ id: "u1", email: "user@example.com" });
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(url).toBe("https://api-dev.tableverse.io/me");
+    expect(url).toBe("https://api-dev.example.test/me");
     expect((init?.headers as Record<string, string>).authorization).toBe(
       "Bearer tok",
     );

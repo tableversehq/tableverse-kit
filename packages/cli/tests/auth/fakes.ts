@@ -11,8 +11,8 @@ import type {
 } from "../../src/lib/platform-client.ts";
 
 export const TEST_CONFIG: PlatformConfig = {
-  apiBaseUrl: "https://api-dev.tableverse.io",
-  webBaseUrl: "https://dev.tableverse.io",
+  apiBaseUrl: "https://api-dev.example.test",
+  webBaseUrl: "https://dev.example.test",
   clientId: "tvk-cli",
 };
 

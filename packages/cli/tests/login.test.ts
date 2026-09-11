@@ -90,7 +90,7 @@ describe("tvk login", () => {
 
     const url = new URL(authorizeUrl);
     expect(url.origin + url.pathname).toBe(
-      "https://dev.tableverse.io/authorize",
+      "https://dev.example.test/authorize",
     );
     expect(url.searchParams.get("response_type")).toBe("code");
     expect(url.searchParams.get("client_id")).toBe("tvk-cli");

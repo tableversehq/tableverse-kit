@@ -154,7 +154,7 @@ describe("tvk upload", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain(
-      "https://dev.tableverse.io/studio/games/game-123/deployments/b1?v=4",
+      "https://dev.example.test/studio/games/game-123/deployments/b1?v=4",
     );
 
     expect(h.uploads).toHaveLength(1);
@@ -197,7 +197,7 @@ describe("tvk upload", () => {
     const result = await runUploadCommand([], h.ctx);
 
     const dashboardUrl =
-      "https://dev.tableverse.io/studio/games/game-123/deployments/b1?v=4";
+      "https://dev.example.test/studio/games/game-123/deployments/b1?v=4";
     expect(result.exitCode).toBe(0);
     expect(h.opened).toEqual([dashboardUrl]);
     expect(result.stdout).toContain(dashboardUrl);
@@ -214,7 +214,7 @@ describe("tvk upload", () => {
     expect(result.exitCode).toBe(0);
     expect(h.opened).toEqual([]);
     expect(result.stdout).toContain(
-      "https://dev.tableverse.io/studio/games/game-123/deployments/b1?v=4",
+      "https://dev.example.test/studio/games/game-123/deployments/b1?v=4",
     );
     expect(h.emitted).not.toContain(
       "Build started — opening the deployment dashboard in your browser…",
@@ -235,7 +235,7 @@ describe("tvk upload", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain(
-      "https://dev.tableverse.io/studio/games/game-123/deployments/b1?v=4",
+      "https://dev.example.test/studio/games/game-123/deployments/b1?v=4",
     );
   });
 
@@ -284,7 +284,7 @@ describe("tvk upload", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain(
-      "https://dev.tableverse.io/studio/games/new-game/deployments/b1?v=4",
+      "https://dev.example.test/studio/games/new-game/deployments/b1?v=4",
     );
     expect(created).toEqual(["Splendor"]);
     const link = JSON.parse(
@@ -320,7 +320,7 @@ describe("tvk upload", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain(
-      "https://dev.tableverse.io/studio/games/old-game/deployments/b1?v=4",
+      "https://dev.example.test/studio/games/old-game/deployments/b1?v=4",
     );
     expect(created).toHaveLength(0);
     const link = JSON.parse(

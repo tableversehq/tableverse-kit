@@ -37,13 +37,13 @@ describe("file token store", () => {
   it("returns undefined when no credentials are stored", async () => {
     const store = createFileTokenStore({ filePath: await tempFilePath() });
 
-    expect(await store.read("https://api-dev.tableverse.io")).toBeUndefined();
+    expect(await store.read("https://api-dev.example.test")).toBeUndefined();
   });
 
   it("writes then reads credentials, keyed by apiBaseUrl", async () => {
     const store = createFileTokenStore({ filePath: await tempFilePath() });
-    const dev = credentials("https://api-dev.tableverse.io");
-    const prod = credentials("https://api.tableverse.io");
+    const dev = credentials("https://api-dev.example.test");
+    const prod = credentials("https://api.example.test");
 
     await store.write(dev);
     await store.write(prod);
@@ -54,7 +54,7 @@ describe("file token store", () => {
 
   it("removes an entry and hands back what it removed", async () => {
     const store = createFileTokenStore({ filePath: await tempFilePath() });
-    const dev = credentials("https://api-dev.tableverse.io");
+    const dev = credentials("https://api-dev.example.test");
     await store.write(dev);
 
     // The removed entry comes back so a caller can revoke its refresh token
@@ -66,8 +66,8 @@ describe("file token store", () => {
 
   it("leaves other environments alone when removing one", async () => {
     const store = createFileTokenStore({ filePath: await tempFilePath() });
-    const dev = credentials("https://api-dev.tableverse.io");
-    const prod = credentials("https://api.tableverse.io");
+    const dev = credentials("https://api-dev.example.test");
+    const prod = credentials("https://api.example.test");
     await store.write(dev);
     await store.write(prod);
 
@@ -83,7 +83,7 @@ describe("file token store", () => {
   it("round-trips an account with no email", async () => {
     const store = createFileTokenStore({ filePath: await tempFilePath() });
     const entry = {
-      ...credentials("https://api-dev.tableverse.io"),
+      ...credentials("https://api-dev.example.test"),
       account: { id: "u_01HX3P9K2M", email: null },
     };
 
@@ -94,12 +94,10 @@ describe("file token store", () => {
 
   it("rejects a credentials file that is not valid JSON", async () => {
     const store = createFileTokenStore({
-      filePath: await fileContaining(
-        '{"https://api-dev.tableverse.io": {"acce',
-      ),
+      filePath: await fileContaining('{"https://api-dev.example.test": {"acce'),
     });
 
-    await expect(store.read("https://api-dev.tableverse.io")).rejects.toThrow(
+    await expect(store.read("https://api-dev.example.test")).rejects.toThrow(
       CredentialsFileError,
     );
   });
@@ -109,7 +107,7 @@ describe("file token store", () => {
       filePath: await fileContaining("[]"),
     });
 
-    await expect(store.read("https://api-dev.tableverse.io")).rejects.toThrow(
+    await expect(store.read("https://api-dev.example.test")).rejects.toThrow(
       CredentialsFileError,
     );
   });
@@ -118,12 +116,12 @@ describe("file token store", () => {
     const store = createFileTokenStore({
       filePath: await fileContaining(
         JSON.stringify({
-          "https://api-dev.tableverse.io": { accessToken: "only-this-one" },
+          "https://api-dev.example.test": { accessToken: "only-this-one" },
         }),
       ),
     });
 
-    await expect(store.read("https://api-dev.tableverse.io")).rejects.toThrow(
+    await expect(store.read("https://api-dev.example.test")).rejects.toThrow(
       CredentialsFileError,
     );
   });
@@ -133,14 +131,14 @@ describe("file token store", () => {
     const store = createFileTokenStore({ filePath });
 
     await expect(
-      store.read("https://api-dev.tableverse.io"),
+      store.read("https://api-dev.example.test"),
     ).rejects.toMatchObject({ filePath });
   });
 
   it("writes the credentials file with 0600 permissions", async () => {
     const filePath = await tempFilePath();
     const store = createFileTokenStore({ filePath });
-    await store.write(credentials("https://api-dev.tableverse.io"));
+    await store.write(credentials("https://api-dev.example.test"));
 
     const mode = (await stat(filePath)).mode & 0o777;
 
@@ -152,14 +150,14 @@ describe("file token store", () => {
     await chmod(filePath, 0o644);
     const store = createFileTokenStore({ filePath });
 
-    await store.write(credentials("https://api-dev.tableverse.io"));
+    await store.write(credentials("https://api-dev.example.test"));
 
     expect((await stat(filePath)).mode & 0o777).toBe(0o600);
   });
 
   it("tightens the permissions when rewriting the file on remove", async () => {
-    const dev = credentials("https://api-dev.tableverse.io");
-    const prod = credentials("https://api.tableverse.io");
+    const dev = credentials("https://api-dev.example.test");
+    const prod = credentials("https://api.example.test");
     const filePath = await fileContaining(
       JSON.stringify({ [dev.apiBaseUrl]: dev, [prod.apiBaseUrl]: prod }),
     );
