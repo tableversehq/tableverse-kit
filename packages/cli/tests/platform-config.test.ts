@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { resolvePlatformConfig } from "../src/lib/platform-config.ts";
 
 describe("resolvePlatformConfig", () => {
-  it("defaults to the dev deployment", () => {
+  it("defaults to the production deployment", () => {
     expect(resolvePlatformConfig({})).toEqual({
-      apiBaseUrl: "https://api-dev.tableverse.io",
-      webBaseUrl: "https://dev.tableverse.io",
+      apiBaseUrl: "https://api.tableverse.io",
+      webBaseUrl: "https://tableverse.io",
       clientId: "tvk-cli",
     });
   });
@@ -26,7 +26,7 @@ describe("resolvePlatformConfig", () => {
     });
 
     expect(config.apiBaseUrl).toBe("https://api.example.test");
-    expect(config.webBaseUrl).toBe("https://dev.tableverse.io");
+    expect(config.webBaseUrl).toBe("https://tableverse.io");
   });
 
   it("strips a trailing slash so joined paths do not double up", () => {

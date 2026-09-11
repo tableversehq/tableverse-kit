@@ -29,8 +29,8 @@ export function createDevHelpText(): string {
 
 const ENVIRONMENT_HELP = [
   "Environment:",
-  "  TABLEVERSE_API_URL   platform-api base URL (default https://api-dev.tableverse.io)",
-  "  TABLEVERSE_WEB_URL   platform-web base URL (default https://dev.tableverse.io)",
+  "  TABLEVERSE_API_URL   platform-api base URL (default https://api.tableverse.io)",
+  "  TABLEVERSE_WEB_URL   platform-web base URL (default https://tableverse.io)",
 ];
 
 export function createLoginHelpText(): string {

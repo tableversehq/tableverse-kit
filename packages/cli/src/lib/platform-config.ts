@@ -1,14 +1,14 @@
 export interface PlatformConfig {
-  /** Base URL of platform-api, e.g. https://api-dev.tableverse.io */
+  /** Base URL of platform-api, e.g. https://api.tableverse.io */
   apiBaseUrl: string;
-  /** Base URL of platform-web, e.g. https://dev.tableverse.io */
+  /** Base URL of platform-web, e.g. https://tableverse.io */
   webBaseUrl: string;
   /** Public OAuth client id for the CLI. */
   clientId: string;
 }
 
-const DEFAULT_API_BASE_URL = "https://api-dev.tableverse.io";
-const DEFAULT_WEB_BASE_URL = "https://dev.tableverse.io";
+const DEFAULT_API_BASE_URL = "https://api.tableverse.io";
+const DEFAULT_WEB_BASE_URL = "https://tableverse.io";
 const CLIENT_ID = "tvk-cli";
 
 function stripTrailingSlash(value: string): string {
@@ -16,9 +16,9 @@ function stripTrailingSlash(value: string): string {
 }
 
 /**
- * Selects the platform environment. `TABLEVERSE_API_URL` / `TABLEVERSE_WEB_URL`
- * point the CLI at a different deployment — staging, or a local platform-api
- * and platform-web while developing.
+ * Selects the platform environment. The CLI talks to production by default.
+ * `TABLEVERSE_API_URL` / `TABLEVERSE_WEB_URL` point it at another deployment —
+ * staging, a development environment, or a local platform-api and platform-web.
  */
 export function resolvePlatformConfig(
   env: Record<string, string | undefined>,

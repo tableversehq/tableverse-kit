@@ -72,11 +72,11 @@ npx tvk validate
 
 ## Environment
 
-| Variable             | Effect                                                              |
-| -------------------- | ------------------------------------------------------------------- |
-| `TABLEVERSE_API_URL` | Platform API base URL. Defaults to `https://api-dev.tableverse.io`. |
-| `TABLEVERSE_WEB_URL` | Platform web base URL. Defaults to `https://dev.tableverse.io`.     |
-| `TABLEVERSE_GAME_ID` | Upload to this game ID, overriding the saved link.                  |
+| Variable             | Effect                                                          |
+| -------------------- | --------------------------------------------------------------- |
+| `TABLEVERSE_API_URL` | Platform API base URL. Defaults to `https://api.tableverse.io`. |
+| `TABLEVERSE_WEB_URL` | Platform web base URL. Defaults to `https://tableverse.io`.     |
+| `TABLEVERSE_GAME_ID` | Upload to this game ID, overriding the saved link.              |
 
 Credentials are stored per API base URL, so separate environments keep separate
 logins. `tvk upload` saves the game identity it links to in
