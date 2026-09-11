@@ -1,13 +1,7 @@
-# create-tableverse
+# @tableverse-kit/client
 
 ## 0.1.0-beta.2
 
 ### Patch Changes
 
 - `tvk dev` seats a roster that matches the player count your game declares, so a client that names no players starts the match. Scaffolded projects keep the rules-server URL on screen when the frontend starts.
-
-## 0.1.0-beta.1
-
-### Patch Changes
-
-- fcfa3b2: Fix create-tableverse scaffolds pinning a stale, lockstep version instead of each package's real current version
