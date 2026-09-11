@@ -10,3 +10,7 @@ packages/create/templates
 # Mintlify docs are authored in MDX; Prettier dedents fenced code inside JSX and
 # Mintlify components, corrupting code samples and breaking component nesting.
 packages/docs/**/*.mdx
+
+# Example projects are emitted by `create-tableverse` and kept verbatim, so they
+# show exactly what the scaffolder produces.
+examples

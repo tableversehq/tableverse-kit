@@ -1,0 +1,15 @@
+{
+  "name": "splendor-engine",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tableverse-kit/engine": "^0.1.0-beta.0"
+  }
+}

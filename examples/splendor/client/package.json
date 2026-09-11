@@ -1,0 +1,19 @@
+{
+  "name": "splendor-client",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tableverse-kit/client": "^0.1.0-beta.1"
+  },
+  "devDependencies": {
+    "splendor-engine": "0.0.0",
+    "typescript": "^5",
+    "vite": "^7.1.12"
+  }
+}
