@@ -3,14 +3,13 @@ build
 coverage
 dist
 
-# Scaffold templates are shipped verbatim; formatting them would rewrite the
-# emitted project's files and break the `{{token}}` placeholders on some paths.
+# Scaffold templates ship verbatim, already in the shape Prettier expects of the
+# project they emit. Prettier reads `_package.json` with its `json` parser and the
+# emitted `package.json` with `json-stringify`, so formatting here would rewrite
+# the template into a shape the emitted project fails on. It would also rewrite
+# the `{{token}}` placeholders on some paths.
 packages/create/templates
 
 # Mintlify docs are authored in MDX; Prettier dedents fenced code inside JSX and
 # Mintlify components, corrupting code samples and breaking component nesting.
 packages/docs/**/*.mdx
-
-# Example projects are emitted by `create-tableverse` and kept verbatim, so they
-# show exactly what the scaffolder produces.
-examples

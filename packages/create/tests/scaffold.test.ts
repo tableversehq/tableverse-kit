@@ -1,6 +1,7 @@
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { check, getFileInfo } from "prettier";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { scaffold } from "../src/scaffold.ts";
 import { run } from "../src/main.ts";
@@ -59,6 +60,36 @@ describe("scaffold", () => {
     expect(names).not.toContain("_package.json");
     expect(names).not.toContain("_gitignore");
     expect(names).not.toContain("engine/_tsconfig.json");
+  });
+
+  // `packages/create/templates` is Prettier-ignored, so the repo's own format
+  // check never reaches the template. This reaches the project it emits.
+  test("emits a project Prettier already considers formatted", async () => {
+    const target = join(workspace, "game");
+    await scaffold({
+      targetDir: target,
+      projectName: "my-game",
+      versions: {
+        cli: "^1.2.3",
+        config: "^1.2.4",
+        client: "^1.2.5",
+        engine: "^1.2.6",
+      },
+    });
+
+    const unformatted: string[] = [];
+    for (const path of await collectFiles(target)) {
+      const { inferredParser } = await getFileInfo(path);
+      if (inferredParser === null) {
+        continue;
+      }
+      const source = await readFile(path, "utf8");
+      if (!(await check(source, { filepath: path }))) {
+        unformatted.push(path.slice(target.length + 1));
+      }
+    }
+
+    expect(unformatted).toEqual([]);
   });
 
   test("substitutes the project name and version tokens", async () => {
