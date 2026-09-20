@@ -64,6 +64,27 @@ describe("scaffold", () => {
 
   // `packages/create/templates` is Prettier-ignored, so the repo's own format
   // check never reaches the template. This reaches the project it emits.
+  test("emits no bundler configuration and names publish directories", async () => {
+    const target = join(workspace, "no-bundler-config");
+    await scaffold({
+      targetDir: target,
+      projectName: "my-game",
+      versions: {
+        cli: "^1.2.3",
+        config: "^1.2.4",
+        client: "^1.2.5",
+        engine: "^1.2.6",
+      },
+    });
+
+    const files = await collectFiles(target);
+    expect(files.some((path) => path.endsWith("vite.config.ts"))).toBe(false);
+
+    const config = await readFile(join(target, "tableverse.config.ts"), "utf8");
+    expect(config).toContain('engine: "./engine"');
+    expect(config).toContain('frontend: "./client"');
+  });
+
   test("emits a project Prettier already considers formatted", async () => {
     const target = join(workspace, "game");
     await scaffold({
@@ -125,9 +146,8 @@ describe("scaffold", () => {
       "utf8",
     );
     expect(configSource).toContain('from "./engine/src/game.ts"');
-    expect(configSource).toContain('engine: { root: "./engine" }');
-    expect(configSource).toContain('root: "./client"');
-    expect(configSource).toContain('buildCommand: "npm run build"');
+    expect(configSource).toContain('engine: "./engine"');
+    expect(configSource).toContain('frontend: "./client"');
 
     const clientManifest = JSON.parse(
       await readFile(join(target, "client", "package.json"), "utf8"),

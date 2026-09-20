@@ -1,5 +1,4 @@
 import type { TSchema, Static } from "@sinclair/typebox";
-import type { PublishConfig } from "@tableverse-kit/config";
 import type { SerializedSetupSchema } from "@tableverse-kit/engine";
 import { Value } from "@sinclair/typebox/value";
 import { MeResponseSchema, type MeResponse } from "./api/me.ts";
@@ -24,12 +23,17 @@ export interface TokenResponse {
   expiresIn: number;
 }
 
+export interface BuildConfig {
+  engine: { root: string };
+  frontend: { root: string; buildCommand: string; outDir: string };
+}
+
 export interface CreateVersionInput {
   accessToken: string;
   gameId: string;
   projectSourceSha256: string;
   projectSourceSizeBytes: number;
-  buildConfig: PublishConfig;
+  buildConfig: BuildConfig;
   metadata: {
     setupInputSchema: SerializedSetupSchema | null;
     minPlayers: number;

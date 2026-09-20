@@ -14,6 +14,7 @@ import {
   type LinkPrompt,
 } from "../link/link-prompt.ts";
 import { openBrowser, type BrowserOpener } from "../browser.ts";
+import { resolveFrontendToolchain } from "../frontend/vite-config.ts";
 
 export interface UploadContext {
   config: PlatformConfig;
@@ -23,6 +24,7 @@ export interface UploadContext {
   cwd: string;
   env: Record<string, string | undefined>;
   loadConfig: (options: { cwd: string }) => Promise<LoadedCliConfig>;
+  resolveToolchain: typeof resolveFrontendToolchain;
   interactive: boolean;
   linkPrompt: LinkPrompt;
   openBrowser: BrowserOpener;
@@ -38,6 +40,7 @@ export function createUploadContext(): UploadContext {
     cwd: process.cwd(),
     env: process.env,
     loadConfig,
+    resolveToolchain: resolveFrontendToolchain,
     tokenStore: createFileTokenStore({
       filePath: resolveCredentialsPath(process.env),
     }),

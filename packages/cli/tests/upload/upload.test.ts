@@ -16,6 +16,7 @@ import type { LoadedCliConfig } from "../../src/lib/load-config.ts";
 import type { PresignedUpload } from "../../src/lib/api/versions.ts";
 import type { CreateVersionInput } from "../../src/lib/platform-client.ts";
 import { PlatformRequestError } from "../../src/lib/platform-client.ts";
+import { FrontendToolchainError } from "../../src/lib/frontend/vite-config.ts";
 import {
   FIXED_NOW,
   TEST_CONFIG,
@@ -50,16 +51,7 @@ async function setupProject(): Promise<string> {
 function loadedConfig(root: string, withPublish = true): LoadedCliConfig {
   return {
     game: createFixtureGame(),
-    publish: withPublish
-      ? {
-          engine: { root: "engine" },
-          frontend: {
-            root: "web",
-            buildCommand: "npm run build",
-            outDir: "dist",
-          },
-        }
-      : undefined,
+    publish: withPublish ? { engine: "engine", frontend: "web" } : undefined,
     configFilePath: join(root, "tableverse.config.ts"),
     configDirectory: root,
   };
@@ -131,6 +123,11 @@ function harness(
     cwd: root,
     env: { TABLEVERSE_GAME_ID: "game-123" },
     loadConfig: async () => loadedConfig(root),
+    resolveToolchain: async (frontendRoot: string) => ({
+      port: 5173,
+      host: "localhost",
+      outDir: join(frontendRoot, "dist"),
+    }),
     interactive: true,
     linkPrompt: async () => {
       throw new Error("linkPrompt_not_stubbed");
@@ -369,6 +366,56 @@ describe("tvk upload", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("publish");
+  });
+
+  it("refuses a frontend build output outside the project", async () => {
+    const root = await setupProject();
+    const h = harness(root, {
+      context: {
+        resolveToolchain: async () => ({
+          port: 5173,
+          host: "localhost",
+          outDir: join(root, "..", "outside-dist"),
+        }),
+      },
+    });
+
+    const result = await runUploadCommand([], h.ctx);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("outside the project");
+    expect(h.versionInput()).toBeUndefined();
+  });
+
+  it("checks the frontend toolchain before linking a game", async () => {
+    const root = await setupProject();
+    let prompted = false;
+    const h = harness(root, {
+      context: {
+        env: {},
+        interactive: true,
+        linkPrompt: async () => {
+          prompted = true;
+          return { action: "create", name: "Splendor" };
+        },
+        resolveToolchain: async (frontendRoot) => {
+          throw new FrontendToolchainError(frontendRoot);
+        },
+      },
+      client: {
+        listGames: async () => ({ games: [] }),
+        createGame: async ({ name }) => ({ ...game(), id: "new-game", name }),
+      },
+    });
+
+    const result = await runUploadCommand([], h.ctx);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("frontend_vite_not_found");
+    expect(prompted).toBe(false);
+    await expect(
+      readFile(join(root, ".tableverse", "game.json"), "utf8"),
+    ).rejects.toThrow();
   });
 
   it("fails before any network call when the project root has no lockfile", async () => {

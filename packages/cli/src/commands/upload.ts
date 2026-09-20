@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, relative, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import type { UploadContext } from "../lib/upload/context.ts";
 import type { GameResponse } from "../lib/api/games.ts";
 import { loadSession } from "../lib/auth/session.ts";
@@ -13,6 +13,7 @@ import { hasPackageLock } from "../lib/packaging/lockfile.ts";
 import { packSource } from "../lib/packaging/tarball.ts";
 import { buildDeploymentUrl } from "../lib/upload/deployment-url.ts";
 import {
+  EscapingBuildOutputError,
   InaccessibleGameError,
   MissingLockfileError,
   MissingProjectManifestError,
@@ -21,6 +22,7 @@ import {
   type SourceLabel,
 } from "../lib/upload/errors.ts";
 import { PlatformRequestError } from "../lib/platform-client.ts";
+import { FRONTEND_BUILD_COMMAND } from "../lib/frontend/commands.ts";
 import { failure, success, type RunResult } from "../lib/command-result.ts";
 import { createUploadHelpText } from "../lib/help-text.ts";
 import { isHelpFlag, rejectCommandArguments } from "../lib/parse-args.ts";
@@ -155,13 +157,18 @@ export async function runUploadCommand(
     }
 
     const projectRoot = config.configDirectory;
-    await resolveSourceRoot("engine", publish.engine.root, projectRoot);
-    await resolveSourceRoot("frontend", publish.frontend.root, projectRoot);
+    await resolveSourceRoot("engine", publish.engine, projectRoot);
+    await resolveSourceRoot("frontend", publish.frontend, projectRoot);
     if (!(await fileExists(join(projectRoot, "package.json")))) {
       throw new MissingProjectManifestError(projectRoot);
     }
     if (!(await hasPackageLock(projectRoot))) {
       throw new MissingLockfileError(projectRoot);
+    }
+    const frontendRoot = resolve(projectRoot, publish.frontend);
+    const toolchain = await ctx.resolveToolchain(frontendRoot);
+    if (!isInside(projectRoot, toolchain.outDir)) {
+      throw new EscapingBuildOutputError(projectRoot, toolchain.outDir);
     }
 
     const link = await resolveGameLink({ projectRoot, env: ctx.env });
@@ -188,10 +195,7 @@ export async function runUploadCommand(
 
     tempDir = await mkdtemp(join(tmpdir(), "tvk-upload-"));
     ctx.emit("Packaging source…");
-    const frontendOutDir = relative(
-      projectRoot,
-      resolve(projectRoot, publish.frontend.root, publish.frontend.outDir),
-    );
+    const frontendOutDir = relative(projectRoot, toolchain.outDir);
     const projectSource = await packSource({
       root: projectRoot,
       outFile: join(tempDir, "project-source.tar.gz"),
@@ -209,7 +213,14 @@ export async function runUploadCommand(
       gameId: game.id,
       projectSourceSha256: projectSource.sha256,
       projectSourceSizeBytes: projectSource.sizeBytes,
-      buildConfig: publish,
+      buildConfig: {
+        engine: { root: publish.engine },
+        frontend: {
+          root: publish.frontend,
+          buildCommand: FRONTEND_BUILD_COMMAND,
+          outDir: relative(frontendRoot, toolchain.outDir),
+        },
+      },
       metadata: {
         setupInputSchema: serializeSetupSchema(config.game.setupInputSchema),
         minPlayers: config.game.playerBounds.min,
@@ -254,4 +265,9 @@ export async function runUploadCommand(
       await rm(tempDir, { recursive: true, force: true });
     }
   }
+}
+
+function isInside(root: string, candidate: string): boolean {
+  const step = relative(root, candidate);
+  return step !== "" && !step.startsWith("..") && !isAbsolute(step);
 }

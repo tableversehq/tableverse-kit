@@ -45,14 +45,7 @@ describe("defineConfig", () => {
   it("returns the config unchanged", () => {
     const config = {
       game: createSampleGame(),
-      publish: {
-        engine: { root: "." },
-        frontend: {
-          root: "./web",
-          buildCommand: "npm run build",
-          outDir: "dist",
-        },
-      },
+      publish: { engine: ".", frontend: "./web" },
     };
 
     expect(defineConfig(config)).toBe(config);

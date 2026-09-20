@@ -2,5 +2,5 @@ import createFixtureGame from "../game-default.ts";
 
 export default {
   game: createFixtureGame(),
-  publish: { engine: " .\\engine ", frontend: " .\\client " },
+  publish: { engine: "../outside", frontend: "./client" },
 };

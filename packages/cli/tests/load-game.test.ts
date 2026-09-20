@@ -54,13 +54,15 @@ describe("loadConfig", () => {
     });
 
     expect(config.publish).toEqual({
-      engine: { root: "./engine" },
-      frontend: {
-        root: "./client",
-        buildCommand: "npm run build",
-        outDir: "dist",
-      },
+      engine: "./engine",
+      frontend: "./client",
     });
+  });
+
+  it("rejects a publish directory that escapes the project", async () => {
+    await expect(
+      loadConfig({ cwd: resolve(currentDir, "fixtures", "escaping") }),
+    ).rejects.toThrow("invalid_cli_config");
   });
 
   it("rejects invalid config files", async () => {

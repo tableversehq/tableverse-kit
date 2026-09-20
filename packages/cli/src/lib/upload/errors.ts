@@ -20,6 +20,16 @@ export class MissingSourceRootError extends Error {
   }
 }
 
+export class EscapingBuildOutputError extends Error {
+  constructor(
+    readonly root: string,
+    readonly outDir: string,
+  ) {
+    super(`escaping_build_output:${outDir}`);
+    this.name = "EscapingBuildOutputError";
+  }
+}
+
 export class MissingLockfileError extends Error {
   constructor(readonly root: string) {
     super(`missing_lockfile:${root}`);
@@ -53,6 +63,13 @@ export function describeUploadError(
       `The ${error.label} source directory does not exist:`,
       `  ${error.root}`,
       "Check the `publish` block in tableverse.config.ts.",
+    ].join("\n");
+  }
+
+  if (error instanceof EscapingBuildOutputError) {
+    return [
+      `The frontend builds to ${error.outDir}, which is outside the project at ${error.root}.`,
+      "Point `build.outDir` in the frontend's Vite config inside the project, then run tvk upload again.",
     ].join("\n");
   }
 

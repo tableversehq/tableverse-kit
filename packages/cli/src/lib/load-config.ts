@@ -42,14 +42,8 @@ export async function loadConfig(
     outDir: config.outDir,
     publish: config.publish
       ? {
-          engine: {
-            root: normalizeRelativePath(config.publish.engine.root),
-          },
-          frontend: {
-            root: normalizeRelativePath(config.publish.frontend.root),
-            buildCommand: config.publish.frontend.buildCommand.trim(),
-            outDir: normalizeRelativePath(config.publish.frontend.outDir),
-          },
+          engine: normalizeRelativePath(config.publish.engine),
+          frontend: normalizeRelativePath(config.publish.frontend),
         }
       : undefined,
     configFilePath,
@@ -100,41 +94,13 @@ function isCliConfig(value: unknown): value is RuntimeCliConfig {
 }
 
 function isPublishConfig(value: unknown): value is PublishConfig {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  if (!("engine" in value) || !isEnginePublishConfig(value.engine)) {
-    return false;
-  }
-
-  return "frontend" in value && isFrontendPublishConfig(value.frontend);
-}
-
-function isEnginePublishConfig(
-  value: unknown,
-): value is PublishConfig["engine"] {
   return (
     !!value &&
     typeof value === "object" &&
-    "root" in value &&
-    isContainedRelativePath(value.root)
-  );
-}
-
-function isFrontendPublishConfig(
-  value: unknown,
-): value is PublishConfig["frontend"] {
-  return (
-    !!value &&
-    typeof value === "object" &&
-    "root" in value &&
-    isContainedRelativePath(value.root) &&
-    "buildCommand" in value &&
-    typeof value.buildCommand === "string" &&
-    value.buildCommand.trim().length > 0 &&
-    "outDir" in value &&
-    isContainedRelativePath(value.outDir)
+    "engine" in value &&
+    isContainedRelativePath(value.engine) &&
+    "frontend" in value &&
+    isContainedRelativePath(value.frontend)
   );
 }
 
