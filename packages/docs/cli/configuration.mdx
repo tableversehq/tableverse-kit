@@ -12,14 +12,8 @@ import { game } from "./engine/src/game.ts";
 export default defineConfig({
   game,
   publish: {
-    engine: {
-      root: "./engine",
-    },
-    frontend: {
-      root: "./client",
-      buildCommand: "npm run build",
-      outDir: "dist",
-    },
+    engine: "./engine",
+    frontend: "./client",
   },
 });
 ```
@@ -31,37 +25,31 @@ export default defineConfig({
 | Field | Required | Description |
 | --- | --- | --- |
 | `game` | Yes | A built game definition from `GameDefinitionBuilder`. |
-| `publish` | For dev and upload | Engine and frontend source build settings. |
+| `publish` | For dev and upload | Engine and frontend source directories. |
 
-You can use `tvk validate` without `publish`. `tvk dev` uses `publish.frontend.root` to start the frontend. `tvk upload` packages the project root and sends the publish settings to Tableverse.
+You can use `tvk validate` without `publish`. `tvk dev` uses `publish.frontend` to start the frontend. `tvk upload` packages the project root and sends the publish settings to Tableverse.
 
-## Engine publish settings
+## Engine source
 
 ```ts
-engine: {
-  root: "./engine",
-}
+engine: "./engine"
 ```
 
-`root` is the engine workspace directory, relative to `tableverse.config.ts`.
+`engine` is the engine workspace directory, relative to `tableverse.config.ts`.
 
 Point it at the engine workspace source. Tableverse creates the sandbox bundle.
 
-## Frontend publish settings
+## Frontend source
 
 ```ts
-frontend: {
-  root: "./client",
-  buildCommand: "npm run build",
-  outDir: "dist",
-}
+frontend: "./client"
 ```
 
-- `root` is the frontend source directory, relative to the config file.
-- `buildCommand` runs inside that source directory on Tableverse.
-- `outDir` is the static build output, relative to the frontend root.
+`frontend` is the frontend source directory, relative to the config file.
 
-The CLI excludes `outDir` from upload because the platform recreates it.
+Build your frontend with Vite. `tvk` reads the build output directory from your project's own Vite config, so your config file never names it.
+
+Tableverse rebuilds the frontend from the uploaded source and serves that build output. The CLI leaves the build output out of the upload.
 
 ## Workspace and lockfile
 
@@ -90,7 +78,7 @@ The project source archive includes the root lockfile and both workspaces, so Ta
 
 Keep one `tableverse.config.ts` in the project root. The CLI searches the current directory and its parents until it finds that file.
 
-You can run `tvk` from the project root, `engine/`, `client/`, or another directory inside the project. Relative `root` paths resolve from the project root.
+You can run `tvk` from the project root, `engine/`, `client/`, or another directory inside the project. The `engine` and `frontend` paths resolve from the project root.
 
 <Note>
   `tvk upload` stores game identity in `.tableverse/game.json`. `TABLEVERSE_GAME_ID` overrides the saved identity.

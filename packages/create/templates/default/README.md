@@ -15,11 +15,15 @@ with two packages:
 npm install
 ```
 
-Start the local rules server and frontend:
+Start the local rules server, the frontend, and the developer shell:
 
 ```sh
 npm run dev
 ```
 
-The frontend connects to the local server and re-renders on every state change.
+Open the shell at `http://127.0.0.1:5100`. It asks how many seats to deal, a
+seed, and any setup input your game declares, then frames your frontend with a
+button per seat so you can play every player from one browser. **Reset** deals a
+fresh match on the same parameters and **Exit game** returns to the form.
+
 Edit `engine/src` to change the rules and `client/src` to change the UI.

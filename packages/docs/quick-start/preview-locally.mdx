@@ -1,15 +1,17 @@
 ---
 title: "Preview locally"
-description: "Run your rules locally and connect your frontend."
+description: "Run your rules locally and play your game in the developer shell."
 ---
 
-Start the rules server and frontend:
+Start the rules server, frontend, and developer shell:
 
 ```bash
 npm run dev
 ```
 
-`npm run dev` loads `tableverse.config.ts`, starts the rules server at `http://localhost:5100`, and runs the frontend's `dev` script from `publish.frontend.root`.
+`npm run dev` loads `tableverse.config.ts`, starts the rules server and a developer shell at `http://127.0.0.1:5100`, and runs the frontend's `dev` script from `publish.frontend`.
+
+Open `http://127.0.0.1:5100`. That is the URL you play on.
 
 The scaffold creates one client for local previews and published games:
 
@@ -22,34 +24,24 @@ type Game = typeof executor;
 const client = createTableverseClient<Game>();
 ```
 
-During a local preview, the client connects to `http://localhost:5100`. It initializes one in-memory session, receives a player-safe view, and updates all connected browser windows after an accepted command.
+During a local preview, the client connects to `http://127.0.0.1:5100`. It receives a player-safe view and updates after every accepted command.
 
-## Try multiple players
+## Start a match
 
-The first connection initializes the session, so give it the full roster. Other browsers pick a different `viewer` from that roster:
+The shell opens on a setup form. Choose the number of seats and the RNG seed. When your game definition declares a setup input schema, the form also collects that setup input.
 
-```ts
-// First browser — initializes the match
-createTableverseClient<Game>({
-  viewer: "p1",
-  players: ["p1", "p2"],
-});
+Start the match, and the shell frames your game.
 
-// Second browser — same match, different viewer
-createTableverseClient<Game>({
-  viewer: "p2",
-});
-```
+## Play every seat
 
-If your game defines setup input, pass it from the first client too:
+The control strip above your game has one button per seat. Click a seat to switch whose perspective the framed game shows, and play a turn-based game past the first move without opening a second browser.
 
-```ts
-const client = createTableverseClient<Game>({
-  viewer: "p1",
-  players: ["p1", "p2"],
-  setupInput: { targetScore: 10 },
-});
-```
+Two more buttons sit in that strip:
+
+- **Reset** starts a fresh match with the same seats, seed, and setup input.
+- **Exit game** discards the match and returns to the setup form.
+
+The shell passes the seat to the framed page, so your frontend needs no code for this.
 
 <Note>
   The local server keeps state in memory. Restarting `tvk dev` starts a new session.
@@ -61,13 +53,7 @@ const client = createTableverseClient<Game>({
 npx tvk dev --port 5200
 ```
 
-Pass the same URL when you create the client:
-
-```ts
-const client = createTableverseClient<Game>({
-  serverUrl: "http://localhost:5200",
-});
-```
+The shell moves with it, so open `http://127.0.0.1:5200` instead. The shell tells your frontend which address to use, so your client code stays the same.
 
 <Card title="Publish to Tableverse" icon="arrow-right" href="/quick-start/publish">
   Validate and upload your project.

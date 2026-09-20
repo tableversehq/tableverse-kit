@@ -141,6 +141,12 @@ workspaces**.
 - `lib/` — config loading, game-descriptor extraction, generation context,
   packaging/upload, platform + auth clients, dev server, arg parsing, output
   helpers. Keep generic generation logic here, not in the engine runtime.
+- `shell/` (sibling of `src/`) — the `tvk dev` developer shell, a React +
+  Tailwind + shadcn app styled after platform-web. `pnpm -C packages/cli
+build:shell` builds it into `dist/shell/`, which the rules server serves and
+  the package publishes; `prepack` builds and verifies it. Build it before
+  running `tvk dev` from this repo. Its logic lives in `shell/src/lib/` as plain
+  TypeScript tested in Node.
 
 ## Architectural direction
 

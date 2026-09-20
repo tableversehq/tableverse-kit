@@ -1,6 +1,6 @@
 ---
 title: "tvk dev"
-description: "Start the local rules server and frontend."
+description: "Start the local rules server, frontend, and developer shell."
 ---
 
 Start the complete development environment from the generated project root:
@@ -9,18 +9,31 @@ Start the complete development environment from the generated project root:
 npm run dev
 ```
 
-This loads `tableverse.config.ts`, starts the rules server at `http://localhost:5100`, and runs the frontend's `dev` script from `publish.frontend.root`.
+This loads `tableverse.config.ts` and starts three things: the local rules server, the frontend's `dev` script from `publish.frontend`, and a developer shell.
 
-Create your frontend client:
+The shell is served at the rules server's address, `http://127.0.0.1:5100` by default. Open that URL to play your game.
+
+## The developer shell
+
+The shell opens on a setup form:
+
+- **Seats** — how many players the match seats.
+- **Seed** — the deterministic RNG seed for the match.
+- **Setup input** — your game's setup input, shown when the game definition declares a setup input schema.
+
+Starting the match frames your game inside the shell, with a control strip above it:
+
+- **One button per seat** — switches whose perspective the framed game shows. Use it to play a turn-based game past the first move on your own.
+- **Reset** — starts a fresh match with the same seats, seed, and setup input.
+- **Exit game** — discards the match and returns to the setup form.
+
+Your frontend needs no code for any of this. The shell passes the seat to the framed page, and the client picks it up:
 
 ```ts
 import { createTableverseClient } from "@tableverse-kit/client";
 import type { executor } from "token-race-engine";
 
-const client = createTableverseClient<typeof executor>({
-  viewer: "p1",
-  players: ["p1", "p2"],
-});
+const client = createTableverseClient<typeof executor>();
 ```
 
 ## Options
@@ -38,14 +51,16 @@ Use another port when `5100` is busy:
 npx tvk dev --port 5200
 ```
 
+The rules server and the shell both move to that port.
+
 ## Local session behavior
 
-- The first client connection initializes the game.
-- Every client connects to the same in-memory state.
-- Each connection can choose a `viewer` and receives that player's safe view.
+- Starting a match from the setup form initializes the game with your seats, seed, and setup input.
+- Every seat connects to the same in-memory state.
+- Each seat receives that player's safe view.
 - Accepted commands send fresh snapshots to all connected clients.
 - Domain and stage events are delivered to connected clients.
-- Restarting the command clears the session.
+- **Reset** deals a fresh match on the same parameters; **Exit game** and restarting the command clear the session.
 
 Restart `tvk dev` after changing engine source. The command loads the game definition when it starts.
 
@@ -58,9 +73,9 @@ Restart `tvk dev` after changing engine source. The command loads the game defin
 If the client remains on `connecting`:
 
 1. Confirm `tvk dev` printed its listening URL.
-2. Confirm the frontend uses the same port.
+2. Confirm you opened the shell URL rather than the frontend dev server's own port.
 3. Check that setup input matches the schema in your game definition.
-4. Restart the server to clear a session initialized with old input.
+4. Click **Exit game** to return to the setup form and start a match with corrected input.
 
 If config loading fails, confirm the project root contains `tableverse.config.ts`. Run `tvk validate` from the same directory to check the game definition.
 

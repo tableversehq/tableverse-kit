@@ -16,7 +16,7 @@ npx tvk --help
 | Command | Purpose |
 | --- | --- |
 | `tvk validate` | Load and validate the game definition. |
-| `tvk dev` | Start the local rules server and frontend. |
+| `tvk dev` | Start the local rules server, the frontend, and the developer shell. |
 | `tvk login` | Sign in to Tableverse in your browser. |
 | `tvk whoami` | Print the signed-in account. |
 | `tvk logout` | Revoke and remove the saved login. |
@@ -39,12 +39,8 @@ import { game } from "./engine/src/game.ts";
 export default defineConfig({
   game,
   publish: {
-    engine: { root: "./engine" },
-    frontend: {
-      root: "./client",
-      buildCommand: "npm run build",
-      outDir: "dist",
-    },
+    engine: "./engine",
+    frontend: "./client",
   },
 });
 ```

@@ -5,7 +5,7 @@ description: "Upload your project source and start a Tableverse build."
 
 `tvk upload` packages the workspace containing `tableverse.config.ts`, uploads it, and starts a Tableverse build.
 
-Tableverse uses the engine and frontend settings in your config to build the uploaded workspace.
+Tableverse uses the engine and frontend source directories in your config to build the uploaded workspace.
 
 ## Before the first upload
 
@@ -48,7 +48,7 @@ The CLI uploads the full project root: the directory containing `tableverse.conf
 It excludes:
 
 - `node_modules`, `.git`, and `.tableverse` directories.
-- The frontend `outDir` because Tableverse rebuilds it.
+- The frontend build output because Tableverse rebuilds it.
 - Local `.env` files such as `.env.local`.
 - Symbolic links.
 
@@ -63,8 +63,8 @@ After the project source uploads, the CLI starts the build and prints a dashboar
 The dashboard shows the platform build of:
 
 - The engine source into the hosted rules bundle.
-- The frontend source using `frontend.buildCommand`.
-- The static files served from `frontend.outDir`.
+- The frontend source into its Vite build output.
+- The static files Tableverse serves from that build output.
 
 ## Upload from CI
 
@@ -77,5 +77,5 @@ TABLEVERSE_GAME_ID=game_123 npx tvk upload
 `TABLEVERSE_GAME_ID` overrides the saved project link. Authentication must already be available for the same platform API environment.
 
 <Card title="Configuration" icon="arrow-right" href="/cli/configuration">
-  Configure source roots and frontend build output.
+  Configure the engine and frontend source directories.
 </Card>

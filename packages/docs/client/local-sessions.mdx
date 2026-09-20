@@ -16,7 +16,7 @@ const client = createTableverseClient<Game>({
 });
 ```
 
-Start the local server and frontend from the project root:
+Start the local server, frontend, and developer shell from the project root:
 
 ```bash
 npm run dev
@@ -26,25 +26,12 @@ npm run dev
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `serverUrl` | `"http://localhost:5100"` | URL printed by `tvk dev`. |
+| `serverUrl` | `"http://127.0.0.1:5100"` | URL printed by `tvk dev`. |
 | `viewer` | `"p1"` | Player ID used for local views and commands. |
-| `players` | `["p1", "p2", …]` | Authoritative roster for the local match, in seating order. The default seats the smallest roster your game accepts. |
-| `seed` | `"dev"` | Deterministic RNG seed for the local match. |
-| `setupInput` | `undefined` | Game configuration passed to `.setup()` when the local session starts. |
 
-The first local connection initializes the in-memory session. Give it the roster and any setup input. The `setupInput` type is derived from the executor:
+The developer shell owns the match. Its setup form takes the number of seats, the RNG seed, and your game's setup input, and starting the match initializes the in-memory session. The shell then frames your page and passes the seat to it, so both options above apply when you open your frontend's own dev server URL directly.
 
-```ts
-const client = createTableverseClient<Game>({
-  viewer: "p1",
-  players: ["p1", "p2"],
-  setupInput: {
-    targetScore: 10,
-  },
-});
-```
-
-Restart `tvk dev` after changing the roster or setup input, or when you want a clean game.
+Use the shell's control strip to switch seats, **Reset** for a fresh match with the same parameters, and **Exit game** to return to the setup form.
 
 ## Wait for the connection
 
@@ -69,7 +56,7 @@ npx tvk dev --port 5200
 
 ```ts
 const client = createTableverseClient<Game>({
-  serverUrl: "http://localhost:5200",
+  serverUrl: "http://127.0.0.1:5200",
 });
 ```
 
