@@ -1,0 +1,286 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@font-face {
+  font-family: "Space Grotesk Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("../../node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
+
+@font-face {
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../../node_modules/@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
+
+@font-face {
+  font-family: "Space Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../../node_modules/@fontsource/space-mono/files/space-mono-latin-400-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Space Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("../../node_modules/@fontsource/space-mono/files/space-mono-latin-700-normal.woff2")
+    format("woff2");
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading:
+    "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+
+  --color-terra: var(--terra);
+  --color-terra-bright: var(--terra-bright);
+  --color-lime: var(--lime);
+  --color-bg-raised: var(--bg-raised);
+  --color-line-soft: var(--line-soft);
+  --color-muted-dim: var(--muted-dim);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+@theme inline {
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(
+        --radix-accordion-content-height,
+        var(--accordion-panel-height, auto)
+      );
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(
+        --radix-accordion-content-height,
+        var(--accordion-panel-height, auto)
+      );
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/* Custom variants */
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+:root {
+  --background: #f3f0e8;
+  --foreground: #1b1a16;
+  --card: #fbf9f4;
+  --card-foreground: #1b1a16;
+  --popover: #fbf9f4;
+  --popover-foreground: #1b1a16;
+  --primary: #c2661c;
+  --primary-foreground: #fff7ef;
+  --secondary: #ece8df;
+  --secondary-foreground: #1b1a16;
+  --muted: #ece8df;
+  --muted-foreground: #6a665d;
+  --accent: #ece8df;
+  --accent-foreground: #1b1a16;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #dcd6ca;
+  --input: #dcd6ca;
+  --ring: #b35e22;
+
+  --bg-raised: #ece8df;
+  --line-soft: #e6e1d5;
+  --terra: #b35e22;
+  --terra-bright: #9b4e18;
+  --lime: #5f8a1e;
+  --muted-dim: #9a958a;
+
+  --cube-top: #c97438;
+  --cube-left: #111110;
+  --cube-right: #45443f;
+  --cube-stroke: #111110;
+  --cube-stroke-w: 2;
+
+  --radius: 0.875rem;
+}
+
+.dark {
+  --background: #0d0d0c;
+  --foreground: #f0f0ee;
+  --card: #1b1b18;
+  --card-foreground: #f0f0ee;
+  --popover: #161614;
+  --popover-foreground: #f0f0ee;
+  --primary: #c97438;
+  --primary-foreground: #160d05;
+  --secondary: #161614;
+  --secondary-foreground: #f0f0ee;
+  --muted: #1b1b18;
+  --muted-foreground: #8a8a85;
+  --accent: #1b1b18;
+  --accent-foreground: #f0f0ee;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #2a2a26;
+  --input: #2a2a26;
+  --ring: #c97438;
+
+  --bg-raised: #161614;
+  --line-soft: #222220;
+  --terra: #c97438;
+  --terra-bright: #e08c4a;
+  --lime: #b6d44a;
+  --muted-dim: #6b6b67;
+
+  --cube-top: #c97438;
+  --cube-left: #e0e0db;
+  --cube-right: #a8a8a2;
+  --cube-stroke: transparent;
+  --cube-stroke-w: 0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    line-height: 1.5;
+  }
+  h1,
+  h2,
+  h3,
+  .font-heading {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+.cube .top {
+  fill: var(--cube-top);
+}
+.cube .left {
+  fill: var(--cube-left);
+}
+.cube .right {
+  fill: var(--cube-right);
+}
+.cube .spark {
+  fill: var(--cube-top);
+}
+.cube polygon {
+  stroke: var(--cube-stroke);
+  stroke-width: var(--cube-stroke-w);
+  stroke-linejoin: round;
+}

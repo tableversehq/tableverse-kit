@@ -17,6 +17,15 @@ export default defineConfig([
     },
   },
   {
+    files: ["packages/cli/shell/**/*.{ts,tsx}"],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ["**/*.json"],
     plugins: { json },
     language: "json/json",

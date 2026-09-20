@@ -31,10 +31,19 @@ import { createTableverseClient } from "../src/index.ts";
 
 class LocalWindow {
   readonly parent = this;
+  readonly location = { search: "" };
 }
 
 class HostedWindow {
   readonly parent = {};
+  readonly location = { search: "" };
+}
+
+class FramedDevWindow {
+  readonly parent = {};
+  readonly location = {
+    search: "?tvk-dev-viewer=p2&tvk-dev-server=http%3A%2F%2F127.0.0.1%3A5123",
+  };
 }
 
 afterEach(() => {
@@ -52,13 +61,8 @@ describe("createTableverseClient", () => {
     expect(connections.hosted).toBe(0);
     expect(connections.local).toEqual([
       {
-        baseUrl: "http://localhost:5100",
-        options: {
-          viewer: "p1",
-          setupInput: undefined,
-          players: undefined,
-          seed: undefined,
-        },
+        baseUrl: "http://127.0.0.1:5100",
+        options: { viewer: "p1" },
       },
     ]);
     client.dispose();
@@ -68,21 +72,29 @@ describe("createTableverseClient", () => {
     vi.stubGlobal("window", new LocalWindow());
 
     const client = createTableverseClient({
-      serverUrl: "http://localhost:5200",
+      serverUrl: "http://127.0.0.1:5200",
       viewer: "p2",
-      players: ["p1", "p2"],
-      seed: "preview",
     });
 
     expect(connections.local).toEqual([
       {
-        baseUrl: "http://localhost:5200",
-        options: {
-          viewer: "p2",
-          setupInput: undefined,
-          players: ["p1", "p2"],
-          seed: "preview",
-        },
+        baseUrl: "http://127.0.0.1:5200",
+        options: { viewer: "p2" },
+      },
+    ]);
+    client.dispose();
+  });
+
+  test("seats a framed page at the viewer named by the frame URL", () => {
+    vi.stubGlobal("window", new FramedDevWindow());
+
+    const client = createTableverseClient();
+
+    expect(connections.hosted).toBe(0);
+    expect(connections.local).toEqual([
+      {
+        baseUrl: "http://127.0.0.1:5123",
+        options: { viewer: "p2" },
       },
     ]);
     client.dispose();

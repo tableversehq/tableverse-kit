@@ -1,0 +1,69 @@
+import { setTimeout as delay } from "node:timers/promises";
+import { afterEach, describe, expect, it } from "vitest";
+import { startFrontend } from "../../src/lib/frontend/process.ts";
+
+let stop: (() => void) | null = null;
+
+afterEach(() => {
+  stop?.();
+  stop = null;
+});
+
+async function answers(port: number): Promise<boolean> {
+  return fetch(`http://127.0.0.1:${port}`).then(
+    () => true,
+    () => false,
+  );
+}
+
+async function waitFor(check: () => Promise<boolean>): Promise<boolean> {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    if (await check()) {
+      return true;
+    }
+    await delay(100);
+  }
+  return false;
+}
+
+describe("startFrontend", () => {
+  it("stops a server started by a grandchild process", async () => {
+    const port = 5412;
+    const frontend = startFrontend(process.cwd(), {
+      executable: "sh",
+      args: [
+        "-c",
+        `node -e 'require("node:http").createServer((q,r)=>r.end("ok")).listen(${port},"127.0.0.1")'`,
+      ],
+    });
+    stop = frontend.stop;
+
+    expect(await waitFor(() => answers(port))).toBe(true);
+
+    frontend.stop();
+
+    expect(await waitFor(async () => !(await answers(port)))).toBe(true);
+  }, 20_000);
+
+  it("reports a frontend that exits on its own", async () => {
+    const frontend = startFrontend(process.cwd(), {
+      executable: "sh",
+      args: ["-c", "exit 3"],
+    });
+    stop = frontend.stop;
+
+    await expect(frontend.exitCode).resolves.toBe(3);
+  }, 10_000);
+
+  it("reports a stop as an ordinary end", async () => {
+    const frontend = startFrontend(process.cwd(), {
+      executable: "sh",
+      args: ["-c", "sleep 30"],
+    });
+    stop = frontend.stop;
+
+    frontend.stop();
+
+    await expect(frontend.exitCode).resolves.toBe(0);
+  }, 10_000);
+});

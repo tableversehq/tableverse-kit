@@ -15,5 +15,7 @@ export type {
 export { TransportError } from "./client/lifecycle.ts";
 export {
   createTableverseClient,
+  DEV_SERVER_PARAM,
+  DEV_VIEWER_PARAM,
   type CreateTableverseClientOptions,
 } from "./create-tableverse-client.ts";

@@ -4,6 +4,9 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
+import { access, readFile } from "node:fs/promises";
+import { extname, join, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { AnyGameDefinition, GameEvent } from "@tableverse-kit/engine";
 import {
   DevSession,
@@ -13,7 +16,27 @@ import {
 
 export interface DevServerOptions {
   port?: number;
+  frontendUrl?: string;
+  shellDirectory?: string;
 }
+
+const BUILT_SHELL_DIRECTORY = fileURLToPath(
+  new URL("../../../dist/shell/", import.meta.url),
+);
+
+const MATCH_ROUTES = new Set([
+  "POST /execute",
+  "POST /discover",
+  "GET /commands",
+]);
+
+const SHELL_CONTENT_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".woff2": "font/woff2",
+  ".svg": "image/svg+xml",
+};
 
 export interface DevServerHandle {
   port: number;
@@ -30,6 +53,11 @@ export async function startDevServer(
   game: AnyGameDefinition,
   options: DevServerOptions = {},
 ): Promise<DevServerHandle> {
+  const shellDirectory = resolve(
+    options.shellDirectory ?? BUILT_SHELL_DIRECTORY,
+  );
+  await requireBuiltShell(shellDirectory);
+
   const session = new DevSession(game);
   const connections = new Set<Connection>();
 
@@ -83,17 +111,53 @@ export async function startDevServer(
       return;
     }
 
+    if (
+      method === "GET" &&
+      (await serveShellFile(res, shellDirectory, url.pathname))
+    ) {
+      return;
+    }
+
+    if (method === "GET" && url.pathname === "/shell.json") {
+      sendJson(res, 200, { frontendUrl: options.frontendUrl ?? null });
+      return;
+    }
+
+    if (method === "GET" && url.pathname === "/game") {
+      sendJson(res, 200, { ...session.describe(), players: session.players });
+      return;
+    }
+
+    if (method === "POST" && url.pathname === "/reset") {
+      session.reset();
+      for (const connection of connections) {
+        connection.res.end();
+      }
+      connections.clear();
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
     if (method === "POST" && url.pathname === "/initialize") {
       const body = (await readJson(req)) as {
         setupInput?: unknown;
         players?: string[];
         seed?: string | number;
       };
-      session.initialize({
-        setup: body.setupInput,
-        players: body.players,
-        seed: body.seed,
-      });
+      try {
+        session.initialize({
+          setup: body.setupInput,
+          players: body.players,
+          seed: body.seed,
+        });
+      } catch (error) {
+        session.reset();
+        sendJson(res, 400, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return;
+      }
       broadcastSnapshots();
       sendJson(res, 200, { version: session.version });
       return;
@@ -101,6 +165,11 @@ export async function startDevServer(
 
     if (method === "GET" && url.pathname === "/session") {
       openStream(res, viewerFrom(url));
+      return;
+    }
+
+    if (!MATCH_ROUTES.has(`${method} ${url.pathname}`)) {
+      sendJson(res, 404, { error: "not_found" });
       return;
     }
 
@@ -134,10 +203,7 @@ export async function startDevServer(
 
     if (method === "GET" && url.pathname === "/commands") {
       sendJson(res, 200, session.availableCommands(viewerFrom(url)));
-      return;
     }
-
-    sendJson(res, 404, { error: "not_found" });
   };
 
   const server = createServer((req, res) => {
@@ -149,7 +215,7 @@ export async function startDevServer(
   const port = await listen(server, options.port ?? 5100);
   return {
     port,
-    url: `http://localhost:${port}`,
+    url: `http://127.0.0.1:${port}`,
     close: () =>
       new Promise<void>((resolve) => {
         for (const connection of connections) {
@@ -158,6 +224,46 @@ export async function startDevServer(
         server.close(() => resolve());
       }),
   };
+}
+
+async function requireBuiltShell(shellDirectory: string): Promise<void> {
+  try {
+    await access(join(shellDirectory, "index.html"));
+  } catch {
+    throw new Error(
+      `The tvk dev shell is not built in ${shellDirectory}. Run \`pnpm -C packages/cli build:shell\`.`,
+    );
+  }
+}
+
+async function serveShellFile(
+  res: ServerResponse,
+  shellDirectory: string,
+  pathname: string,
+): Promise<boolean> {
+  let relativePath: string;
+  try {
+    relativePath =
+      pathname === "/" ? "index.html" : decodeURIComponent(pathname.slice(1));
+  } catch {
+    return false;
+  }
+
+  const filePath = resolve(shellDirectory, relativePath);
+  const contentType = SHELL_CONTENT_TYPES[extname(filePath)];
+  if (!filePath.startsWith(`${shellDirectory}${sep}`) || !contentType) {
+    return false;
+  }
+
+  let body: Buffer;
+  try {
+    body = await readFile(filePath);
+  } catch {
+    return false;
+  }
+  res.writeHead(200, { "content-type": contentType });
+  res.end(body);
+  return true;
 }
 
 function viewerFrom(url: URL): string {
@@ -205,7 +311,7 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
 function listen(server: Server, port: number): Promise<number> {
   return new Promise((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, () => {
+    server.listen(port, "127.0.0.1", () => {
       const address = server.address();
       if (address && typeof address === "object") {
         resolve(address.port);

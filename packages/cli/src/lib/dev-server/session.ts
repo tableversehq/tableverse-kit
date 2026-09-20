@@ -1,11 +1,21 @@
-import { createGameExecutor } from "@tableverse-kit/engine";
+import {
+  createGameExecutor,
+  serializeSetupSchema,
+} from "@tableverse-kit/engine";
 import type {
   AnyGameDefinition,
   AnyGameExecutor,
   CanonicalState,
   GameEvent,
+  SerializedSetupSchema,
   Viewer,
 } from "@tableverse-kit/engine";
+
+export interface GameDescription {
+  name: string;
+  playerBounds: { min: number; max: number };
+  setupInputSchema: SerializedSetupSchema | null;
+}
 
 export interface Snapshot {
   viewerId: string;
@@ -30,12 +40,14 @@ export interface DiscoveryRequest {
 }
 
 export class DevSession {
+  readonly #game: AnyGameDefinition;
   readonly #executor: AnyGameExecutor;
   readonly #defaultPlayers: readonly string[];
   #state: CanonicalState | null = null;
   #version = 0;
 
   constructor(game: AnyGameDefinition) {
+    this.#game = game;
     this.#executor = createGameExecutor(game);
     this.#defaultPlayers = seatRoster(game.playerBounds.min);
   }
@@ -48,6 +60,23 @@ export class DevSession {
     return this.#version;
   }
 
+  get players(): readonly string[] {
+    return this.#state?.runtime.players ?? this.#defaultPlayers;
+  }
+
+  describe(): GameDescription {
+    return {
+      name: this.#game.name,
+      playerBounds: this.#game.playerBounds,
+      setupInputSchema: serializeSetupSchema(this.#game.setupInputSchema),
+    };
+  }
+
+  reset(): void {
+    this.#state = null;
+    this.#version = 0;
+  }
+
   initialize(
     init: {
       setup?: unknown;
@@ -55,9 +84,6 @@ export class DevSession {
       seed?: string | number;
     } = {},
   ): void {
-    if (this.#state) {
-      return;
-    }
     // One uniform, cast-free call (see `AnyGameExecutor`): the dynamic host builds a
     // single init object and lets the runtime validate `setup` against the schema.
     this.#state = this.#executor.createInitialState({

@@ -5,6 +5,9 @@
       "path": "./packages/cli"
     },
     {
+      "path": "./packages/cli/shell"
+    },
+    {
       "path": "./packages/client"
     },
     {

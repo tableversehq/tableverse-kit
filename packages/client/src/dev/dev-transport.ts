@@ -20,34 +20,23 @@ export type SseFactory = (url: string) => SseConnection;
 
 export interface DevTransportOptions {
   viewer: string;
-  setupInput?: unknown;
-  // The authoritative roster and seed the dev server hands the engine's init
-  // contract.
-  players?: string[];
-  seed?: string | number;
   sse?: SseFactory;
 }
 
 export class DevTransport<E extends AnyGameExecutor> implements Transport<E> {
   readonly #baseUrl: string;
   readonly #viewer: string;
-  readonly #setupInput: unknown;
-  readonly #players: string[] | undefined;
-  readonly #seed: string | number | undefined;
   readonly #sse: SseFactory;
   #connection: SseConnection | null = null;
 
   constructor(baseUrl: string, options: DevTransportOptions) {
     this.#baseUrl = baseUrl.replace(/\/$/, "");
     this.#viewer = options.viewer;
-    this.#setupInput = options.setupInput;
-    this.#players = options.players;
-    this.#seed = options.seed;
     this.#sse = options.sse ?? browserSse;
   }
 
   connect(handlers: TransportHandlers<E>): void {
-    void this.#start(handlers);
+    this.#openStream(handlers);
   }
 
   async execute(command: GameShapeOf<E>["command"]): Promise<ExecutionResult> {
@@ -76,26 +65,6 @@ export class DevTransport<E extends AnyGameExecutor> implements Transport<E> {
   close(): void {
     this.#connection?.close();
     this.#connection = null;
-  }
-
-  async #start(handlers: TransportHandlers<E>): Promise<void> {
-    try {
-      await this.#fetch(`${this.#baseUrl}/initialize`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          setupInput: this.#setupInput,
-          players: this.#players,
-          seed: this.#seed,
-        }),
-      });
-    } catch (error) {
-      handlers.onError(
-        error instanceof TransportError ? error.reason : "connection_lost",
-      );
-      return;
-    }
-    this.#openStream(handlers);
   }
 
   #openStream(handlers: TransportHandlers<E>): void {

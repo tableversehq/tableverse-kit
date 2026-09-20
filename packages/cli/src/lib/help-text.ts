@@ -20,10 +20,10 @@ export function createDevHelpText(): string {
   return [
     "tvk dev",
     "",
-    "Start the local rules server and frontend.",
+    "Start the local rules server, the frontend, and the developer shell.",
     "",
     "Optional flags:",
-    "  --port <number>",
+    "  --port <number>   rules server and shell port",
   ].join("\n");
 }
 
