@@ -106,9 +106,9 @@ export interface GameDefinitionWithSetupInput<
   TEventRegistry extends EventRegistry = EmptyEventRegistry,
 > extends BaseGameDefinition<RootState, TCommandDefinition, TEventRegistry> {
   setupInputSchema: ObjectFieldType<Record<string, FieldType>>;
-  setup?: (
+  setup?(
     context: GameSetupContextWithInput<StateClassOf<RootState>, SetupInput>,
-  ) => void;
+  ): void;
 }
 
 export type GameDefinition<

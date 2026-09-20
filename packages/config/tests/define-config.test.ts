@@ -28,6 +28,19 @@ function createSampleGame() {
     .build();
 }
 
+function createSetupInputGame() {
+  const stage = createStageFactory<SampleState>();
+  return new GameDefinitionBuilder("sample-setup")
+    .state(SampleGameState)
+    .players({ min: 1, max: 8 })
+    .initialStage(stage("done").automatic().build())
+    .setupInput(t.object({ startingValue: t.number() }))
+    .setup(({ game, input }) => {
+      game.value = input.startingValue;
+    })
+    .build();
+}
+
 describe("defineConfig", () => {
   it("returns the config unchanged", () => {
     const config = {
@@ -50,5 +63,11 @@ describe("defineConfig", () => {
 
     expect(result.publish).toBeUndefined();
     expect(result.game.name).toBe("sample");
+  });
+
+  it("accepts a game that declares setup input", () => {
+    const result = defineConfig({ game: createSetupInputGame() });
+
+    expect(result.game.setupInputSchema).toBeDefined();
   });
 });
