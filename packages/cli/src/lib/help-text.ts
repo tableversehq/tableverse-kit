@@ -31,6 +31,9 @@ const ENVIRONMENT_HELP = [
   "Environment:",
   "  TABLEVERSE_API_URL   platform-api base URL (default https://api.tableverse.io)",
   "  TABLEVERSE_WEB_URL   platform-web base URL (default https://tableverse.io)",
+  "",
+  "  A .env beside tableverse.config.ts sets these too. Values already in the",
+  "  environment win over the file.",
 ];
 
 export function createLoginHelpText(): string {

@@ -12,6 +12,7 @@ import { createUploadContext } from "./lib/upload/context.ts";
 import { failure, success, type RunResult } from "./lib/command-result.ts";
 import { createRootHelpText } from "./lib/help-text.ts";
 import { isHelpFlag } from "./lib/parse-args.ts";
+import { loadProjectEnv } from "./lib/project-env.ts";
 
 interface RunOptions {
   cwd?: string;
@@ -59,6 +60,7 @@ export async function run(
 }
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
+  loadProjectEnv(process.cwd());
   const result = await run(argv);
 
   if (result.stdout) {
