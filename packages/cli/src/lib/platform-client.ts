@@ -25,7 +25,7 @@ export interface TokenResponse {
 
 export interface BuildConfig {
   engine: { root: string };
-  frontend: { root: string; buildCommand: string; outDir: string };
+  frontend: { root: string };
 }
 
 export interface CreateVersionInput {

@@ -161,11 +161,7 @@ describe("tvk upload", () => {
     expect(input.projectSourceSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(input.buildConfig).toEqual({
       engine: { root: "engine" },
-      frontend: {
-        root: "web",
-        buildCommand: "npm run build",
-        outDir: "dist",
-      },
+      frontend: { root: "web" },
     });
     expect(input.metadata).toEqual({
       setupInputSchema: null,
@@ -368,7 +364,7 @@ describe("tvk upload", () => {
     expect(result.stderr).toContain("publish");
   });
 
-  it("refuses a frontend build output outside the project", async () => {
+  it("packages a project whose build output sits outside it", async () => {
     const root = await setupProject();
     const h = harness(root, {
       context: {
@@ -382,9 +378,11 @@ describe("tvk upload", () => {
 
     const result = await runUploadCommand([], h.ctx);
 
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain("outside the project");
-    expect(h.versionInput()).toBeUndefined();
+    expect(result.exitCode).toBe(0);
+    expect(h.versionInput()!.buildConfig).toEqual({
+      engine: { root: "engine" },
+      frontend: { root: "web" },
+    });
   });
 
   it("checks the frontend toolchain before linking a game", async () => {

@@ -13,7 +13,6 @@ import { hasPackageLock } from "../lib/packaging/lockfile.ts";
 import { packSource } from "../lib/packaging/tarball.ts";
 import { buildDeploymentUrl } from "../lib/upload/deployment-url.ts";
 import {
-  EscapingBuildOutputError,
   InaccessibleGameError,
   MissingLockfileError,
   MissingProjectManifestError,
@@ -22,7 +21,6 @@ import {
   type SourceLabel,
 } from "../lib/upload/errors.ts";
 import { PlatformRequestError } from "../lib/platform-client.ts";
-import { FRONTEND_BUILD_COMMAND } from "../lib/frontend/commands.ts";
 import { failure, success, type RunResult } from "../lib/command-result.ts";
 import { createUploadHelpText } from "../lib/help-text.ts";
 import { isHelpFlag, rejectCommandArguments } from "../lib/parse-args.ts";
@@ -167,9 +165,6 @@ export async function runUploadCommand(
     }
     const frontendRoot = resolve(projectRoot, publish.frontend);
     const toolchain = await ctx.resolveToolchain(frontendRoot);
-    if (!isInside(projectRoot, toolchain.outDir)) {
-      throw new EscapingBuildOutputError(projectRoot, toolchain.outDir);
-    }
 
     const link = await resolveGameLink({ projectRoot, env: ctx.env });
     let game: GameResponse;
@@ -199,7 +194,9 @@ export async function runUploadCommand(
     const projectSource = await packSource({
       root: projectRoot,
       outFile: join(tempDir, "project-source.tar.gz"),
-      excludeDirs: [frontendOutDir],
+      excludeDirs: isInside(projectRoot, toolchain.outDir)
+        ? [frontendOutDir]
+        : [],
     });
 
     if (projectSource.droppedFiles.length > 0) {
@@ -215,11 +212,7 @@ export async function runUploadCommand(
       projectSourceSizeBytes: projectSource.sizeBytes,
       buildConfig: {
         engine: { root: publish.engine },
-        frontend: {
-          root: publish.frontend,
-          buildCommand: FRONTEND_BUILD_COMMAND,
-          outDir: relative(frontendRoot, toolchain.outDir),
-        },
+        frontend: { root: publish.frontend },
       },
       metadata: {
         setupInputSchema: serializeSetupSchema(config.game.setupInputSchema),

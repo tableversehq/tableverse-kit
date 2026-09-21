@@ -182,11 +182,7 @@ describe("platform client", () => {
       projectSourceSizeBytes: 123,
       buildConfig: {
         engine: { root: "./engine" },
-        frontend: {
-          root: "./client",
-          buildCommand: "npm run build",
-          outDir: "dist",
-        },
+        frontend: { root: "./client" },
       },
       metadata: {
         setupInputSchema: null,
@@ -206,11 +202,7 @@ describe("platform client", () => {
       projectSourceSizeBytes: 123,
       buildConfig: {
         engine: { root: "./engine" },
-        frontend: {
-          root: "./client",
-          buildCommand: "npm run build",
-          outDir: "dist",
-        },
+        frontend: { root: "./client" },
       },
       metadata: {
         setupInputSchema: null,

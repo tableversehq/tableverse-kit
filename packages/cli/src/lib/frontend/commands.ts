@@ -5,5 +5,3 @@ export const FRONTEND_DEV_COMMAND: Readonly<{
   executable: "npm",
   args: ["run", "dev"],
 };
-
-export const FRONTEND_BUILD_COMMAND = "npm run build";
