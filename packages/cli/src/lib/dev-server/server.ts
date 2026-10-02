@@ -215,7 +215,7 @@ export async function startDevServer(
   const port = await listen(server, options.port ?? 5100);
   return {
     port,
-    url: `http://127.0.0.1:${port}`,
+    url: `http://localhost:${port}`,
     close: () =>
       new Promise<void>((resolve) => {
         for (const connection of connections) {

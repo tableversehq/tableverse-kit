@@ -21,7 +21,7 @@ function createRuntime(
   return {
     startServer: async () => ({
       port: 5100,
-      url: "http://127.0.0.1:5100",
+      url: "http://localhost:5100",
       close: async () => {},
     }),
     runFrontend: () => ({ exitCode: Promise.resolve(0), stop: () => {} }),
@@ -38,10 +38,10 @@ function createRuntime(
 }
 
 describe("tvk dev", () => {
-  it("starts the frontend through npm", () => {
+  it("starts the frontend through npm and keeps its startup quiet", () => {
     expect(FRONTEND_DEV_COMMAND).toEqual({
       executable: "npm",
-      args: ["run", "dev"],
+      args: ["run", "--silent", "dev", "--", "--logLevel", "warn"],
     });
   });
 
@@ -59,7 +59,7 @@ describe("tvk dev", () => {
         framed = options?.frontendUrl;
         return {
           port: 5100,
-          url: "http://127.0.0.1:5100",
+          url: "http://localhost:5100",
           close: async () => {
             serverClosed = true;
           },
@@ -96,7 +96,15 @@ describe("tvk dev", () => {
     expect(framed).toBe("http://localhost:5173");
     expect(waited).toEqual(["http://localhost:5173"]);
     expect(serverClosed).toBe(true);
-    expect(output.at(-1)).toBe("tvk dev is ready at http://127.0.0.1:5100");
+    expect(output.at(-1)).toBe(
+      [
+        "",
+        "  Your game is ready!",
+        "",
+        "  Open http://localhost:5100 in your browser.",
+        "  Press Ctrl+C to stop.",
+      ].join("\n"),
+    );
   });
 
   it("closes the rules server when the frontend cannot be spawned", async () => {
@@ -104,7 +112,7 @@ describe("tvk dev", () => {
     const runtime = createRuntime({
       startServer: async () => ({
         port: 5100,
-        url: "http://127.0.0.1:5100",
+        url: "http://localhost:5100",
         close: async () => {
           serverClosed = true;
         },
@@ -166,7 +174,7 @@ describe("tvk dev", () => {
         framed = options?.frontendUrl;
         return {
           port: 5100,
-          url: "http://127.0.0.1:5100",
+          url: "http://localhost:5100",
           close: async () => {},
         };
       },
@@ -183,7 +191,7 @@ describe("tvk dev", () => {
     const runtime = createRuntime({
       startServer: async () => ({
         port: 5100,
-        url: "http://127.0.0.1:5100",
+        url: "http://localhost:5100",
         close: async () => {
           serverClosed = true;
         },

@@ -1,3 +1,6 @@
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { startFrontend } from "../../src/lib/frontend/process.ts";
@@ -66,4 +69,36 @@ describe("startFrontend", () => {
 
     await expect(frontend.exitCode).resolves.toBe(0);
   }, 10_000);
+
+  it("passes the quiet flags through npm to the dev script", async () => {
+    const project = await mkdtemp(join(tmpdir(), "tvk-frontend-"));
+    try {
+      await writeFile(
+        join(project, "package.json"),
+        JSON.stringify({
+          name: "argv-probe",
+          private: true,
+          scripts: { dev: "node record.mjs" },
+        }),
+      );
+      await writeFile(
+        join(project, "record.mjs"),
+        [
+          'import { writeFile } from "node:fs/promises";',
+          'await writeFile("argv.json", JSON.stringify(process.argv.slice(2)));',
+        ].join("\n"),
+      );
+
+      const frontend = startFrontend(project);
+      stop = frontend.stop;
+
+      await expect(frontend.exitCode).resolves.toBe(0);
+      const argv: unknown = JSON.parse(
+        await readFile(join(project, "argv.json"), "utf8"),
+      );
+      expect(argv).toEqual(["--logLevel", "warn"]);
+    } finally {
+      await rm(project, { recursive: true, force: true });
+    }
+  }, 30_000);
 });

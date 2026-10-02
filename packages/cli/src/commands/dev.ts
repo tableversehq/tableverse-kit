@@ -101,7 +101,7 @@ export async function runDevCommand(
         return failure(`The frontend did not answer at ${frontendUrl}.`);
       }
 
-      runtime.emit(`tvk dev is ready at ${server.url}`);
+      runtime.emit(readyMessage(server.url));
       const end = await frontendEnd;
       if (end.kind === "failed") {
         return failure(`The frontend stopped: ${end.message}`);
@@ -119,6 +119,16 @@ export async function runDevCommand(
       error instanceof Error ? error.message : "dev_command_failed",
     );
   }
+}
+
+function readyMessage(url: string): string {
+  return [
+    "",
+    "  Your game is ready!",
+    "",
+    `  Open ${url} in your browser.`,
+    "  Press Ctrl+C to stop.",
+  ].join("\n");
 }
 
 function settleFrontend(exitCode: Promise<number>): Promise<FrontendEnd> {

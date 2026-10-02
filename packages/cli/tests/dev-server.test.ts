@@ -188,10 +188,13 @@ test("a client connecting before the match reports no view", async () => {
   client.dispose();
 });
 
-test("binds loopback only", async () => {
+test("advertises localhost and answers on the loopback address", async () => {
   handle = await serve(twoPlayerGame, { port: 0 });
 
-  expect(handle.url.startsWith("http://127.0.0.1:")).toBe(true);
+  expect(handle.url).toBe(`http://localhost:${handle.port}`);
+
+  const numeric = await fetch(`http://127.0.0.1:${handle.port}/game`);
+  expect(numeric.status).toBe(200);
 });
 
 test("serves the game description before a match exists", async () => {
