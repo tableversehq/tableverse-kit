@@ -1,5 +1,11 @@
 # create-tableverse
 
+## 0.1.0-beta.4
+
+### Patch Changes
+
+- 95f2fb3: `tvk dev` offers one address. The frontend's dev server starts quietly, so the only link on screen is the shell's, `http://localhost:5100` by default, under a short note on how to open and stop it. Frontend warnings and build errors still reach the terminal.
+
 ## 0.1.0-beta.3
 
 ### Patch Changes
