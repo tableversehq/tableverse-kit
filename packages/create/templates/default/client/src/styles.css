@@ -1,0 +1,200 @@
+:root {
+  --surface: #f6f7f9;
+  --panel: #ffffff;
+  --line: #d9dde3;
+  --text: #16191d;
+  --muted: #6b7280;
+  --accent: #2f6fed;
+  --mark-x: #2f6fed;
+  --mark-o: #e0603a;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgb(16 19 29 / 6%), 0 12px 32px rgb(16 19 29 / 8%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #0f1115;
+    --panel: #171a20;
+    --line: #2a2f38;
+    --text: #e8eaed;
+    --muted: #9aa3af;
+    --accent: #6f9bff;
+    --mark-x: #6f9bff;
+    --mark-o: #ff8f6b;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 14px 40px rgb(0 0 0 / 45%);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--surface);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+
+.game {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+}
+
+.status {
+  margin: 0;
+  font-size: clamp(1.25rem, 1rem + 1.4vw, 1.75rem);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-align: center;
+  min-height: 1.4em;
+}
+
+.seat {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.notice {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 0.9rem;
+  color: var(--mark-o);
+}
+
+.board {
+  position: relative;
+  width: min(84vw, 22rem);
+  aspect-ratio: 1;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.cell:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.cell:disabled {
+  cursor: default;
+}
+
+.cell:disabled:empty {
+  opacity: 0.55;
+}
+
+.cell.winning {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+}
+
+.mark {
+  width: 64%;
+  height: 64%;
+  overflow: visible;
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw 260ms ease forwards;
+}
+
+.mark-x {
+  stroke: var(--mark-x);
+}
+
+.mark-x line:last-child {
+  animation-delay: 120ms;
+}
+
+.mark-o {
+  stroke: var(--mark-o);
+}
+
+.mark line,
+.mark circle {
+  stroke-dasharray: inherit;
+  stroke-dashoffset: inherit;
+  animation: inherit;
+}
+
+.win-line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.win-line line {
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.board.has-winner .win-line {
+  opacity: 1;
+}
+
+.board.has-winner .win-line line {
+  animation: draw 320ms 120ms ease forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell,
+  .win-line {
+    transition: none;
+  }
+
+  .mark,
+  .board.has-winner .win-line line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

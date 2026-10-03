@@ -1,21 +1,26 @@
 import { createCommandFactory, t } from "@tableverse-kit/engine";
 import { events } from "./events.ts";
-import { GameState } from "./state.ts";
+import { BOARD_SIZE, GameState } from "./state.ts";
 
 const defineCommand = createCommandFactory<GameState, typeof events>();
 
-export const score = defineCommand({
-  commandId: "score",
-  commandSchema: t.object({ points: t.number() }),
+export const place = defineCommand({
+  commandId: "place",
+  commandSchema: t.object({
+    cell: t.number({ min: 0, max: BOARD_SIZE - 1 }),
+  }),
 })
-  .validate(({ command }) =>
-    command.input.points > 0
-      ? { ok: true as const }
-      : { ok: false as const, reason: "points_must_be_positive" },
+  .validate(({ game, command }) =>
+    game.isCellOpen(command.input.cell)
+      ? { ok: true }
+      : { ok: false, reason: "cell_already_taken" },
   )
   .execute(({ game, command, emitEvent }) => {
-    game.scores[command.actorId] =
-      (game.scores[command.actorId] ?? 0) + command.input.points;
-    emitEvent({ type: "scored", payload: { points: command.input.points } });
+    const mark = game.markOf(command.actorId);
+    game.board[command.input.cell] = mark;
+    emitEvent({
+      type: "marked",
+      payload: { cell: command.input.cell, mark, playerId: command.actorId },
+    });
   })
   .build();

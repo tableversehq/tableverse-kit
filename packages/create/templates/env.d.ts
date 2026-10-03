@@ -10,3 +10,5 @@ interface ImportMeta {
 declare module "vite" {
   export function defineConfig(config: unknown): unknown;
 }
+
+declare module "*.css" {}

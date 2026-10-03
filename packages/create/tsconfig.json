@@ -3,5 +3,9 @@
   "compilerOptions": {
     "composite": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "templates/default/engine/src/**/*.ts"
+  ]
 }
