@@ -1,6 +1,5 @@
 import "./styles.css";
 import { createTableverseClient } from "@tableverse-kit/client";
-import type { ConnectionStatus } from "@tableverse-kit/client";
 import type { executor } from "{{projectName}}-engine";
 import { createBoard } from "./board.ts";
 
@@ -30,19 +29,13 @@ async function place(cell: number): Promise<void> {
     const result = await client.execute({ type: "place", input: { cell } });
     notice.textContent = result.accepted ? "" : humanize(result.reason);
   } catch {
-    notice.textContent = "Not connected to the game.";
+    notice.textContent = "";
   }
 }
 
 function humanize(reason: string | undefined): string {
   const words = (reason ?? "move_rejected").replace(/_/g, " ");
   return `${words.charAt(0).toUpperCase()}${words.slice(1)}.`;
-}
-
-function connectionText(connection: ConnectionStatus): string {
-  return connection === "connecting" || connection === "reconnecting"
-    ? `${connection}…`
-    : "Connection lost";
 }
 
 function activeSeat(view: View): string {
@@ -80,11 +73,9 @@ function seatFor(view: View, viewerId: string | null): string {
 
 function render(): void {
   const view = client.getView();
-  const connection = client.getStatus();
-  const connected = connection === "ready";
 
   if (view === null) {
-    status.textContent = connectionText(connection);
+    status.textContent = "";
     seat.textContent = "";
     notice.textContent = "";
     board.update({ cells: [], winningLine: [], interactive: false });
@@ -92,20 +83,14 @@ function render(): void {
   }
 
   const viewerId = client.getViewerId();
-  status.textContent = connected
-    ? statusFor(view, viewerId)
-    : connectionText(connection);
+  status.textContent = statusFor(view, viewerId);
   seat.textContent = seatFor(view, viewerId);
-  if (connected) {
-    notice.textContent = "";
-  }
+  notice.textContent = "";
   board.update({
     cells: view.game.board,
     winningLine: view.game.winningLine,
     interactive:
-      connected &&
-      view.game.outcome === "playing" &&
-      activeSeat(view) === viewerId,
+      view.game.outcome === "playing" && activeSeat(view) === viewerId,
   });
 }
 

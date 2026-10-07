@@ -46,7 +46,7 @@ The stage flow is the part worth reading first. `turn` lets the seated player
 run `place`, then hands control to `resolve`, which decides whether the game
 continues:
 
-```
+```text
 turn ──place──> resolve ──┬─ still playing ──> turn
                           └─ won or drawn ───> gameOver
 ```
