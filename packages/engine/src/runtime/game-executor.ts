@@ -66,6 +66,7 @@ export interface GameExecutor<
     state: CanonicalState<CanonicalStateOf<RootState>>,
     viewer: Viewer,
   ): VisibleState<ViewOf<RootState>>;
+  isGameEnded(state: CanonicalState<CanonicalStateOf<RootState>>): boolean;
   listAvailableCommands(
     state: CanonicalState<CanonicalStateOf<RootState>>,
     options: {
@@ -576,6 +577,14 @@ function createExecutorMethods<
         CanonicalStateOf<RootState>,
         ViewOf<RootState>
       >(state, viewer, gameDefinition.stateFacade);
+    },
+
+    // The stage machine parks here for good: an automatic stage accepts no
+    // commands, and without a transition nothing can move it on.
+    isGameEnded(state) {
+      validateCanonicalState(gameDefinition, state);
+      const currentStage = getCurrentStageDefinition(gameDefinition, state);
+      return currentStage?.kind === "automatic" && !currentStage.transition;
     },
 
     listAvailableCommands(state, options) {

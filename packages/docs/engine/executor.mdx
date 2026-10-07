@@ -41,6 +41,7 @@ executor.createInitialState({ seed: "match-42", players: ["p1", "p2"] });
 | `listAvailableCommands(state, { actorId })` | Command IDs the actor may currently use. |
 | `discoverCommand(state, request)` | Legal UI choices, completed command input, or `null`. |
 | `executeCommand(state, command)` | An accepted or rejected result with state and events. |
+| `isGameEnded(state)` | Whether the match has reached a stage it never leaves. |
 
 ## Execute a command
 
@@ -88,6 +89,36 @@ const view = executor.getView(state, { kind: "player", playerId: "p1" });
 ```
 
 Use canonical state only inside trusted rule and test code. Send `getView()` output to players.
+
+## Detect the end of a game
+
+A game ends by transitioning into an automatic stage that defines no transition of
+its own. The stage machine settles on that stage and the match accepts no further
+commands.
+
+```ts
+const gameOver = defineStage("gameOver").automatic().build();
+
+const resolve = defineStage("resolve")
+  .automatic()
+  .run(({ game }) => {
+    game.outcome = game.completedLine() ? "won" : "playing";
+  })
+  .nextStages(() => ({ turn, gameOver }))
+  .transition(({ game, nextStages }) =>
+    game.outcome === "playing" ? nextStages.turn : nextStages.gameOver,
+  )
+  .build();
+```
+
+`isGameEnded(state)` reports when a match has settled there, so a host can retire
+the match and tell its players.
+
+```ts
+if (executor.isGameEnded(state)) {
+  // the match is over
+}
+```
 
 <Note>
   Frontends normally use `TableverseClient` instead of calling the executor. The client supplies the viewer identity and actor ID through the host.
