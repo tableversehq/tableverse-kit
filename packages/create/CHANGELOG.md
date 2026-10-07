@@ -1,5 +1,11 @@
 # create-tableverse
 
+## 0.1.0-beta.6
+
+### Patch Changes
+
+- A scaffolded project pins the current `@tableverse-kit` packages, so a new game starts on the latest engine, client, CLI, and config rather than the versions that were current when the scaffolder was last published.
+
 ## 0.1.0-beta.5
 
 ### Patch Changes
