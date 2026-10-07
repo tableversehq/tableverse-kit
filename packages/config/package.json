@@ -1,6 +1,6 @@
 {
   "name": "@tableverse-kit/config",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "description": "Typed publish configuration for a Tableverse project's tableverse.config.ts.",
   "license": "Apache-2.0",
   "homepage": "https://docs.tableverse.io/",

@@ -1,5 +1,13 @@
 # @tableverse-kit/cli
 
+## 0.1.0-beta.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @tableverse-kit/engine@0.1.0-beta.2
+  - @tableverse-kit/config@0.1.0-beta.3
+
 ## 0.1.0-beta.4
 
 ### Patch Changes
