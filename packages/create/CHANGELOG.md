@@ -1,5 +1,11 @@
 # create-tableverse
 
+## 0.1.0-beta.7
+
+### Patch Changes
+
+- A scaffolded game renders the match and leaves the connection to the platform around it. The status line reports whose turn it is, who won, or a draw, and keeps showing the result after the host retires a finished match.
+
 ## 0.1.0-beta.6
 
 ### Patch Changes
