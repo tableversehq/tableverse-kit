@@ -1,0 +1,24 @@
+{
+  "name": "tictactoe",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "engine",
+    "client"
+  ],
+  "scripts": {
+    "dev": "tvk dev",
+    "login": "tvk login",
+    "logout": "tvk logout",
+    "whoami": "tvk whoami",
+    "upload": "tvk upload",
+    "build": "npm run build --workspace=client",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@tableverse-kit/cli": "^0.1.0-beta.5",
+    "@tableverse-kit/config": "^0.1.0-beta.3",
+    "typescript": "^5.9.3"
+  }
+}
