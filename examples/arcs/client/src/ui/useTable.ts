@@ -21,6 +21,7 @@ import {
 import { hydrate } from "../model/hydrate.ts";
 import { attempt } from "../model/oracle.ts";
 import { situation, type Global, type Situation } from "../model/situation.ts";
+import { battleFlow, pendingFlow } from "../model/turn.ts";
 import { explain } from "../model/text.ts";
 
 const subscribe = (fn: () => void) => client.subscribe(fn);
@@ -34,6 +35,7 @@ export interface RootEntry {
 export interface Table {
   status: string;
   view: Game | null;
+  planning: boolean;
   me: string | null;
   version: number | null;
   sit: Situation | null;
@@ -86,23 +88,78 @@ export function useTable(): Table {
   const [effects, setEffects] = useState<MapEffect[]>([]);
   const prev = useRef<Game | null>(null);
 
+  const [plan, setPlan] = useState<Input[]>([]);
+
   useEffect(() => {
     setChosen({ answers: {} });
     setMenu(null);
     setBusy(false);
-    if (g) {
-      const fx = diffMap(prev.current, g);
-      prev.current = g;
-      if (fx.length) {
-        setEffects((e) => [...e, ...fx]);
-        const ids = new Set(fx.map((f) => f.id));
-        setTimeout(
-          () => setEffects((e) => e.filter((f) => !ids.has(f.id))),
-          1300,
-        );
-      }
+    setPlan([]);
+  }, [version]);
+
+  const planning =
+    !!ctx &&
+    !!g &&
+    !!sit?.mine &&
+    sit.phase === "battle" &&
+    g.battle[0]?.step !== "roll";
+
+  const planned = useMemo(() => {
+    if (!planning || !ctx) return null;
+    let state = ctx.base;
+    for (const input of plan) {
+      const trial = attempt(state, ctx.me, input);
+      if (!trial.ok) break;
+      state = trial.after;
     }
-  }, [version, g]);
+    return state;
+  }, [planning, ctx, plan]);
+
+  const display = useMemo<Game | null>(() => {
+    if (!g || !planned) return g;
+    return {
+      ...g,
+      pieces: planned.pieces.map((p) => ({ ...p })),
+      battle: planned.battle.map((b) => ({
+        ...b,
+        dice: b.dice.map((d) => ({ ...d })),
+      })),
+      log: [...planned.log],
+      players: g.players.map((p) => {
+        const q = planned.player(p.id);
+        return {
+          ...p,
+          resources: [...q.resources],
+          guilds: [...q.guilds],
+          trophies: q.trophies.map((t) => ({ ...t })),
+          captives: [...q.captives],
+          outrage: [...q.outrage],
+          outrageAgents: [...q.outrageAgents],
+        };
+      }),
+    };
+  }, [g, planned]);
+
+  useEffect(() => {
+    if (!display) return;
+    const fx = diffMap(prev.current, display);
+    prev.current = display;
+    if (!fx.length) return;
+    setEffects((e) => [...e, ...fx]);
+    const ids = new Set(fx.map((f) => f.id));
+    setTimeout(() => setEffects((e) => e.filter((f) => !ids.has(f.id))), 1300);
+  }, [display]);
+
+  const planFlow = useMemo(() => {
+    if (!planned || !display || !me) return undefined;
+    const planCtx: Ctx = { view: display, base: planned, me };
+    const p = planned.pending[0];
+    if (p)
+      return p.actor === me && ["ransack", "resources"].includes(p.kind)
+        ? pendingFlow(planCtx)
+        : undefined;
+    return planned.battle[0]?.attacker === me ? battleFlow(planCtx) : undefined;
+  }, [planned, display, me]);
 
   useEffect(() => {
     if (!error) return;
@@ -114,10 +171,25 @@ export function useTable(): Table {
     document.title = sit?.mine ? "● Your turn · ARCS" : "ARCS · The Reach";
   }, [sit?.mine]);
 
-  const flow = sit?.focus ?? chosen.flow;
+  const flow = planning ? planFlow : (sit?.focus ?? chosen.flow);
   const answers = chosen.answers;
   const outcome = flow ? flow.run(answers) : undefined;
-  const step = outcome && isStep(outcome) ? outcome : undefined;
+  const undo = { value: "__undo", label: "Undo", tone: "quiet" as const };
+  const step: Step | undefined =
+    planning && !flow && plan.length
+      ? {
+          id: "__battle",
+          prompt: "Confirm the battle?",
+          choices: [
+            { value: "__confirm", label: "Confirm", tone: "primary" },
+            undo,
+          ],
+        }
+      : outcome && isStep(outcome)
+        ? planning && plan.length
+          ? { ...outcome, choices: [...(outcome.choices ?? []), undo] }
+          : outcome
+        : undefined;
   const ready = outcome && !isStep(outcome) ? outcome.input : undefined;
 
   const execute = useCallback(
@@ -149,9 +221,14 @@ export function useTable(): Table {
   const readyKey = ready ? JSON.stringify(ready) : "";
   useEffect(() => {
     if (!ready || busy || !outcome || isStep(outcome)) return;
+    if (planning) {
+      setPlan((p) => [...p, ready]);
+      setChosen({ answers: {} });
+      return;
+    }
     followUps.current = outcome.then ?? [];
     void execute(ready);
-  }, [readyKey]);
+  }, [readyKey, plan.length]);
 
   useEffect(() => {
     const next = followUps.current[0];
@@ -268,6 +345,18 @@ export function useTable(): Table {
   const choose = (value: string) => {
     if (busy || !step) return;
     if (value === "cancel") return cancel();
+    if (value === "__undo") {
+      setChosen({ answers: {} });
+      setPlan((p) => p.slice(0, -1));
+      return;
+    }
+    if (value === "__confirm") {
+      const [first, ...rest] = plan;
+      if (!first) return;
+      followUps.current = rest;
+      void execute(first);
+      return;
+    }
     if (step.multi) toggle(step.id, value, step.multi.max);
     else set(step.id, value);
   };
@@ -286,11 +375,12 @@ export function useTable(): Table {
 
   return {
     status,
-    view: g,
+    view: display,
+    planning,
     me,
     version,
     sit,
-    base,
+    base: planned ?? base,
     flow,
     step,
     answers,

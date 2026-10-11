@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import type { Game } from "../client.ts";
 import { key, type Target } from "../model/flow.ts";
@@ -7,6 +8,7 @@ import { LogLine } from "./Log.tsx";
 
 interface Props {
   g: Game;
+  me: string | null;
   targets: Map<string, Target>;
   picked: Set<string>;
   onPick(key: string): void;
@@ -20,7 +22,7 @@ function battleShown(g: Game): boolean {
   return g.phase === "card" && g.played.some((p) => p.owner === roll.attacker);
 }
 
-function Battle({ g, targets, picked, onPick }: Props) {
+function Battle({ g, me, targets, picked, onPick }: Props) {
   const roll = g.rolls[0];
   const b = g.battle[0];
   if (!roll) return null;
@@ -87,7 +89,11 @@ function Battle({ g, targets, picked, onPick }: Props) {
         })}
         {!roll.dice.length && <span className="muted">No dice rolled</span>}
       </div>
-      {b ? (
+      {b && b.attacker !== me ? (
+        <div className="battle-waiting">
+          Waiting for {playerName(g, b.attacker)} to assign damage
+        </div>
+      ) : b ? (
         <ol className="battle-steps">
           {steps.map(([id, label]) => (
             <li key={id} className={b.step === id ? "now" : ""}>
@@ -110,10 +116,51 @@ function Battle({ g, targets, picked, onPick }: Props) {
 }
 
 export function Hub(props: Props) {
-  if (!battleShown(props.g)) return null;
+  const { g } = props;
+  const roll = g.rolls[0];
+  const live = g.battle.length > 0;
+  const phase = `${roll?.serial ?? -1}:${live ? "live" : "done"}`;
+  const [state, setState] = useState({
+    phase: "",
+    mode: "open" as "open" | "collapsed" | "hidden",
+  });
+  const mode = state.phase === phase ? state.mode : "open";
+  const ref = useRef<HTMLDivElement>(null);
+  const shown = battleShown(g);
+  const rerolling = live && g.battle[0]?.step === "roll";
+
+  useEffect(() => {
+    if (!shown || live || mode === "hidden") return;
+    const timer = setTimeout(() => setState({ phase, mode: "hidden" }), 6000);
+    return () => clearTimeout(timer);
+  }, [shown, live, mode, phase]);
+
+  useEffect(() => {
+    if (!shown || mode !== "open" || rerolling) return;
+    const onDown = (e: PointerEvent) => {
+      if (e.target instanceof Node && ref.current?.contains(e.target)) return;
+      setState({ phase, mode: live ? "collapsed" : "hidden" });
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [shown, mode, live, phase, rerolling]);
+
+  if (!shown || !roll || mode === "hidden") return null;
+  if (mode === "collapsed" && !rerolling)
+    return (
+      <div className="hub-anchor">
+        <button
+          className="hub-pill"
+          onClick={() => setState({ phase, mode: "open" })}
+        >
+          Battle in {systemName(g, roll.system)} · show dice
+        </button>
+      </div>
+    );
   return (
     <div className="hub-anchor">
       <motion.div
+        ref={ref}
         className="hub"
         initial={{ scale: 0.7, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

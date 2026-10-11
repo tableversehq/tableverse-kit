@@ -268,7 +268,6 @@ export function pendingFlow(ctx: Ctx): Flow | undefined {
       return {
         id: "dest",
         prompt: `Catapult — keep moving from ${systemName(ctx.view, p.target)}?`,
-        detail: "Ships stop at any planet or a gate controlled by a rival.",
         highlight: [key.system(p.target)],
         targets: ids.length
           ? g
@@ -656,8 +655,6 @@ export function battleFlow(ctx: Ctx): Flow | undefined {
       return {
         id: "target",
         prompt: prompts[b.step] ?? "Assign hits",
-        detail:
-          "Hitting a fresh piece damages it; hitting a damaged piece destroys it.",
         highlight: [key.system(b.system)],
         targets,
       };

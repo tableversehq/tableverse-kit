@@ -202,6 +202,84 @@ describe("Arcs table", () => {
     );
   });
 
+  it("plans battle damage privately and sends it only on confirm", async () => {
+    const g = state.game;
+    const rival = g.order.find((id) => id !== viewer)!;
+    g.pieces = g.pieces.filter((x) => x.system !== "1.1");
+    for (let i = 0; i < 4; i++)
+      g.pieces.push({
+        id: `atk-${i}`,
+        owner: viewer,
+        kind: "ship",
+        system: g.pieces.find((x) => x.owner === viewer)!.system,
+        damaged: false,
+      });
+    const at = g.pieces.find((x) => x.id === "atk-0")!.system;
+    for (let i = 0; i < 3; i++)
+      g.pieces.push({
+        id: `def-${i}`,
+        owner: rival,
+        kind: "ship",
+        system: at,
+        damaged: false,
+      });
+    Object.assign(g, {
+      phase: "actions",
+      suit: "aggression",
+      pips: 3,
+      prelude: false,
+      lead: [
+        {
+          id: "aggression-2",
+          suit: "aggression",
+          rank: 2,
+          pips: 3,
+          ambition: "tyrant",
+        },
+      ],
+    });
+    let rolled = false;
+    for (let seed = 0; seed < 40 && !rolled; seed++) {
+      const trial = executor.executeCommand(
+        { ...state, rng: { ...state.rng, seed: `battle-${seed}` } },
+        {
+          type: "act",
+          actorId: viewer,
+          input: { op: "battle", system: at, target: rival, assault: 4 },
+        },
+      );
+      if (
+        trial.ok &&
+        trial.state.game.battle[0] &&
+        trial.state.game.battle[0].step !== "roll"
+      ) {
+        state = trial.state;
+        rolled = true;
+      }
+    }
+    expect(rolled).toBe(true);
+    publish();
+    render(<App />);
+    bridge.execute.mockClear();
+    const user = userEvent.setup();
+    for (
+      let i = 0;
+      i < 20 && !screen.queryByRole("button", { name: /^Confirm/ });
+      i++
+    ) {
+      const target = document.querySelector(".fleet.target, .building.target");
+      const done = screen.queryByRole("button", { name: /^Finish battle/ });
+      if (target) fireEvent.click(target);
+      else if (done) await user.click(done);
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(bridge.execute).not.toHaveBeenCalled();
+    expect(state.game.battle.length).toBe(1);
+    await user.click(screen.getByRole("button", { name: /^Confirm/ }));
+    await waitFor(() => expect(state.game.battle.length).toBe(0));
+    expect(bridge.execute.mock.calls.length).toBeGreaterThan(0);
+  });
+
   it("moves a fleet: origin, then destination", async () => {
     state.game.players
       .find((x) => x.id === viewer)!

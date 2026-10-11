@@ -282,7 +282,6 @@ export function verbFlow(ctx: Ctx, verb: string, pay: Pay): Flow {
       const dest = str(a, "dest");
       const route = dest ? routes.get(dest) : undefined;
       if (route?.[0]) return { input: route[0], then: route.slice(1) };
-      const catapult = g.at(origin, me, "starport").length > 0;
       const via = (seq: Input[]) =>
         seq
           .slice(0, -1)
@@ -304,9 +303,6 @@ export function verbFlow(ctx: Ctx, verb: string, pay: Pay): Flow {
         prompt: ids.length
           ? `Move ${ids.length} ship${ids.length > 1 ? "s" : ""} from ${systemName(ctx.view, origin)} — choose a destination`
           : "Choose at least one ship",
-        detail: catapult
-          ? "Leaving your starport lets the fleet Catapult: every glowing system is one move away. Ships stop at a planet or at a gate a rival controls."
-          : undefined,
         highlight: [key.system(origin)],
         targets,
         params: [

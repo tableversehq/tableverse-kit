@@ -515,6 +515,7 @@ export function ReachMap({
   const scale = Math.min(size.w / vw, size.h / HEIGHT);
   const box = { w: vw * scale, h: HEIGHT * scale };
   const [hover, setHover] = useState("");
+  const boxRef = useRef<HTMLDivElement>(null);
   const [peek, setPeek] = useState<Peek | null>(null);
   const blocked = useMemo(() => {
     const live = new Set(g.systems.map((s) => s.cluster));
@@ -528,6 +529,52 @@ export function ReachMap({
     top: `${((y - geo.view.y) / geo.view.h) * 100}%`,
   });
 
+  const tipPlacement = (
+    c: { x: number; y: number },
+    gate: boolean,
+    rows: number,
+  ) => {
+    const rect = boxRef.current?.getBoundingClientRect();
+    if (!rect) return { left: 0, top: 0 };
+    const sx = (x: number) =>
+      rect.left + ((x - geo.view.x) / geo.view.w) * rect.width;
+    const sy = (y: number) =>
+      rect.top + ((y - geo.view.y) / geo.view.h) * rect.height;
+    const w = 250,
+      h = 64 + rows * 20;
+    const dx = c.x - CX,
+      dy = c.y - CY,
+      len = Math.hypot(dx, dy) || 1;
+    let ux = dx / len,
+      uy = dy / len;
+    let ax: number, ay: number;
+    if (gate) {
+      ax = sx(CX + dx * 0.32);
+      ay = sy(CY + dy * 0.32);
+      ux = 0;
+      uy = 0;
+    } else {
+      const reach = PLANET_R + 16;
+      ax = sx(c.x + ux * reach * geo.stretch);
+      ay = sy(c.y + uy * reach);
+      if (
+        (uy < 0 && ay - h < 8) ||
+        (uy > 0 && ay + h > window.innerHeight - 8)
+      ) {
+        uy = 0;
+        ux = ux >= 0 ? 1 : -1;
+        ax = sx(c.x + ux * reach * 1.4);
+        ay = sy(c.y);
+      }
+    }
+    const left = ax - (0.5 - 0.5 * ux) * w,
+      top = ay - (0.5 - 0.5 * uy) * h;
+    return {
+      left: Math.min(Math.max(8, left), window.innerWidth - w - 8),
+      top: Math.min(Math.max(8, top), window.innerHeight - h - 8),
+      width: w,
+    };
+  };
   const hovered = g.systems.find((s) => s.id === hover);
   let tip: ReactNode = null;
   if (hovered) {
@@ -539,13 +586,11 @@ export function ReachMap({
         : undefined);
     const ctrl = control(g, hovered.id);
     const here = g.pieces.filter((p) => p.system === hovered.id);
-    const below = c.y < 320;
-    const dy = hovered.planet ? 60 : 56;
-    tip = (
-      <div
-        className={`map-tip ${below ? "below" : ""}`}
-        style={pct(c.x, below ? c.y + dy : c.y - dy)}
-      >
+    const rows =
+      g.order.filter((id) => here.some((p) => p.owner === id)).length +
+      (t ? 2 : 0);
+    tip = createPortal(
+      <div className="map-tip" style={tipPlacement(c, !hovered.planet, rows)}>
         <strong>{systemName(g, hovered.id)}</strong>
         {hovered.planet ? (
           <span className="muted">
@@ -589,13 +634,18 @@ export function ReachMap({
             {t.detail ? <div className="muted">{t.detail}</div> : null}
           </div>
         )}
-      </div>
+      </div>,
+      document.body,
     );
   }
 
   return (
     <div className="map-frame" ref={ref}>
-      <div className="map-box" style={{ width: box.w, height: box.h }}>
+      <div
+        className="map-box"
+        ref={boxRef}
+        style={{ width: box.w, height: box.h }}
+      >
         <svg
           viewBox={`${geo.view.x} ${geo.view.y} ${geo.view.w} ${geo.view.h}`}
           className={`reach ${active ? "has-targets" : ""}`}

@@ -44,11 +44,11 @@ const PENDING_TEXT: Record<string, (g: Game, target: string) => string> = {
 
 const BATTLE_TEXT: Record<string, string> = {
   roll: "deciding on Skirmisher rerolls",
-  self: "assigning hits to their own ships",
-  intercept: "assigning intercept hits",
-  ship: "assigning hits to the defender",
-  building: "assigning hits to buildings",
-  raid: "raiding",
+  self: "assigning battle damage",
+  intercept: "assigning battle damage",
+  ship: "assigning battle damage",
+  building: "assigning battle damage",
+  raid: "choosing what to raid",
 };
 
 export function situation(

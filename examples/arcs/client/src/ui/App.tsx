@@ -179,6 +179,25 @@ export function App() {
   const g = t.view;
   const base = t.base;
   const [drawer, setDrawer] = useState<"" | "log" | "help">("");
+  const [handUp, setHandUp] = useState(false);
+  const zone = useRef<HTMLDivElement>(null);
+  const pointer = useRef({ x: -1, y: -1 });
+  useEffect(() => {
+    const track = (e: PointerEvent) => {
+      pointer.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("pointermove", track);
+    return () => window.removeEventListener("pointermove", track);
+  }, []);
+  useEffect(() => {
+    if (!handUp) return;
+    const frame = requestAnimationFrame(() => {
+      const { x, y } = pointer.current;
+      const under = x < 0 ? null : document.elementFromPoint(x, y);
+      if (!under || !zone.current?.contains(under)) setHandUp(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  });
   const [focus, setFocus] = useState<string[]>([]);
   const [summary, setSummary] = useState(0);
   const lastChapter = useRef<number | null>(null);
@@ -302,22 +321,38 @@ export function App() {
             effects={t.effects}
             onPick={t.pick}
           >
-            <Hub g={g} targets={t.targets} picked={t.picked} onPick={t.pick} />
-          </ReachMap>
-        </ErrorBoundary>
-        <div className="dock">
-          <ActionTray t={t} />
-          {meP && (
-            <Hand
-              cards={handOf(meP)}
-              targets={handTargets ? t.targets : new Map()}
+            <Hub
+              g={g}
+              me={me}
+              targets={t.targets}
               picked={t.picked}
-              selected={selectedCard}
-              dim={!handKeys && !selectedCard}
-              selectable={t.sit?.mine === true && t.sit.phase === "card"}
               onPick={t.pick}
             />
-          )}
+          </ReachMap>
+        </ErrorBoundary>
+        <div className={`dock ${handUp ? "hand-up" : ""}`}>
+          <div
+            className="dock-zone"
+            ref={zone}
+            onMouseLeave={() => setHandUp(false)}
+          >
+            <div className="dock-part tray-part">
+              <ActionTray t={t} />
+            </div>
+            {meP && (
+              <div className="dock-part" onMouseEnter={() => setHandUp(true)}>
+                <Hand
+                  cards={handOf(meP)}
+                  targets={handTargets ? t.targets : new Map()}
+                  picked={t.picked}
+                  selected={selectedCard}
+                  dim={!handKeys && !selectedCard}
+                  selectable={t.sit?.mine === true && t.sit.phase === "card"}
+                  onPick={t.pick}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </main>
 

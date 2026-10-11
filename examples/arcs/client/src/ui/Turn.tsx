@@ -136,11 +136,6 @@ export function ActionTray({ t }: { t: Table }) {
   if (!g || !sit || !sit.mine) return null;
   const runGlobal = (gl: Global) =>
     gl.confirm ? setAsking(gl) : t.runGlobal(gl);
-  const cancellable =
-    !asking &&
-    (!!t.menu ||
-      (!!t.flow && !sit.focus) ||
-      (sit.phase === "card" && Object.keys(t.answers).length > 0));
   const root = sit.phase === "actions" && !t.flow;
 
   let prompt: ReactNode = null;
@@ -307,35 +302,29 @@ export function ActionTray({ t }: { t: Table }) {
       style={{ ["--ac" as string]: playerColor(g, sit.actor) }}
       aria-label="Your choices"
     >
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.div
-          key={`${t.version}-${step?.id ?? ""}-${t.menu ? "menu" : ""}-${asking ? "ask" : ""}`}
-          className="tray-body"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          {prompt && <div className="tray-prompt">{prompt}</div>}
-          {cancellable && (
-            <span className="tray-hint">click elsewhere to cancel</span>
-          )}
-          <div className="tray-controls">
-            {controls}
-            {!asking &&
-              sit.globals.map((gl) => (
-                <button
-                  key={gl.id}
-                  className={`btn ${gl.tone} global`}
-                  onClick={() => runGlobal(gl)}
-                  disabled={t.busy}
-                >
-                  {gl.label}
-                </button>
-              ))}
-          </div>
-        </motion.div>
-      </AnimatePresence>
+      <motion.div
+        key={`${t.version}-${step?.id ?? ""}-${step?.prompt ?? ""}-${t.menu ? "menu" : ""}-${asking ? "ask" : ""}`}
+        className="tray-body"
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        {prompt && <div className="tray-prompt">{prompt}</div>}
+        <div className="tray-controls">
+          {controls}
+          {!asking &&
+            sit.globals.map((gl) => (
+              <button
+                key={gl.id}
+                className={`btn ${gl.tone} global`}
+                onClick={() => runGlobal(gl)}
+                disabled={t.busy}
+              >
+                {gl.label}
+              </button>
+            ))}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
