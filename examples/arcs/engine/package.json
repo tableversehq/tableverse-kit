@@ -1,0 +1,23 @@
+{
+  "name": "arcs-engine",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./rules": "./src/rules.ts",
+    "./data": "./src/data.ts",
+    "./state": "./src/state.ts",
+    "./input": "./src/input.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "@tableverse-kit/engine": "^0.1.0-beta.2"
+  }
+}

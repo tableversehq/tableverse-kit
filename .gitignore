@@ -71,3 +71,5 @@ package-lock.json
 
 # local design docs and plans (kept out of the published repo)
 /docs/
+
+examples/arcs/client/public

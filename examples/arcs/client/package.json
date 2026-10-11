@@ -1,0 +1,30 @@
+{
+  "name": "arcs-client",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tableverse-kit/client": "^0.1.0-beta.4",
+    "arcs-engine": "*",
+    "lucide-react": "^0.468.0",
+    "motion": "^12.43.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "jsdom": "^30.1.2",
+    "typescript": "^5",
+    "vite": "^7.1.12",
+    "vitest": "^4.1.11"
+  }
+}
